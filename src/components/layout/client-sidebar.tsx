@@ -15,26 +15,29 @@ import { useUser } from '@/lib/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { NotificationBell } from './notification-bell'
 import { Logo } from '@/components/shared/logo'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface NavItem {
-  label: string
+  labelKey: string
+  fallback: string
   href: string
   icon: React.ComponentType<{ className?: string }>
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Search Workers', href: '/search', icon: Search },
-  { label: 'Bookings', href: '/bookings', icon: CalendarDays },
-  { label: 'Messages', href: '/messages', icon: MessageSquare },
-  { label: 'Reviews', href: '/reviews', icon: Star },
-  { label: 'Profile', href: '/profile', icon: User },
+  { labelKey: 'nav.dashboard', fallback: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { labelKey: 'nav.search', fallback: 'Search Workers', href: '/search', icon: Search },
+  { labelKey: 'nav.bookings', fallback: 'Bookings', href: '/bookings', icon: CalendarDays },
+  { labelKey: 'nav.messages', fallback: 'Messages', href: '/messages', icon: MessageSquare },
+  { labelKey: 'nav.reviews', fallback: 'Reviews', href: '/reviews', icon: Star },
+  { labelKey: 'nav.profile', fallback: 'Profile', href: '/profile', icon: User },
 ]
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
   const { user, profile, isLoading } = useUser()
+  const { t } = useTranslation()
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -70,7 +73,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               )}>
               <Icon className={cn('h-5 w-5 shrink-0', isActive && 'text-emerald-600')} />
-              {item.label}
+              {t(item.labelKey, item.fallback)}
             </Link>
           )
         })}
@@ -105,7 +108,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="mt-3 w-full justify-start gap-2 text-gray-600 hover:text-red-600"
           onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
-          Logout
+          {t('auth.logout', 'Log Out')}
         </Button>
       </div>
     </div>

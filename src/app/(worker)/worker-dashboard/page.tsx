@@ -15,6 +15,7 @@ import {
   TrendingUp, AlertCircle
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface DashboardBooking {
   id: string
@@ -48,6 +49,7 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
 
 export default function WorkerDashboard() {
   const { user, profile, isLoading: userLoading } = useUser()
+  const { t } = useTranslation()
   const supabase = createClient()
 
   const [workerProfile, setWorkerProfile] = useState<WorkerProfileData | null>(null)
@@ -237,7 +239,7 @@ export default function WorkerDashboard() {
               <Briefcase className="w-5 h-5 text-emerald-600" />
             </div>
             <p className="text-2xl font-bold">{totalBookings}</p>
-            <p className="text-xs text-muted-foreground">Bookings</p>
+            <p className="text-xs text-muted-foreground">{t('nav.bookings', 'Bookings')}</p>
           </CardContent>
         </Card>
         <Card className="overflow-hidden">
@@ -249,7 +251,7 @@ export default function WorkerDashboard() {
             <p className="text-2xl font-bold">
               {workerProfile?.overall_rating?.toFixed(1) || '0.0'}
             </p>
-            <p className="text-xs text-muted-foreground">Rating</p>
+            <p className="text-xs text-muted-foreground">{t('worker.rating', 'Rating')}</p>
           </CardContent>
         </Card>
         <Card className="overflow-hidden">
@@ -259,7 +261,7 @@ export default function WorkerDashboard() {
               <TrendingUp className="w-5 h-5 text-sky-600" />
             </div>
             <p className="text-2xl font-bold">{workerProfile?.total_reviews || 0}</p>
-            <p className="text-xs text-muted-foreground">Reviews</p>
+            <p className="text-xs text-muted-foreground">{t('worker.reviews', 'Reviews')}</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -277,7 +279,7 @@ export default function WorkerDashboard() {
               <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center">
                 <CalendarDays className="w-6 h-6 text-emerald-600" />
               </div>
-              <span className="font-medium text-sm">View Calendar</span>
+              <span className="font-medium text-sm">{t('nav.calendar', 'View Calendar')}</span>
             </CardContent>
           </Card>
         </Link>
@@ -287,7 +289,7 @@ export default function WorkerDashboard() {
               <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                 <User className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="font-medium text-sm">Edit Profile</span>
+              <span className="font-medium text-sm">{t('worker.edit_profile', 'Edit Profile')}</span>
             </CardContent>
           </Card>
         </Link>

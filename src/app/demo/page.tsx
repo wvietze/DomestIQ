@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Logo } from '@/components/shared/logo'
+import { LanguageSwitcher } from '@/components/layout/language-switcher'
 import {
   Briefcase, Home, Search, CalendarDays, MessageSquare,
   Star, User, Settings, Bell, Wallet, ShieldCheck,
@@ -102,8 +103,9 @@ export default function DemoPage() {
       className="max-w-3xl mx-auto p-4 sm:p-6 space-y-8 pb-12"
     >
       <motion.div variants={fadeUp} className="text-center space-y-3 pt-6">
-        <div className="flex justify-center">
+        <div className="flex items-center justify-center gap-4">
           <Logo size="large" />
+          <LanguageSwitcher />
         </div>
         <h1 className="text-2xl font-bold">Demo Navigator</h1>
         <p className="text-muted-foreground max-w-md mx-auto">

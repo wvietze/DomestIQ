@@ -7,20 +7,22 @@ import {
   MessageSquare, Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface NavItem {
-  label: string
+  labelKey: string
+  fallback: string
   href: string
   icon: React.ComponentType<{ className?: string }>
   showBadge?: boolean
 }
 
 const navItems: NavItem[] = [
-  { label: 'Home', href: '/worker-dashboard', icon: LayoutDashboard },
-  { label: 'Calendar', href: '/worker-calendar', icon: CalendarDays },
-  { label: 'Bookings', href: '/worker-bookings', icon: ClipboardList },
-  { label: 'Messages', href: '/worker-messages', icon: MessageSquare, showBadge: true },
-  { label: 'Earnings', href: '/worker-earnings', icon: Wallet },
+  { labelKey: 'nav.home', fallback: 'Home', href: '/worker-dashboard', icon: LayoutDashboard },
+  { labelKey: 'nav.calendar', fallback: 'Calendar', href: '/worker-calendar', icon: CalendarDays },
+  { labelKey: 'nav.bookings', fallback: 'Bookings', href: '/worker-bookings', icon: ClipboardList },
+  { labelKey: 'nav.messages', fallback: 'Messages', href: '/worker-messages', icon: MessageSquare, showBadge: true },
+  { labelKey: 'nav.earnings', fallback: 'Earnings', href: '/worker-earnings', icon: Wallet },
 ]
 
 interface WorkerBottomNavProps {
@@ -29,6 +31,7 @@ interface WorkerBottomNavProps {
 
 export function WorkerBottomNav({ unreadCount = 0 }: WorkerBottomNavProps) {
   const pathname = usePathname()
+  const { t } = useTranslation()
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white/90 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
@@ -60,7 +63,7 @@ export function WorkerBottomNav({ unreadCount = 0 }: WorkerBottomNavProps) {
                 'text-[10px] leading-tight relative z-10',
                 isActive ? 'font-bold text-emerald-700' : 'font-medium'
               )}>
-                {item.label}
+                {t(item.labelKey, item.fallback)}
               </span>
             </Link>
           )

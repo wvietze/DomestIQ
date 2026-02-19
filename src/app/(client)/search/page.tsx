@@ -9,6 +9,7 @@ import { WorkerCard } from '@/components/worker/worker-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { SearchX, Search, Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
@@ -31,6 +32,7 @@ interface WorkerResult {
 export default function SearchPage() {
   const supabase = createClient()
   const { filters, isSearching, setSearching } = useSearchStore()
+  const { t } = useTranslation()
   const [workers, setWorkers] = useState<WorkerResult[]>([])
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
@@ -75,7 +77,7 @@ export default function SearchPage() {
           <Search className="w-5 h-5 text-emerald-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Find Workers</h1>
+          <h1 className="text-2xl font-bold">{t('search.title', 'Find Workers')}</h1>
           <p className="text-sm text-muted-foreground">Trusted workers in your area</p>
         </div>
       </motion.div>
@@ -102,8 +104,8 @@ export default function SearchPage() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
               <SearchX className="w-8 h-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-semibold">No workers found</p>
-            <p className="text-muted-foreground text-sm max-w-xs mx-auto">Try different filters or expand your search area to find more workers</p>
+            <p className="text-lg font-semibold">{t('search.no_results', 'No workers found')}</p>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">{t('search.try_different', 'Try different filters')}</p>
           </motion.div>
         ) : (
           <>

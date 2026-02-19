@@ -14,11 +14,6 @@ export function useTranslation() {
 
   useEffect(() => {
     async function loadTranslations() {
-      if (language === 'en') {
-        setTranslations({})
-        return
-      }
-
       if (translationCache[language]) {
         setTranslations(translationCache[language])
         return
@@ -33,7 +28,6 @@ export function useTranslation() {
           setTranslations(data)
         }
       } catch {
-        // Fallback to English
         setTranslations({})
       } finally {
         setIsLoading(false)
@@ -45,10 +39,9 @@ export function useTranslation() {
 
   const t = useCallback(
     (key: string, fallback?: string) => {
-      if (language === 'en') return fallback ?? key
       return translations[key] ?? fallback ?? key
     },
-    [language, translations]
+    [translations]
   )
 
   const translateText = useCallback(

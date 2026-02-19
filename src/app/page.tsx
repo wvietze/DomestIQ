@@ -10,6 +10,7 @@ import {
   Briefcase, TrendingUp, Award,
 } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
+import { LanguageSwitcher } from '@/components/layout/language-switcher'
 
 /* ─── Animation Variants ─── */
 
@@ -97,6 +98,7 @@ export default function LandingPage() {
             <a href="#stories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Stories</a>
           </nav>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Log In</Link>
             <Link href="/register" className="text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">Get Started</Link>
           </div>

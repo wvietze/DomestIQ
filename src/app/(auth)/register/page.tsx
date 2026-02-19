@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Briefcase, Home, ArrowRight, Shield, Smartphone, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }
@@ -11,7 +12,8 @@ const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.12 } }
 const roles = [
   {
     href: '/register/worker',
-    title: "I'm a Worker",
+    titleKey: 'auth.worker',
+    titleFallback: "I'm a Worker",
     subtitle: 'Find consistent work near you',
     icon: Briefcase,
     gradient: 'from-amber-500 via-emerald-600 to-teal-600',
@@ -26,7 +28,8 @@ const roles = [
   },
   {
     href: '/register/client',
-    title: "I Need a Worker",
+    titleKey: 'auth.client',
+    titleFallback: "I'm looking for a Worker",
     subtitle: 'Find trusted workers near you',
     icon: Home,
     gradient: 'from-sky-500 to-blue-600',
@@ -41,6 +44,8 @@ const roles = [
 ]
 
 export default function RegisterPage() {
+  const { t } = useTranslation()
+
   return (
     <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6">
       <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="text-center">
@@ -65,7 +70,7 @@ export default function RegisterPage() {
                     <div className={cn('mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl', role.iconBg)}>
                       <Icon className={cn('h-8 w-8', role.iconColor)} />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{role.title}</h3>
+                    <h3 className="text-lg font-bold text-foreground">{t(role.titleKey, role.titleFallback)}</h3>
                     <p className="mt-1.5 text-sm text-muted-foreground">{role.subtitle}</p>
 
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -96,7 +101,7 @@ export default function RegisterPage() {
 
       <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-emerald-600 hover:underline">Log In</Link>
+        <Link href="/login" className="font-semibold text-emerald-600 hover:underline">{t('auth.login', 'Log In')}</Link>
       </motion.p>
     </motion.div>
   )
