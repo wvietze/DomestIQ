@@ -1,66 +1,103 @@
-import Link from "next/link"
-import { Briefcase, Search, ArrowRight } from "lucide-react"
+'use client'
+
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { Briefcase, Home, ArrowRight, Shield, Smartphone, Star } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }
+
+const roles = [
+  {
+    href: '/register/worker',
+    title: "I'm a Worker",
+    subtitle: 'Find consistent work near you',
+    icon: Briefcase,
+    gradient: 'from-amber-500 via-emerald-600 to-teal-600',
+    hoverBg: 'hover:border-emerald-200 hover:bg-emerald-50/50',
+    iconBg: 'bg-gradient-to-br from-amber-500/10 to-emerald-600/10',
+    iconColor: 'text-emerald-600',
+    badges: [
+      { icon: Smartphone, label: 'Phone-friendly' },
+      { icon: Shield, label: 'Keep 100% earnings' },
+      { icon: Star, label: 'Build reputation' },
+    ],
+  },
+  {
+    href: '/register/client',
+    title: "I Need a Worker",
+    subtitle: 'Find trusted workers near you',
+    icon: Home,
+    gradient: 'from-sky-500 to-blue-600',
+    hoverBg: 'hover:border-blue-200 hover:bg-blue-50/50',
+    iconBg: 'bg-gradient-to-br from-sky-500/10 to-blue-600/10',
+    iconColor: 'text-blue-600',
+    badges: [
+      { icon: Shield, label: 'Verified workers' },
+      { icon: Star, label: 'Rated & reviewed' },
+    ],
+  },
+]
 
 export default function RegisterPage() {
   return (
-    <div className="space-y-8">
-      <div className="text-center">
+    <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6">
+      <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="text-center">
         <h2 className="text-2xl font-bold text-foreground">Join DomestIQ</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Choose how you want to use DomestIQ
+          How would you like to use DomestIQ?
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* Worker Card */}
-        <Link href="/register/worker" className="group">
-          <div className="relative h-full rounded-2xl bg-white/80 backdrop-blur-sm border border-white/60 p-6 text-center card-hover overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative">
-              <div className="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5">
-                <Briefcase className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">
-                I&apos;m a Worker
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Find households that need your skills
-              </p>
-              <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-blue-600">
-                Get started <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </div>
-        </Link>
+        {roles.map((role) => {
+          const Icon = role.icon
+          return (
+            <motion.div key={role.href} variants={fadeUp} transition={{ duration: 0.5 }}>
+              <Link href={role.href} className="group block">
+                <div className={cn(
+                  'relative h-full rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-transparent p-6 text-center transition-all duration-300 overflow-hidden',
+                  role.hoverBg,
+                  'hover:shadow-lg hover:-translate-y-1'
+                )}>
+                  <div className="relative">
+                    <div className={cn('mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl', role.iconBg)}>
+                      <Icon className={cn('h-8 w-8', role.iconColor)} />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground">{role.title}</h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{role.subtitle}</p>
 
-        {/* Client Card */}
-        <Link href="/register/client" className="group">
-          <div className="relative h-full rounded-2xl bg-white/80 backdrop-blur-sm border border-white/60 p-6 text-center card-hover overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative">
-              <div className="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5">
-                <Search className="h-8 w-8 text-emerald-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">
-                I&apos;m looking for a Worker
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Find trusted workers near you
-              </p>
-              <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-emerald-600">
-                Get started <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </div>
-        </Link>
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      {role.badges.map(badge => {
+                        const BadgeIcon = badge.icon
+                        return (
+                          <span key={badge.label} className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-gray-100 rounded-full px-2.5 py-1">
+                            <BadgeIcon className="w-3 h-3" />
+                            {badge.label}
+                          </span>
+                        )
+                      })}
+                    </div>
+
+                    <div className={cn(
+                      'mt-5 inline-flex items-center gap-1.5 text-sm font-semibold',
+                      role.iconColor
+                    )}>
+                      Get started <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          )
+        })}
       </div>
 
-      <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-blue-600 hover:underline">
-          Log In
-        </Link>
-      </p>
-    </div>
+      <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-sm text-muted-foreground">
+        Already have an account?{' '}
+        <Link href="/login" className="font-semibold text-emerald-600 hover:underline">Log In</Link>
+      </motion.p>
+    </motion.div>
   )
 }

@@ -1,13 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchStore } from '@/lib/stores/search-store'
 import { SearchFilters } from '@/components/search/search-filters'
 import { WorkerCard } from '@/components/worker/worker-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { SearchX } from 'lucide-react'
+import { SearchX, Search, Loader2 } from 'lucide-react'
+
+const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
 
 interface WorkerResult {
   worker_id: string
@@ -49,13 +53,8 @@ export default function SearchPage() {
       })
 
       if (error) throw error
-
       const results = (data || []) as WorkerResult[]
-      if (reset) {
-        setWorkers(results)
-      } else {
-        setWorkers(prev => [...prev, ...results])
-      }
+      if (reset) { setWorkers(results) } else { setWorkers(prev => [...prev, ...results]) }
       setHasMore(results.length === 20)
     } catch (err) {
       console.error('Search error:', err)
@@ -69,10 +68,21 @@ export default function SearchPage() {
   }, [filters.serviceId, filters.minRating, filters.availableDay, filters.maxDistance, filters.locationLat, filters.locationLng]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Find Workers</h1>
+    <motion.div initial="hidden" animate="visible" variants={stagger}
+      className="max-w-2xl mx-auto p-4 space-y-4">
+      <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+          <Search className="w-5 h-5 text-emerald-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">Find Workers</h1>
+          <p className="text-sm text-muted-foreground">Trusted workers in your area</p>
+        </div>
+      </motion.div>
 
-      <SearchFilters />
+      <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+        <SearchFilters />
+      </motion.div>
 
       <div className="space-y-3">
         {isSearching && workers.length === 0 ? (
@@ -87,32 +97,37 @@ export default function SearchPage() {
             </div>
           ))
         ) : workers.length === 0 ? (
-          <div className="text-center py-12 space-y-3">
-            <SearchX className="w-12 h-12 text-muted-foreground mx-auto" />
-            <p className="text-lg font-medium">No workers found</p>
-            <p className="text-muted-foreground">Try different filters or expand your search area</p>
-          </div>
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}
+            className="text-center py-16 space-y-3">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+              <SearchX className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-lg font-semibold">No workers found</p>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">Try different filters or expand your search area to find more workers</p>
+          </motion.div>
         ) : (
           <>
-            {workers.map(worker => (
-              <WorkerCard key={worker.worker_id} worker={worker} />
+            <motion.p variants={fadeUp} className="text-sm text-muted-foreground">
+              {workers.length}{hasMore ? '+' : ''} workers found
+            </motion.p>
+            {workers.map((worker, i) => (
+              <motion.div key={worker.worker_id} variants={fadeUp}
+                transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.4) }}>
+                <WorkerCard worker={worker} />
+              </motion.div>
             ))}
             {hasMore && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  setPage(p => p + 1)
-                  searchWorkers(false)
-                }}
-                disabled={isSearching}
-              >
-                {isSearching ? 'Loading...' : 'Load More'}
-              </Button>
+              <motion.div variants={fadeUp}>
+                <Button variant="outline" className="w-full h-12"
+                  onClick={() => { setPage(p => p + 1); searchWorkers(false) }}
+                  disabled={isSearching}>
+                  {isSearching ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading...</> : 'Load More Workers'}
+                </Button>
+              </motion.div>
             )}
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

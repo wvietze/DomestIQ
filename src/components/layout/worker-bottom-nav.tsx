@@ -3,11 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
-  CalendarDays,
-  ClipboardList,
-  MessageSquare,
-  Wallet,
+  LayoutDashboard, CalendarDays, ClipboardList,
+  MessageSquare, Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -19,32 +16,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/worker-dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    label: 'Calendar',
-    href: '/worker-calendar',
-    icon: CalendarDays,
-  },
-  {
-    label: 'Bookings',
-    href: '/worker-bookings',
-    icon: ClipboardList,
-  },
-  {
-    label: 'Messages',
-    href: '/worker-messages',
-    icon: MessageSquare,
-    showBadge: true,
-  },
-  {
-    label: 'Earnings',
-    href: '/worker-earnings',
-    icon: Wallet,
-  },
+  { label: 'Home', href: '/worker-dashboard', icon: LayoutDashboard },
+  { label: 'Calendar', href: '/worker-calendar', icon: CalendarDays },
+  { label: 'Bookings', href: '/worker-bookings', icon: ClipboardList },
+  { label: 'Messages', href: '/worker-messages', icon: MessageSquare, showBadge: true },
+  { label: 'Earnings', href: '/worker-earnings', icon: Wallet },
 ]
 
 interface WorkerBottomNavProps {
@@ -55,39 +31,35 @@ export function WorkerBottomNav({ unreadCount = 0 }: WorkerBottomNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg">
-      <div className="flex items-center justify-around pb-4 pt-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white/90 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <div className="flex items-center justify-around pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href)
           const Icon = item.icon
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
+            <Link key={item.href} href={item.href}
               className={cn(
-                'relative flex flex-col items-center gap-0.5 px-2 py-1 transition-colors',
+                'relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all rounded-xl',
                 isActive
-                  ? 'text-primary'
-                  : 'text-gray-500 hover:text-gray-700'
-              )}
-            >
+                  ? 'text-emerald-600'
+                  : 'text-gray-400 hover:text-gray-600 active:scale-95'
+              )}>
               <div className="relative">
-                <Icon className="h-6 w-6" />
+                {isActive && (
+                  <div className="absolute -inset-2 rounded-xl bg-emerald-50" />
+                )}
+                <Icon className={cn('h-6 w-6 relative z-10', isActive && 'text-emerald-600')} />
                 {item.showBadge && unreadCount > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-red-500">
-                    <span className="sr-only">
-                      {unreadCount} unread messages
-                    </span>
+                  <span className="absolute -right-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </div>
-              <span
-                className={cn(
-                  'text-[10px] leading-tight',
-                  isActive ? 'font-semibold' : 'font-normal'
-                )}
-              >
+              <span className={cn(
+                'text-[10px] leading-tight relative z-10',
+                isActive ? 'font-bold text-emerald-700' : 'font-medium'
+              )}>
                 {item.label}
               </span>
             </Link>
