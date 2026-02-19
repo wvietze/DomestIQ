@@ -7,7 +7,7 @@ import {
   CalendarDays,
   ClipboardList,
   MessageSquare,
-  User,
+  Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -41,9 +41,9 @@ const navItems: NavItem[] = [
     showBadge: true,
   },
   {
-    label: 'Profile',
-    href: '/worker-profile',
-    icon: User,
+    label: 'Earnings',
+    href: '/worker-earnings',
+    icon: Wallet,
   },
 ]
 

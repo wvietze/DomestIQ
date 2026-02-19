@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { StarRating } from '@/components/ui/star-rating'
 import {
   Edit, ShieldCheck, BadgeCheck, Clock, Briefcase,
-  MapPin, Eye, ChevronRight, Calendar
+  MapPin, Eye, ChevronRight, Calendar, Settings
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -289,6 +289,13 @@ export default function WorkerProfilePage() {
           <Link href="/worker-profile/edit">
             <Edit className="w-4 h-4 mr-2" />
             Edit Profile
+          </Link>
+        </Button>
+
+        <Button asChild variant="outline" className="w-full h-12 text-base">
+          <Link href="/worker-settings">
+            <Settings className="w-4 h-4 mr-2" />
+            Settings & Bank Details
           </Link>
         </Button>
 

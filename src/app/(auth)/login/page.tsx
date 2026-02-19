@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -123,11 +122,11 @@ function LoginForm() {
   }
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Welcome Back</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="rounded-2xl bg-white/80 backdrop-blur-sm border border-white/60 shadow-xl shadow-black/5 overflow-hidden">
+      <div className="p-6 pb-0 text-center">
+        <h2 className="text-2xl font-bold">Welcome Back</h2>
+      </div>
+      <div className="p-6 space-y-6">
         {/* Tab Toggle */}
         <div className="flex rounded-lg border bg-muted p-1">
           <button
@@ -276,21 +275,20 @@ function LoginForm() {
             <Separator />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
+            <span className="bg-white/80 px-2 text-muted-foreground">
               Or continue with
             </span>
           </div>
         </div>
 
         {/* Google OAuth */}
-        <Button
+        <button
           type="button"
-          variant="outline"
-          className="w-full"
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-foreground hover:bg-gray-50 transition-colors disabled:opacity-50"
           onClick={handleGoogleLogin}
           disabled={loading}
         >
-          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+          <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
               fill="#4285F4"
@@ -309,16 +307,16 @@ function LoginForm() {
             />
           </svg>
           Continue with Google
-        </Button>
-      </CardContent>
-      <CardFooter className="justify-center">
+        </button>
+      </div>
+      <div className="p-6 pt-0 text-center">
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-primary hover:underline">
+          <Link href="/register" className="font-medium text-blue-600 hover:underline">
             Sign Up
           </Link>
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }

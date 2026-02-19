@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 const publicRoutes = ['/', '/login', '/register', '/callback', '/terms', '/privacy']
-const workerRoutes = ['/worker-dashboard', '/worker-profile', '/worker-calendar', '/worker-bookings', '/worker-messages', '/worker-reviews']
-const clientRoutes = ['/dashboard', '/search', '/workers', '/bookings', '/messages', '/reviews', '/profile']
+const workerRoutes = ['/worker-dashboard', '/worker-profile', '/worker-calendar', '/worker-bookings', '/worker-messages', '/worker-reviews', '/worker-earnings', '/worker-settings', '/worker-notifications']
+const clientRoutes = ['/dashboard', '/search', '/workers', '/bookings', '/messages', '/reviews', '/profile', '/notifications']
 const adminRoutes = ['/admin']
 
 export async function middleware(request: NextRequest) {

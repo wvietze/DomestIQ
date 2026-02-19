@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   LogOut,
+  Bell,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { useUser } from '@/lib/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { NotificationBell } from './notification-bell'
 
 interface NavItem {
   label: string
@@ -53,8 +55,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo */}
-      <div className="flex h-16 items-center px-6">
+      {/* Logo & Notifications */}
+      <div className="flex h-16 items-center justify-between px-6">
         <Link
           href="/dashboard"
           className="text-xl font-bold text-primary"
@@ -62,6 +64,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         >
           DomestIQ
         </Link>
+        {user && <NotificationBell userId={user.id} />}
       </div>
 
       <Separator />
