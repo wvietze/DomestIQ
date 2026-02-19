@@ -41,7 +41,7 @@ interface CalendarBooking {
 
 const statusColors: Record<string, string> = {
   pending: 'bg-amber-500',
-  confirmed: 'bg-primary',
+  confirmed: 'bg-emerald-600',
   in_progress: 'bg-emerald-500',
   completed: 'bg-gray-400',
   cancelled: 'bg-destructive',
@@ -150,13 +150,17 @@ export default function WorkerCalendarPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
-      <motion.h1
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold"
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
       >
-        Calendar
-      </motion.h1>
+        <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+          <CalendarDays className="w-5 h-5 text-sky-600" />
+        </div>
+        <h1 className="text-2xl font-bold">Calendar</h1>
+      </motion.div>
 
       {/* View Toggle + Navigation */}
       <div className="flex items-center justify-between">
@@ -210,7 +214,7 @@ export default function WorkerCalendarPage() {
             setCurrentDate(new Date())
             setSelectedDate(new Date())
           }}
-          className="text-primary text-xs"
+          className="text-emerald-600 text-xs"
         >
           Today
         </Button>
@@ -242,7 +246,7 @@ export default function WorkerCalendarPage() {
                   onClick={() => setSelectedDate(day)}
                   className={cn(
                     'relative flex flex-col items-center justify-start p-1.5 rounded-lg transition-all min-h-[48px]',
-                    isSelected && 'bg-primary/10 ring-2 ring-primary',
+                    isSelected && 'bg-emerald-50 ring-2 ring-emerald-500',
                     !isSelected && today && 'bg-muted',
                     !isSelected && !today && 'hover:bg-muted/50',
                     viewMode === 'month' && !isCurrentMonth && 'opacity-30'
@@ -251,7 +255,7 @@ export default function WorkerCalendarPage() {
                   <span
                     className={cn(
                       'text-sm',
-                      today && 'font-bold text-primary',
+                      today && 'font-bold text-emerald-600',
                       isSelected && 'font-bold'
                     )}
                   >
@@ -265,7 +269,7 @@ export default function WorkerCalendarPage() {
                           key={i}
                           className={cn(
                             'w-1.5 h-1.5 rounded-full',
-                            statusColors[b.status] || 'bg-primary'
+                            statusColors[b.status] || 'bg-emerald-600'
                           )}
                         />
                       ))}

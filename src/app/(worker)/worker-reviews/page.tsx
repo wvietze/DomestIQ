@@ -107,13 +107,17 @@ export default function WorkerReviewsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <motion.h1
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold"
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
       >
-        My Reviews
-      </motion.h1>
+        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+          <Star className="w-5 h-5 text-amber-600" />
+        </div>
+        <h1 className="text-2xl font-bold">My Reviews</h1>
+      </motion.div>
 
       {reviews.length === 0 ? (
         <Card>
@@ -157,8 +161,8 @@ export default function WorkerReviewsPage() {
               <CardContent className="space-y-4">
                 {/* Punctuality */}
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 bg-sky-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-4 h-4 text-sky-500" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
@@ -167,7 +171,7 @@ export default function WorkerReviewsPage() {
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
                       <div
-                        className="bg-primary h-2 rounded-full transition-all"
+                        className="bg-sky-500 h-2 rounded-full transition-all"
                         style={{ width: `${(stats.punctuality / 5) * 100}%` }}
                       />
                     </div>

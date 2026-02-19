@@ -203,7 +203,7 @@ export default function WorkerDashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Profile {completeness}% complete</span>
-                <Link href="/worker-profile/edit" className="text-xs text-primary font-medium">
+                <Link href="/worker-profile/edit" className="text-xs text-emerald-600 font-medium">
                   Complete Profile
                 </Link>
               </div>
@@ -230,17 +230,19 @@ export default function WorkerDashboard() {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="grid grid-cols-3 gap-3"
       >
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="w-10 h-10 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-2">
-              <Briefcase className="w-5 h-5 text-primary" />
+        <Card className="overflow-hidden">
+          <CardContent className="p-4 text-center relative">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+            <div className="w-10 h-10 mx-auto bg-emerald-50 rounded-full flex items-center justify-center mb-2">
+              <Briefcase className="w-5 h-5 text-emerald-600" />
             </div>
             <p className="text-2xl font-bold">{totalBookings}</p>
             <p className="text-xs text-muted-foreground">Bookings</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
+        <Card className="overflow-hidden">
+          <CardContent className="p-4 text-center relative">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
             <div className="w-10 h-10 mx-auto bg-amber-50 rounded-full flex items-center justify-center mb-2">
               <Star className="w-5 h-5 text-amber-500" />
             </div>
@@ -250,10 +252,11 @@ export default function WorkerDashboard() {
             <p className="text-xs text-muted-foreground">Rating</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="w-10 h-10 mx-auto bg-emerald-50 rounded-full flex items-center justify-center mb-2">
-              <TrendingUp className="w-5 h-5 text-emerald-500" />
+        <Card className="overflow-hidden">
+          <CardContent className="p-4 text-center relative">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 to-blue-500" />
+            <div className="w-10 h-10 mx-auto bg-sky-50 rounded-full flex items-center justify-center mb-2">
+              <TrendingUp className="w-5 h-5 text-sky-600" />
             </div>
             <p className="text-2xl font-bold">{workerProfile?.total_reviews || 0}</p>
             <p className="text-xs text-muted-foreground">Reviews</p>
@@ -269,20 +272,20 @@ export default function WorkerDashboard() {
         className="grid grid-cols-2 gap-3"
       >
         <Link href="/worker-calendar">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+          <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer h-full">
             <CardContent className="p-4 flex flex-col items-center justify-center gap-2 text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <CalendarDays className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center">
+                <CalendarDays className="w-6 h-6 text-emerald-600" />
               </div>
               <span className="font-medium text-sm">View Calendar</span>
             </CardContent>
           </Card>
         </Link>
         <Link href="/worker-profile/edit">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+          <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer h-full">
             <CardContent className="p-4 flex flex-col items-center justify-center gap-2 text-center">
-              <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-secondary-foreground" />
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-blue-600" />
               </div>
               <span className="font-medium text-sm">Edit Profile</span>
             </CardContent>
@@ -302,7 +305,7 @@ export default function WorkerDashboard() {
               <h2 className="font-semibold text-lg">New Requests</h2>
               <Badge variant="warning">{pendingBookings.length}</Badge>
             </div>
-            <Link href="/worker-bookings" className="text-sm text-primary font-medium flex items-center">
+            <Link href="/worker-bookings" className="text-sm text-emerald-600 font-medium flex items-center">
               View All <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -373,7 +376,7 @@ export default function WorkerDashboard() {
       >
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-lg">Upcoming Bookings</h2>
-          <Link href="/worker-bookings" className="text-sm text-primary font-medium flex items-center">
+          <Link href="/worker-bookings" className="text-sm text-emerald-600 font-medium flex items-center">
             View All <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

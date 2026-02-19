@@ -48,6 +48,7 @@ import {
   Info,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -486,7 +487,17 @@ export default function WorkerSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
+      >
+        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+          <Shield className="w-5 h-5 text-gray-600" />
+        </div>
+        <h1 className="text-2xl font-bold">Settings</h1>
+      </motion.div>
 
       {/* ================================================================== */}
       {/* 1. Bank Account Setup                                              */}
@@ -817,14 +828,14 @@ export default function WorkerSettingsPage() {
           <div className="flex flex-col gap-2">
             <a
               href="/privacy"
-              className="flex items-center gap-2 text-sm text-primary hover:underline"
+              className="flex items-center gap-2 text-sm text-emerald-600 hover:underline"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Privacy Policy
             </a>
             <a
               href="/terms"
-              className="flex items-center gap-2 text-sm text-primary hover:underline"
+              className="flex items-center gap-2 text-sm text-emerald-600 hover:underline"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Terms of Service

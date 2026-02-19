@@ -303,8 +303,8 @@ export default function WorkerProfileEditPage() {
             <AvatarImage src={avatarPreview || undefined} alt="Profile" />
             <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
           </Avatar>
-          <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md">
-            <Camera className="w-4 h-4 text-primary-foreground" />
+          <label className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center cursor-pointer shadow-md">
+            <Camera className="w-4 h-4 text-white" />
             <input
               type="file"
               accept="image/*"
@@ -394,8 +394,8 @@ export default function WorkerProfileEditPage() {
                     className={cn(
                       'flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all',
                       selected
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-card hover:border-primary/50'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-border bg-card hover:border-emerald-300'
                     )}
                   >
                     <Icon className="w-6 h-6" />
@@ -432,7 +432,7 @@ export default function WorkerProfileEditPage() {
                   className={cn(
                     'w-12 h-10 rounded-lg border-2 text-sm font-medium transition-all flex-shrink-0',
                     slot.is_available
-                      ? 'border-primary bg-primary/10 text-primary'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                       : 'border-border text-muted-foreground'
                   )}
                 >
@@ -472,7 +472,7 @@ export default function WorkerProfileEditPage() {
       <div className="fixed bottom-20 left-0 right-0 p-4 bg-background border-t">
         <div className="max-w-2xl mx-auto">
           <Button
-            className="w-full h-12 text-base"
+            className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
             onClick={handleSave}
             disabled={isSaving}
           >

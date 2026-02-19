@@ -124,13 +124,17 @@ export default function WorkerMessagesPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
-      <motion.h1
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold"
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
       >
-        Messages
-      </motion.h1>
+        <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+          <MessageSquare className="w-5 h-5 text-violet-600" />
+        </div>
+        <h1 className="text-2xl font-bold">Messages</h1>
+      </motion.div>
 
       {conversations.length === 0 ? (
         <Card>
@@ -168,7 +172,7 @@ export default function WorkerMessagesPage() {
                           <AvatarFallback className="text-sm">{initials}</AvatarFallback>
                         </Avatar>
                         {convo.unread_count > 0 && (
-                          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full border-2 border-background" />
+                          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-background" />
                         )}
                       </div>
 
@@ -187,7 +191,7 @@ export default function WorkerMessagesPage() {
                             {convo.last_message_preview || 'No messages yet'}
                           </p>
                           {convo.unread_count > 0 && (
-                            <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                            <span className="bg-emerald-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                               {convo.unread_count > 9 ? '9+' : convo.unread_count}
                             </span>
                           )}

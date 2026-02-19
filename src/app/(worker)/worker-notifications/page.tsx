@@ -317,7 +317,12 @@ export default function WorkerNotificationsPage() {
     <div className="max-w-2xl mx-auto space-y-6 p-4 pt-16">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notifications</h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <Bell className="w-5 h-5 text-amber-600" />
+          </div>
+          <h1 className="text-2xl font-bold">Notifications</h1>
+        </div>
         {hasUnread && (
           <Button
             variant="outline"
@@ -370,7 +375,7 @@ export default function WorkerNotificationsPage() {
                   key={notification.id}
                   className={cn(
                     'cursor-pointer hover:shadow-md transition-shadow',
-                    !notification.is_read && 'border-primary/20 bg-primary/[0.02]'
+                    !notification.is_read && 'border-emerald-200 bg-emerald-50/30'
                   )}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -400,7 +405,7 @@ export default function WorkerNotificationsPage() {
                         </p>
                         {/* Unread dot */}
                         {!notification.is_read && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 mt-1" />
+                          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0 mt-1" />
                         )}
                       </div>
                       {notification.body && (

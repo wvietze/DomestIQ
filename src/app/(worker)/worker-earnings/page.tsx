@@ -9,8 +9,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import {
   TrendingUp, DollarSign, Calendar, FileText, Download,
-  ChevronRight, Loader2, ShieldCheck, Banknote,
+  ChevronRight, Loader2, ShieldCheck, Banknote, Wallet,
 } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 type Period = 'week' | 'month' | 'year' | 'all'
 
@@ -135,8 +136,18 @@ export default function WorkerEarningsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Earnings</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <Wallet className="w-5 h-5 text-emerald-600" />
+          </div>
+          <h1 className="text-2xl font-bold">My Earnings</h1>
+        </div>
         <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
           {(['week', 'month', 'year', 'all'] as Period[]).map((p) => (
             <button
@@ -152,11 +163,12 @@ export default function WorkerEarningsPage() {
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
           <CardContent className="p-4 text-center">
             <DollarSign className="w-6 h-6 mx-auto text-emerald-500 mb-2" />
             <p className="text-2xl font-bold text-emerald-600">
@@ -165,16 +177,18 @@ export default function WorkerEarningsPage() {
             <p className="text-xs text-muted-foreground mt-1">Total Earned</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-sky-400 to-sky-600" />
           <CardContent className="p-4 text-center">
-            <Calendar className="w-6 h-6 mx-auto text-blue-500 mb-2" />
+            <Calendar className="w-6 h-6 mx-auto text-sky-500 mb-2" />
             <p className="text-2xl font-bold">
               {summary?.total_bookings || 0}
             </p>
             <p className="text-xs text-muted-foreground mt-1">Bookings</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
           <CardContent className="p-4 text-center">
             <TrendingUp className="w-6 h-6 mx-auto text-amber-500 mb-2" />
             <p className="text-2xl font-bold">

@@ -171,7 +171,7 @@ export default function WorkerBookingsPage() {
                 </span>
               </div>
               {booking.estimated_cost && (
-                <p className="text-sm font-medium text-primary mt-1">
+                <p className="text-sm font-bold text-emerald-700 mt-1">
                   R{booking.estimated_cost}
                 </p>
               )}
@@ -202,7 +202,7 @@ export default function WorkerBookingsPage() {
               </Button>
               <Button
                 size="sm"
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
                 disabled={actionLoading === booking.id}
                 onClick={(e) => {
                   e.preventDefault()
@@ -246,13 +246,17 @@ export default function WorkerBookingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
-      <motion.h1
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold"
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
       >
-        My Bookings
-      </motion.h1>
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+          <ClipboardList className="w-5 h-5 text-emerald-600" />
+        </div>
+        <h1 className="text-2xl font-bold">My Bookings</h1>
+      </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
