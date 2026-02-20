@@ -70,3 +70,6 @@ export type {
   ReferralStatus,
   ReferralStats,
 } from './referral';
+
+// Portfolio
+export type { PortfolioImage } from './portfolio';

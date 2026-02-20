@@ -65,6 +65,22 @@ export default function SearchPage() {
     }
   }, [supabase, filters, page, setSearching])
 
+  // Apply client-side filters (price, verified) and sorting
+  const filteredWorkers = workers.filter(w => {
+    if (filters.verifiedOnly && !w.id_verified) return false
+    if (filters.minPrice !== null && (w.hourly_rate === null || w.hourly_rate < filters.minPrice)) return false
+    if (filters.maxPrice !== null && (w.hourly_rate === null || w.hourly_rate > filters.maxPrice)) return false
+    return true
+  }).sort((a, b) => {
+    switch (filters.sortBy) {
+      case 'rating': return b.overall_rating - a.overall_rating
+      case 'price_low': return (a.hourly_rate ?? 999) - (b.hourly_rate ?? 999)
+      case 'price_high': return (b.hourly_rate ?? 0) - (a.hourly_rate ?? 0)
+      case 'reviews': return b.total_reviews - a.total_reviews
+      default: return 0 // relevance = server order
+    }
+  })
+
   useEffect(() => {
     searchWorkers(true)
   }, [filters.serviceId, filters.minRating, filters.availableDay, filters.maxDistance, filters.locationLat, filters.locationLng]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -98,21 +114,22 @@ export default function SearchPage() {
               </div>
             </div>
           ))
-        ) : workers.length === 0 ? (
+        ) : filteredWorkers.length === 0 ? (
           <motion.div variants={fadeUp} transition={{ duration: 0.4 }}
             className="text-center py-16 space-y-3">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
               <SearchX className="w-8 h-8 text-muted-foreground" />
             </div>
             <p className="text-lg font-semibold">{t('search.no_results', 'No workers found')}</p>
-            <p className="text-muted-foreground text-sm max-w-xs mx-auto">{t('search.try_different', 'Try different filters')}</p>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">{t('search.try_different', 'Try adjusting your filters or search terms')}</p>
           </motion.div>
         ) : (
           <>
             <motion.p variants={fadeUp} className="text-sm text-muted-foreground">
-              {workers.length}{hasMore ? '+' : ''} workers found
+              {filteredWorkers.length}{hasMore ? '+' : ''} workers found
+              {filters.sortBy !== 'relevance' && <span className="ml-1">· sorted by {filters.sortBy.replace('_', ' ')}</span>}
             </motion.p>
-            {workers.map((worker, i) => (
+            {filteredWorkers.map((worker, i) => (
               <motion.div key={worker.worker_id} variants={fadeUp}
                 transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.4) }}>
                 <WorkerCard worker={worker} />

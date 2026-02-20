@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+export type SortOption = 'relevance' | 'rating' | 'price_low' | 'price_high' | 'reviews'
+
 interface SearchFilters {
   serviceId: string | null
   minRating: number
@@ -9,6 +11,10 @@ interface SearchFilters {
   locationLng: number | null
   radiusKm: number
   query: string
+  minPrice: number | null
+  maxPrice: number | null
+  sortBy: SortOption
+  verifiedOnly: boolean
 }
 
 interface SearchState {
@@ -29,6 +35,10 @@ const defaultFilters: SearchFilters = {
   locationLng: null,
   radiusKm: 25,
   query: '',
+  minPrice: null,
+  maxPrice: null,
+  sortBy: 'relevance',
+  verifiedOnly: false,
 }
 
 export const useSearchStore = create<SearchState>((set) => ({

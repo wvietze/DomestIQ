@@ -16,7 +16,8 @@ import {
   Camera, Save, Loader2, CheckCircle2, ArrowLeft,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
-  Wrench, Baby, Dog, ShieldCheck, MapPin, Navigation
+  Wrench, Baby, Dog, ShieldCheck, MapPin, Navigation,
+  ImagePlus, X, GripVertical
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -75,6 +76,8 @@ export default function WorkerProfileEditPage() {
   const [locationName, setLocationName] = useState('')
   const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [portfolioImages, setPortfolioImages] = useState<Array<{ id: string; image_url: string; caption: string | null }>>([])
+  const [portfolioUploading, setPortfolioUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -146,6 +149,16 @@ export default function WorkerProfileEditPage() {
             return updated
           })
         }
+      }
+
+      // Load portfolio images
+      if (wp) {
+        const { data: portfolio } = await supabase
+          .from('portfolio_images')
+          .select('id, image_url, caption')
+          .eq('worker_profile_id', wp.id)
+          .order('sort_order')
+        if (portfolio) setPortfolioImages(portfolio)
       }
 
       // Set avatar preview from current profile
@@ -227,6 +240,52 @@ export default function WorkerProfileEditPage() {
       const reader = new FileReader()
       reader.onloadend = () => setAvatarPreview(reader.result as string)
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || !user || !workerProfileId) return
+    setPortfolioUploading(true)
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const ext = file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}-${i}.${ext}`
+        const { error: uploadErr } = await supabase.storage.from('portfolio').upload(fileName, file)
+        if (uploadErr) continue
+        const { data: urlData } = supabase.storage.from('portfolio').getPublicUrl(fileName)
+        const { data: row } = await supabase
+          .from('portfolio_images')
+          .insert({
+            worker_profile_id: workerProfileId,
+            image_url: urlData.publicUrl,
+            sort_order: portfolioImages.length + i,
+          })
+          .select('id, image_url, caption')
+          .single()
+        if (row) setPortfolioImages(prev => [...prev, row])
+      }
+    } catch {
+      setError('Failed to upload some images')
+    } finally {
+      setPortfolioUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const handlePortfolioDelete = async (imageId: string, imageUrl: string) => {
+    try {
+      // Extract storage path from URL
+      const url = new URL(imageUrl)
+      const pathParts = url.pathname.split('/portfolio/')
+      if (pathParts[1]) {
+        await supabase.storage.from('portfolio').remove([decodeURIComponent(pathParts[1])])
+      }
+      await supabase.from('portfolio_images').delete().eq('id', imageId)
+      setPortfolioImages(prev => prev.filter(img => img.id !== imageId))
+    } catch {
+      setError('Failed to delete image')
     }
   }
 
@@ -591,6 +650,75 @@ export default function WorkerProfileEditPage() {
                 )}
               </div>
             ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Portfolio / Work Gallery */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ImagePlus className="w-4 h-4 text-emerald-600" />
+              Work Portfolio
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Show clients the quality of your work. Upload before &amp; after photos, completed projects, etc.
+            </p>
+
+            {/* Image Grid */}
+            {portfolioImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {portfolioImages.map(img => (
+                  <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden group">
+                    <img src={img.image_url} alt={img.caption || 'Portfolio'} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => handlePortfolioDelete(img.id, img.image_url)}
+                      className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload Button */}
+            <label className="cursor-pointer">
+              <div className={cn(
+                "flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors",
+                portfolioUploading ? "border-emerald-300 bg-emerald-50" : "border-border hover:border-emerald-400 hover:bg-emerald-50/50"
+              )}>
+                {portfolioUploading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" />
+                    <span className="text-sm font-medium text-emerald-700">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">Add Photos</span>
+                  </>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handlePortfolioUpload}
+                disabled={portfolioUploading}
+              />
+            </label>
+            <p className="text-xs text-muted-foreground text-center">
+              {portfolioImages.length}/12 photos &middot; Tap &amp; hold to remove
+            </p>
           </CardContent>
         </Card>
       </motion.div>

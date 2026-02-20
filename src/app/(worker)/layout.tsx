@@ -4,6 +4,7 @@ import { WorkerBottomNav } from '@/components/layout/worker-bottom-nav'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
 import { NotificationBell } from '@/components/layout/notification-bell'
 import { OfflineIndicator } from '@/components/shared/offline-indicator'
+import { PushPrompt } from '@/components/shared/push-prompt'
 import { Logo } from '@/components/shared/logo'
 import { useUser } from '@/lib/hooks/use-user'
 
@@ -27,8 +28,13 @@ export default function WorkerLayout({
         </div>
       </div>
 
-      {/* Main content area with padding for top and bottom bars */}
-      <main className="flex-1 pt-16 pb-20">{children}</main>
+      {/* Push notification prompt */}
+      <div className="pt-14">
+        <PushPrompt />
+      </div>
+
+      {/* Main content area with padding for bottom bar */}
+      <main className="flex-1 pb-20">{children}</main>
 
       {/* Bottom navigation */}
       <WorkerBottomNav />

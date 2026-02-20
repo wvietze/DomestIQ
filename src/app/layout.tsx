@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 import { PopiConsentBanner } from "@/components/shared/popi-consent-banner";
+import { ServiceWorkerRegister } from "@/components/shared/sw-register";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
         <ToastProvider>
           {children}
           <PopiConsentBanner />
+          <ServiceWorkerRegister />
           <ToastViewport />
         </ToastProvider>
       </body>
