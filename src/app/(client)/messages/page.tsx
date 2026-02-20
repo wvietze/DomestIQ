@@ -32,39 +32,43 @@ export default function ClientMessagesPage() {
 
   useEffect(() => {
     async function loadConversations() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
+      if (!user) return
 
-      const { data: convos } = await supabase
-        .from('conversations')
-        .select('*')
-        .or(`participant_1.eq.${authUser.id},participant_2.eq.${authUser.id}`)
-        .eq('status', 'active')
-        .order('last_message_at', { ascending: false, nullsFirst: false })
+      try {
+        const { data: convos } = await supabase
+          .from('conversations')
+          .select('*')
+          .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+          .eq('status', 'active')
+          .order('last_message_at', { ascending: false, nullsFirst: false })
 
-      if (!convos) { setIsLoading(false); return }
+        if (!convos) return
 
-      const conversationItems: ConversationItem[] = []
-      for (const convo of convos) {
-        const otherUserId = convo.participant_1 === authUser.id ? convo.participant_2 : convo.participant_1
+        const conversationItems: ConversationItem[] = []
+        for (const convo of convos) {
+          const otherUserId = convo.participant_1 === user.id ? convo.participant_2 : convo.participant_1
 
-        const { data: profile } = await supabase.from('profiles').select('id, full_name, avatar_url').eq('id', otherUserId).single()
-        const { count } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('conversation_id', convo.id).neq('sender_id', authUser.id).eq('is_read', false)
+          const { data: profile } = await supabase.from('profiles').select('id, full_name, avatar_url').eq('id', otherUserId).single()
+          const { count } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('conversation_id', convo.id).neq('sender_id', user.id).eq('is_read', false)
 
-        conversationItems.push({
-          ...convo,
-          other_user: profile
-            ? (profile as unknown as { id: string; full_name: string; avatar_url: string | null })
-            : { id: otherUserId, full_name: 'Unknown User', avatar_url: null },
-          unread_count: count || 0,
-        })
+          conversationItems.push({
+            ...convo,
+            other_user: profile
+              ? (profile as unknown as { id: string; full_name: string; avatar_url: string | null })
+              : { id: otherUserId, full_name: 'Unknown User', avatar_url: null },
+            unread_count: count || 0,
+          })
+        }
+
+        setConversations(conversationItems)
+      } catch (err) {
+        console.error('Messages load error:', err)
+      } finally {
+        setIsLoading(false)
       }
-
-      setConversations(conversationItems)
-      setIsLoading(false)
     }
-    loadConversations()
-  }, [supabase])
+    if (!userLoading) loadConversations()
+  }, [user, userLoading, supabase])
 
   useEffect(() => {
     if (!user) return

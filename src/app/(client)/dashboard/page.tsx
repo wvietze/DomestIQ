@@ -121,38 +121,42 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     async function loadDashboard() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
+      if (!user) return
 
-      const { data: bookingData } = await supabase
-        .from('bookings')
-        .select('id, status, scheduled_date, start_time, profiles!worker_id(full_name, avatar_url), services(name)')
-        .eq('client_id', authUser.id)
-        .in('status', ['pending', 'accepted', 'confirmed', 'in_progress'])
-        .order('scheduled_date', { ascending: true })
-        .limit(5)
+      try {
+        const { data: bookingData } = await supabase
+          .from('bookings')
+          .select('id, status, scheduled_date, start_time, profiles!worker_id(full_name, avatar_url), services(name)')
+          .eq('client_id', user.id)
+          .in('status', ['pending', 'accepted', 'confirmed', 'in_progress'])
+          .order('scheduled_date', { ascending: true })
+          .limit(5)
 
-      if (bookingData) setBookings(bookingData as unknown as DashboardBooking[])
+        if (bookingData) setBookings(bookingData as unknown as DashboardBooking[])
 
-      const { count } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .neq('sender_id', authUser.id)
-        .eq('is_read', false)
-      setUnreadMessages(count || 0)
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .neq('sender_id', user.id)
+          .eq('is_read', false)
+        setUnreadMessages(count || 0)
 
-      const { data: notifData } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
-      if (notifData) setNotifications(notifData as Notification[])
-
-      setIsLoading(false)
+        const { data: notifData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+        if (notifData) setNotifications(notifData as Notification[])
+      } catch (err) {
+        console.error('Dashboard load error:', err)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    loadDashboard()
-  }, [supabase])
+
+    if (!userLoading) loadDashboard()
+  }, [user, userLoading, supabase])
 
   if (userLoading || isLoading) {
     return (

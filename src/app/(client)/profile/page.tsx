@@ -59,43 +59,46 @@ export default function ClientProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
+      if (!user) return
 
-      // Get profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
+      try {
+        // Get profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
 
-      if (profile) {
-        const p = profile as unknown as ProfileData
-        setProfileData(p)
-        setFullName(p.full_name || '')
-        setPhone(p.phone || '')
+        if (profile) {
+          const p = profile as unknown as ProfileData
+          setProfileData(p)
+          setFullName(p.full_name || '')
+          setPhone(p.phone || '')
+        }
+
+        // Get client profile (address info)
+        const { data: clientProfile } = await supabase
+          .from('client_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        if (clientProfile) {
+          const cp = clientProfile as unknown as ClientData
+          setAddress(cp.address || '')
+          setSuburb(cp.suburb || '')
+          setCity(cp.city || '')
+          setProvince(cp.province || '')
+        }
+      } catch (err) {
+        console.error('Profile load error:', err)
+      } finally {
+        setIsLoading(false)
       }
-
-      // Get client profile (address info)
-      const { data: clientProfile } = await supabase
-        .from('client_profiles')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .single()
-
-      if (clientProfile) {
-        const cp = clientProfile as unknown as ClientData
-        setAddress(cp.address || '')
-        setSuburb(cp.suburb || '')
-        setCity(cp.city || '')
-        setProvince(cp.province || '')
-      }
-
-      setIsLoading(false)
     }
 
-    loadProfile()
-  }, [supabase])
+    if (!userLoading) loadProfile()
+  }, [user, userLoading, supabase])
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

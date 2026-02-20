@@ -16,7 +16,7 @@ import {
   Camera, Save, Loader2, CheckCircle2, ArrowLeft,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
-  Wrench, Baby, Dog, ShieldCheck
+  Wrench, Baby, Dog, ShieldCheck, MapPin, Navigation
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -69,6 +69,11 @@ export default function WorkerProfileEditPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [allServices, setAllServices] = useState<{ id: string; name: string }[]>([])
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
+  const [serviceRadius, setServiceRadius] = useState(25)
+  const [locationName, setLocationName] = useState('')
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -90,7 +95,7 @@ export default function WorkerProfileEditPage() {
       // Get worker profile
       const { data: wp } = await supabase
         .from('worker_profiles')
-        .select('id, bio, hourly_rate')
+        .select('id, bio, hourly_rate, location_lat, location_lng, service_radius_km')
         .eq('user_id', user.id)
         .single()
 
@@ -98,6 +103,9 @@ export default function WorkerProfileEditPage() {
         setWorkerProfileId(wp.id)
         setBio(wp.bio || '')
         setHourlyRate(wp.hourly_rate?.toString() || '')
+        if (wp.location_lat) setLocationLat(wp.location_lat)
+        if (wp.location_lng) setLocationLng(wp.location_lng)
+        if (wp.service_radius_km) setServiceRadius(wp.service_radius_km)
 
         // Get currently linked services
         const { data: workerSvcs } = await supabase
@@ -173,6 +181,45 @@ export default function WorkerProfileEditPage() {
     )
   }
 
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser')
+      return
+    }
+    setIsDetectingLocation(true)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
+        setLocationLat(lat)
+        setLocationLng(lng)
+        // Try reverse geocoding for a friendly name
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+          )
+          if (res.ok) {
+            const data = await res.json()
+            if (data.results?.[0]) {
+              const components = data.results[0].address_components
+              const suburb = components.find((c: { types: string[] }) => c.types.includes('sublocality'))?.long_name
+              const city = components.find((c: { types: string[] }) => c.types.includes('locality'))?.long_name
+              setLocationName([suburb, city].filter(Boolean).join(', ') || data.results[0].formatted_address)
+            }
+          }
+        } catch {
+          setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        }
+        setIsDetectingLocation(false)
+      },
+      () => {
+        setError('Could not detect your location. Please check permissions.')
+        setIsDetectingLocation(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -185,12 +232,13 @@ export default function WorkerProfileEditPage() {
 
   const calculateCompleteness = (): number => {
     let score = 0
-    if (profile?.full_name) score += 15
+    if (profile?.full_name) score += 10
     if (avatarPreview) score += 15
     if (bio.trim().length > 0) score += 15
     if (hourlyRate) score += 10
-    if (selectedServices.length > 0) score += 20
-    if (availability.some(a => a.is_available)) score += 15
+    if (selectedServices.length > 0) score += 15
+    if (availability.some(a => a.is_available)) score += 10
+    if (locationLat && locationLng) score += 15
     score += 10 // base for having an account
     return Math.min(score, 100)
   }
@@ -218,6 +266,9 @@ export default function WorkerProfileEditPage() {
         .update({
           bio: bio.trim() || null,
           hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null,
+          location_lat: locationLat,
+          location_lng: locationLng,
+          service_radius_km: serviceRadius,
           profile_completeness: calculateCompleteness(),
         })
         .eq('id', workerProfileId)
@@ -406,6 +457,87 @@ export default function WorkerProfileEditPage() {
                   </button>
                 )
               })}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Service Area */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18 }}
+      >
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-emerald-600" />
+              Service Area
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Set your location and how far you are willing to travel for work
+            </p>
+
+            {/* Current Location */}
+            {locationLat && locationLng ? (
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-emerald-900">
+                      {locationName || `${locationLat.toFixed(4)}, ${locationLng.toFixed(4)}`}
+                    </p>
+                    <p className="text-xs text-emerald-700">
+                      {serviceRadius}km service radius
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                <p className="text-sm text-amber-800">
+                  No location set yet. Clients won&apos;t be able to find you in area searches.
+                </p>
+              </div>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={detectLocation}
+              disabled={isDetectingLocation}
+              className="w-full gap-2"
+            >
+              {isDetectingLocation ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Navigation className="w-4 h-4" />
+              )}
+              {isDetectingLocation ? 'Detecting...' : 'Use My Current Location'}
+            </Button>
+
+            {/* Service Radius Slider */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">How far will you travel?</Label>
+                <span className="text-sm font-bold text-emerald-700">{serviceRadius} km</span>
+              </div>
+              <input
+                type="range"
+                min={5}
+                max={100}
+                step={5}
+                value={serviceRadius}
+                onChange={e => setServiceRadius(parseInt(e.target.value))}
+                className="w-full h-2 bg-emerald-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>5 km</span>
+                <span>50 km</span>
+                <span>100 km</span>
+              </div>
             </div>
           </CardContent>
         </Card>

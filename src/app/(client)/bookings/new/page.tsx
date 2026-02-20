@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/lib/hooks/use-user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,6 +26,7 @@ function NewBookingForm() {
   const searchParams = useSearchParams()
   const workerId = searchParams.get('worker')
   const supabase = createClient()
+  const { user } = useUser()
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -119,7 +121,6 @@ function NewBookingForm() {
     setError('')
     setIsLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
       // Create the booking in Supabase with status 'pending'

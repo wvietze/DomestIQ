@@ -38,76 +38,79 @@ interface UnreviewedBooking {
 
 export default function ClientReviewsPage() {
   const supabase = createClient()
-  const { isLoading: userLoading } = useUser()
+  const { user, isLoading: userLoading } = useUser()
   const [reviews, setReviews] = useState<ReviewItem[]>([])
   const [unreviewedBookings, setUnreviewedBookings] = useState<UnreviewedBooking[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function loadReviews() {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Fetch reviews written by this user
-      const { data: reviewData } = await supabase
-        .from('reviews')
-        .select(`
-          id, booking_id, overall_rating, sub_ratings, comment, created_at,
-          profiles!reviewee_id(full_name, avatar_url),
-          bookings!inner(services(name))
-        `)
-        .eq('reviewer_id', user.id)
-        .order('created_at', { ascending: false })
+      try {
+        // Fetch reviews written by this user
+        const { data: reviewData } = await supabase
+          .from('reviews')
+          .select(`
+            id, booking_id, overall_rating, sub_ratings, comment, created_at,
+            profiles!reviewee_id(full_name, avatar_url),
+            bookings!inner(services(name))
+          `)
+          .eq('reviewer_id', user.id)
+          .order('created_at', { ascending: false })
 
-      if (reviewData) {
-        const items: ReviewItem[] = reviewData.map(r => {
-          const worker = r.profiles as unknown as { full_name: string; avatar_url: string | null }
-          const booking = r.bookings as unknown as { services: { name: string } }
-          return {
-            id: r.id,
-            booking_id: r.booking_id,
-            overall_rating: r.overall_rating,
-            sub_ratings: r.sub_ratings as unknown as ReviewItem['sub_ratings'],
-            comment: r.comment,
-            created_at: r.created_at,
-            worker_name: worker?.full_name || 'Unknown',
-            worker_avatar: worker?.avatar_url || null,
-            service_name: booking?.services?.name || 'Service',
+        if (reviewData) {
+          const items: ReviewItem[] = reviewData.map(r => {
+            const worker = r.profiles as unknown as { full_name: string; avatar_url: string | null }
+            const booking = r.bookings as unknown as { services: { name: string } }
+            return {
+              id: r.id,
+              booking_id: r.booking_id,
+              overall_rating: r.overall_rating,
+              sub_ratings: r.sub_ratings as unknown as ReviewItem['sub_ratings'],
+              comment: r.comment,
+              created_at: r.created_at,
+              worker_name: worker?.full_name || 'Unknown',
+              worker_avatar: worker?.avatar_url || null,
+              service_name: booking?.services?.name || 'Service',
+            }
+          })
+          setReviews(items)
+
+          // Find completed bookings without reviews
+          const reviewedBookingIds = items.map(r => r.booking_id)
+
+          const { data: completedBookings } = await supabase
+            .from('bookings')
+            .select('id, scheduled_date, profiles!worker_id(full_name), services(name)')
+            .eq('client_id', user.id)
+            .eq('status', 'completed')
+
+          if (completedBookings) {
+            const unreviewed = completedBookings
+              .filter(b => !reviewedBookingIds.includes(b.id))
+              .map(b => {
+                const profile = b.profiles as unknown as { full_name: string }
+                const service = b.services as unknown as { name: string }
+                return {
+                  id: b.id,
+                  scheduled_date: b.scheduled_date,
+                  worker_name: profile?.full_name || 'Unknown',
+                  service_name: service?.name || 'Service',
+                }
+              })
+            setUnreviewedBookings(unreviewed)
           }
-        })
-        setReviews(items)
-
-        // Find completed bookings without reviews
-        const reviewedBookingIds = items.map(r => r.booking_id)
-
-        const { data: completedBookings } = await supabase
-          .from('bookings')
-          .select('id, scheduled_date, profiles!worker_id(full_name), services(name)')
-          .eq('client_id', user.id)
-          .eq('status', 'completed')
-
-        if (completedBookings) {
-          const unreviewed = completedBookings
-            .filter(b => !reviewedBookingIds.includes(b.id))
-            .map(b => {
-              const profile = b.profiles as unknown as { full_name: string }
-              const service = b.services as unknown as { name: string }
-              return {
-                id: b.id,
-                scheduled_date: b.scheduled_date,
-                worker_name: profile?.full_name || 'Unknown',
-                service_name: service?.name || 'Service',
-              }
-            })
-          setUnreviewedBookings(unreviewed)
         }
+      } catch (err) {
+        console.error('Reviews load error:', err)
+      } finally {
+        setIsLoading(false)
       }
-
-      setIsLoading(false)
     }
 
-    loadReviews()
-  }, [supabase])
+    if (!userLoading) loadReviews()
+  }, [user, userLoading, supabase])
 
   if (userLoading || isLoading) {
     return (

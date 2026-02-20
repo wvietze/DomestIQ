@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/ui/star-rating'
 import {
   Edit, ShieldCheck, BadgeCheck, Clock, Briefcase,
-  Eye, Calendar, Settings, CheckCircle2
+  Eye, Calendar, Settings, CheckCircle2, MapPin
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -29,6 +29,9 @@ interface WorkerProfileData {
   is_active: boolean
   id_verified: boolean
   criminal_check_clear: boolean
+  location_lat: number | null
+  location_lng: number | null
+  service_radius_km: number | null
 }
 
 interface WorkerServiceData {
@@ -61,7 +64,7 @@ export default function WorkerProfilePage() {
 
       const { data: wp } = await supabase
         .from('worker_profiles')
-        .select('id, bio, hourly_rate, overall_rating, total_reviews, profile_completeness, is_active, id_verified, criminal_check_clear')
+        .select('id, bio, hourly_rate, overall_rating, total_reviews, profile_completeness, is_active, id_verified, criminal_check_clear, location_lat, location_lng, service_radius_km')
         .eq('user_id', user.id)
         .single()
 
@@ -260,6 +263,37 @@ export default function WorkerProfilePage() {
             ) : (
               <p className="text-sm text-muted-foreground italic">
                 No availability schedule set.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Service Area */}
+      <motion.div variants={fadeUp}>
+        <Card>
+          <CardContent className="p-4">
+            <h2 className="font-semibold mb-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-emerald-600" />
+              Service Area
+            </h2>
+            {workerProfile?.location_lat && workerProfile?.location_lng ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 py-2 px-3 bg-emerald-50/50 rounded-lg">
+                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="text-sm font-medium">
+                    {workerProfile.location_lat.toFixed(4)}, {workerProfile.location_lng.toFixed(4)}
+                  </span>
+                </div>
+                {workerProfile.service_radius_km && (
+                  <p className="text-sm text-muted-foreground">
+                    Willing to travel up to <span className="font-semibold text-emerald-700">{workerProfile.service_radius_km} km</span>
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                No service area set. Add your location so clients can find you.
               </p>
             )}
           </CardContent>

@@ -32,47 +32,51 @@ const statusLabels: Record<string, string> = {
 
 export default function ClientBookingsPage() {
   const supabase = createClient()
-  const { isLoading: userLoading } = useUser()
+  const { user, isLoading: userLoading } = useUser()
   const [bookings, setBookings] = useState<BookingListItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('upcoming')
 
   useEffect(() => {
     async function loadBookings() {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data: bookingData } = await supabase
-        .from('bookings')
-        .select('id, status, scheduled_date, start_time, end_time, address, total_amount, currency, profiles!worker_id(full_name, avatar_url), services(name)')
-        .eq('client_id', user.id)
-        .order('scheduled_date', { ascending: false })
+      try {
+        const { data: bookingData } = await supabase
+          .from('bookings')
+          .select('id, status, scheduled_date, start_time, end_time, address, total_amount, currency, profiles!worker_id(full_name, avatar_url), services(name)')
+          .eq('client_id', user.id)
+          .order('scheduled_date', { ascending: false })
 
-      if (!bookingData) { setIsLoading(false); return }
+        if (!bookingData) return
 
-      const completedIds = bookingData.filter(b => b.status === 'completed').map(b => b.id)
-      let reviewedBookingIds: string[] = []
-      if (completedIds.length > 0) {
-        const { data: reviews } = await supabase.from('reviews').select('booking_id').in('booking_id', completedIds).eq('reviewer_id', user.id)
-        reviewedBookingIds = (reviews || []).map(r => r.booking_id)
-      }
-
-      const items: BookingListItem[] = bookingData.map(b => {
-        const profile = b.profiles as unknown as { full_name: string; avatar_url: string | null }
-        const service = b.services as unknown as { name: string }
-        return {
-          id: b.id, status: b.status, scheduled_date: b.scheduled_date, start_time: b.start_time,
-          end_time: b.end_time, address: b.address, total_amount: b.total_amount, currency: b.currency,
-          worker_name: profile?.full_name || 'Unknown', worker_avatar: profile?.avatar_url || null,
-          service_name: service?.name || 'Service', has_review: reviewedBookingIds.includes(b.id),
+        const completedIds = bookingData.filter(b => b.status === 'completed').map(b => b.id)
+        let reviewedBookingIds: string[] = []
+        if (completedIds.length > 0) {
+          const { data: reviews } = await supabase.from('reviews').select('booking_id').in('booking_id', completedIds).eq('reviewer_id', user.id)
+          reviewedBookingIds = (reviews || []).map(r => r.booking_id)
         }
-      })
 
-      setBookings(items)
-      setIsLoading(false)
+        const items: BookingListItem[] = bookingData.map(b => {
+          const profile = b.profiles as unknown as { full_name: string; avatar_url: string | null }
+          const service = b.services as unknown as { name: string }
+          return {
+            id: b.id, status: b.status, scheduled_date: b.scheduled_date, start_time: b.start_time,
+            end_time: b.end_time, address: b.address, total_amount: b.total_amount, currency: b.currency,
+            worker_name: profile?.full_name || 'Unknown', worker_avatar: profile?.avatar_url || null,
+            service_name: service?.name || 'Service', has_review: reviewedBookingIds.includes(b.id),
+          }
+        })
+
+        setBookings(items)
+      } catch (err) {
+        console.error('Bookings load error:', err)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    loadBookings()
-  }, [supabase])
+    if (!userLoading) loadBookings()
+  }, [user, userLoading, supabase])
 
   const today = new Date().toISOString().split('T')[0]
   const upcomingBookings = bookings.filter(b => b.scheduled_date >= today && !['completed', 'cancelled', 'declined', 'no_show'].includes(b.status))

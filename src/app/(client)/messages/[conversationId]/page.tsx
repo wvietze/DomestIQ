@@ -48,61 +48,61 @@ export default function ClientConversationPage({
   // Load conversation and messages
   useEffect(() => {
     async function loadConversation() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
+      if (!user) return
 
-      // Get conversation details
-      const { data: conversation } = await supabase
-        .from('conversations')
-        .select('*')
-        .eq('id', conversationId)
-        .single()
+      try {
+        // Get conversation details
+        const { data: conversation } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('id', conversationId)
+          .single()
 
-      if (!conversation) {
+        if (!conversation) return
+
+        // Get other participant
+        const otherUserId =
+          conversation.participant_1 === user.id
+            ? conversation.participant_2
+            : conversation.participant_1
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('id', otherUserId)
+          .single()
+
+        if (profile) {
+          setOtherParticipant(profile as unknown as Participant)
+        }
+
+        // Load messages
+        const { data: messagesData } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true })
+
+        if (messagesData) {
+          setMessages(messagesData as unknown as Message[])
+        }
+
+        // Mark unread messages as read
+        await supabase
+          .from('messages')
+          .update({ is_read: true })
+          .eq('conversation_id', conversationId)
+          .neq('sender_id', user.id)
+          .eq('is_read', false)
+      } catch (err) {
+        console.error('Conversation load error:', err)
+      } finally {
         setIsLoading(false)
-        return
       }
-
-      // Get other participant
-      const otherUserId =
-        conversation.participant_1 === authUser.id
-          ? conversation.participant_2
-          : conversation.participant_1
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url')
-        .eq('id', otherUserId)
-        .single()
-
-      if (profile) {
-        setOtherParticipant(profile as unknown as Participant)
-      }
-
-      // Load messages
-      const { data: messagesData } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true })
-
-      if (messagesData) {
-        setMessages(messagesData as unknown as Message[])
-      }
-
-      // Mark unread messages as read
-      await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('conversation_id', conversationId)
-        .neq('sender_id', authUser.id)
-        .eq('is_read', false)
-
-      setIsLoading(false)
     }
 
     loadConversation()
-  }, [conversationId, supabase])
+  }, [conversationId, user, supabase])
 
   // Scroll to bottom when messages change
   useEffect(() => {

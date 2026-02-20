@@ -126,62 +126,65 @@ export default function BookingDetailPage({
 
   useEffect(() => {
     async function loadBooking() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
+      if (!user) return
 
-      const { data } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          profiles!worker_id(full_name, avatar_url),
-          services(name)
-        `)
-        .eq('id', id)
-        .single()
-
-      if (data) {
-        const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null }
-        const service = data.services as unknown as { name: string }
-        setBooking({
-          ...data,
-          worker_name: profile?.full_name || 'Unknown',
-          worker_avatar: profile?.avatar_url || null,
-          service_name: service?.name || 'Service',
-        } as unknown as BookingDetail)
-
-        // Check for existing review
-        if (data.status === 'completed') {
-          const { data: reviewData } = await supabase
-            .from('reviews')
-            .select('*')
-            .eq('booking_id', id)
-            .eq('reviewer_id', authUser.id)
-            .single()
-
-          if (reviewData) {
-            setReview(reviewData as unknown as ExistingReview)
-          }
-        }
-
-        // Fetch transaction for this booking
-        const { data: txData } = await supabase
-          .from('transactions')
-          .select('id, booking_id, worker_amount, platform_fee, total_amount, platform_fee_percent, currency, status, paystack_reference, paid_at, created_at')
-          .eq('booking_id', id)
-          .order('created_at', { ascending: false })
-          .limit(1)
+      try {
+        const { data } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            profiles!worker_id(full_name, avatar_url),
+            services(name)
+          `)
+          .eq('id', id)
           .single()
 
-        if (txData) {
-          setTransaction(txData as unknown as BookingTransaction)
-        }
-      }
+        if (data) {
+          const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null }
+          const service = data.services as unknown as { name: string }
+          setBooking({
+            ...data,
+            worker_name: profile?.full_name || 'Unknown',
+            worker_avatar: profile?.avatar_url || null,
+            service_name: service?.name || 'Service',
+          } as unknown as BookingDetail)
 
-      setIsLoading(false)
+          // Check for existing review
+          if (data.status === 'completed') {
+            const { data: reviewData } = await supabase
+              .from('reviews')
+              .select('*')
+              .eq('booking_id', id)
+              .eq('reviewer_id', user.id)
+              .single()
+
+            if (reviewData) {
+              setReview(reviewData as unknown as ExistingReview)
+            }
+          }
+
+          // Fetch transaction for this booking
+          const { data: txData } = await supabase
+            .from('transactions')
+            .select('id, booking_id, worker_amount, platform_fee, total_amount, platform_fee_percent, currency, status, paystack_reference, paid_at, created_at')
+            .eq('booking_id', id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
+          if (txData) {
+            setTransaction(txData as unknown as BookingTransaction)
+          }
+        }
+      } catch (err) {
+        console.error('Booking detail load error:', err)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     loadBooking()
-  }, [id, supabase])
+  }, [id, user, supabase])
 
   // Auto-show review form if hash is #review
   useEffect(() => {
