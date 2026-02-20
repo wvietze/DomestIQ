@@ -73,3 +73,6 @@ export type {
 
 // Portfolio
 export type { PortfolioImage } from './portfolio';
+
+// Favorite
+export type { FavoriteWorker, FavoriteWorkerWithProfile } from './favorite';

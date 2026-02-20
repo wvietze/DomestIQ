@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -719,6 +720,33 @@ export default function WorkerProfileEditPage() {
             <p className="text-xs text-muted-foreground text-center">
               {portfolioImages.length}/12 photos &middot; Tap &amp; hold to remove
             </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Verification Documents */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-500" />
+              Verification Documents
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Get verified to appear higher in search results and earn more bookings.
+            </p>
+            <Link href="/worker-verification">
+              <Button variant="outline" className="w-full gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                Manage Verification
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </motion.div>

@@ -47,6 +47,9 @@ function NewBookingForm() {
   const [instructions, setInstructions] = useState('')
   const [isRecurring, setIsRecurring] = useState(false)
   const [recurringDays, setRecurringDays] = useState<number[]>([])
+  const [workerAvailability, setWorkerAvailability] = useState<Array<{ day_of_week: number; start_time: string; end_time: string; is_available: boolean }>>([])
+  const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set())
+  const [dateWarning, setDateWarning] = useState('')
 
   useEffect(() => {
     if (!workerId) return
@@ -74,6 +77,25 @@ function NewBookingForm() {
           rate: ws.custom_rate || (wp.hourly_rate as number | null),
         }))
         setWorker({ ...profile, services })
+
+        // Load availability
+        const { data: avail } = await supabase
+          .from('worker_availability')
+          .select('day_of_week, start_time, end_time, is_available')
+          .eq('worker_id', (wp as Record<string, unknown>).id as string)
+        if (avail) setWorkerAvailability(avail as Array<{ day_of_week: number; start_time: string; end_time: string; is_available: boolean }>)
+
+        // Load blocked dates (next 90 days)
+        const today = new Date()
+        const future = new Date(today)
+        future.setDate(future.getDate() + 90)
+        try {
+          const res = await fetch(`/api/blocked-dates?worker_id=${workerId}&from=${today.toISOString().split('T')[0]}&to=${future.toISOString().split('T')[0]}`)
+          if (res.ok) {
+            const data = await res.json()
+            setBlockedDates(new Set((data.blocked_dates || []).map((d: { blocked_date: string }) => d.blocked_date)))
+          }
+        } catch { /* ignore */ }
       }
     }
     loadWorker()
@@ -99,6 +121,34 @@ function NewBookingForm() {
   const workerRate = selectedService?.rate || 0
   const workerAmount = Math.round(workerRate * estimatedHours * 100) / 100
   const priceBreakdown = calculatePlatformFee(workerAmount)
+
+  // Validate date when it changes
+  useEffect(() => {
+    if (!date) { setDateWarning(''); return }
+    const selected = new Date(date + 'T00:00:00')
+    const dayOfWeek = selected.getDay()
+
+    // Check blocked dates
+    if (blockedDates.has(date)) {
+      setDateWarning('This worker has blocked this date and is unavailable.')
+      return
+    }
+
+    // Check availability schedule
+    const dayAvail = workerAvailability.find(a => a.day_of_week === dayOfWeek)
+    if (dayAvail && !dayAvail.is_available) {
+      setDateWarning(`This worker is not available on ${['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'][dayOfWeek]}.`)
+      return
+    }
+
+    // Auto-populate times from worker's schedule
+    if (dayAvail && dayAvail.is_available) {
+      setStartTime(dayAvail.start_time.slice(0, 5))
+      setEndTime(dayAvail.end_time.slice(0, 5))
+    }
+
+    setDateWarning('')
+  }, [date, workerAvailability, blockedDates])
 
   const handleProceedToPayment = () => {
     setError('')
@@ -372,6 +422,12 @@ function NewBookingForm() {
       <div className="space-y-2">
         <Label>Date</Label>
         <Input type="date" value={date} onChange={e => setDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
+        {dateWarning && (
+          <p className="text-amber-600 text-sm flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full shrink-0" />
+            {dateWarning}
+          </p>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -428,7 +484,7 @@ function NewBookingForm() {
 
       <Button
         onClick={handleProceedToPayment}
-        disabled={!serviceId || !date || !address}
+        disabled={!serviceId || !date || !address || !!dateWarning}
         className="w-full h-12 text-lg"
       >
         Review & Pay

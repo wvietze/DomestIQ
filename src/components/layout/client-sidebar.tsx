@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Search, CalendarDays, MessageSquare,
-  Star, User, Menu, X, LogOut,
+  Star, User, Menu, X, LogOut, Heart,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ const navItems: NavItem[] = [
   { labelKey: 'nav.search', fallback: 'Search Workers', href: '/search', icon: Search },
   { labelKey: 'nav.bookings', fallback: 'Bookings', href: '/bookings', icon: CalendarDays },
   { labelKey: 'nav.messages', fallback: 'Messages', href: '/messages', icon: MessageSquare },
+  { labelKey: 'nav.favorites', fallback: 'Favorites', href: '/favorites', icon: Heart },
   { labelKey: 'nav.reviews', fallback: 'Reviews', href: '/reviews', icon: Star },
   { labelKey: 'nav.profile', fallback: 'Profile', href: '/profile', icon: User },
 ]

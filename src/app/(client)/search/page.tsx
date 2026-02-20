@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { SearchX, Search, Loader2 } from 'lucide-react'
 import { useTranslation } from '@/lib/hooks/use-translation'
+import { useFavoritesStore } from '@/lib/stores/favorites-store'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
@@ -33,9 +34,25 @@ export default function SearchPage() {
   const supabase = createClient()
   const { filters, isSearching, setSearching } = useSearchStore()
   const { t } = useTranslation()
+  const { setFavorites, loaded: favoritesLoaded } = useFavoritesStore()
   const [workers, setWorkers] = useState<WorkerResult[]>([])
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+
+  // Load favorites on mount
+  useEffect(() => {
+    if (favoritesLoaded) return
+    async function loadFavs() {
+      try {
+        const res = await fetch('/api/favorites')
+        if (res.ok) {
+          const data = await res.json()
+          setFavorites((data.favorites || []).map((f: { worker_id: string }) => f.worker_id))
+        }
+      } catch { /* ignore */ }
+    }
+    loadFavs()
+  }, [favoritesLoaded, setFavorites])
 
   const searchWorkers = useCallback(async (reset = false) => {
     setSearching(true)

@@ -15,6 +15,7 @@ import {
   MessageSquare, Clock, ArrowLeft, MapPin,
   Briefcase, Award, ChevronLeft, ChevronRight, X
 } from 'lucide-react'
+import { FavoriteButton } from '@/components/shared/favorite-button'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
@@ -299,6 +300,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
       {/* Sticky Book Now CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t p-4 z-30">
         <div className="max-w-2xl mx-auto flex gap-3">
+          <FavoriteButton workerId={id} size="md" className="h-12 w-12 border border-gray-200 rounded-xl" />
           <Button variant="outline" className="h-12 px-5" onClick={() => router.push(`/messages?with=${id}`)}>
             <MessageSquare className="w-5 h-5" />
           </Button>

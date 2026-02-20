@@ -11,6 +11,11 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
+import { AnimatedCountersSection } from '@/components/landing/animated-counters-section'
+import { TrustBadgesSection } from '@/components/landing/trust-badges-section'
+import { CityCoverageSection } from '@/components/landing/city-coverage-section'
+import { FaqSection } from '@/components/landing/faq-section'
+import { PwaInstallSection } from '@/components/landing/pwa-install-section'
 
 /* ─── Animation Variants ─── */
 
@@ -96,6 +101,7 @@ export default function LandingPage() {
             <a href="#for-households" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Households</a>
             <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Services</a>
             <a href="#stories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Stories</a>
+            <a href="#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <LanguageSwitcher />
@@ -402,6 +408,18 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ━━━ Animated Counters ━━━ */}
+      <AnimatedCountersSection />
+
+      {/* ━━━ Trust Badges ━━━ */}
+      <TrustBadgesSection />
+
+      {/* ━━━ City Coverage ━━━ */}
+      <CityCoverageSection />
+
+      {/* ━━━ FAQ ━━━ */}
+      <FaqSection />
+
       {/* ━━━ Movement CTA ━━━ */}
       <section className="relative py-24 md:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-950" />
@@ -457,6 +475,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ━━━ PWA Install Prompt ━━━ */}
+      <PwaInstallSection />
 
       {/* ━━━ Footer ━━━ */}
       <footer className="border-t bg-gray-50/50">

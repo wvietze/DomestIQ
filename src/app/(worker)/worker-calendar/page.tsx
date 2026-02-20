@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  ChevronLeft, ChevronRight, CalendarDays, Clock
+  ChevronLeft, ChevronRight, CalendarDays, Clock, Ban, Loader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -64,11 +64,13 @@ export default function WorkerCalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
   const [bookings, setBookings] = useState<CalendarBooking[]>([])
+  const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [blockingDate, setBlockingDate] = useState(false)
 
   useEffect(() => {
-    async function loadBookings() {
+    async function loadData() {
       if (!user) return
 
       let rangeStart: Date
@@ -82,19 +84,31 @@ export default function WorkerCalendarPage() {
         rangeEnd = endOfWeek(currentDate)
       }
 
-      const { data } = await supabase
-        .from('bookings')
-        .select('id, status, scheduled_date, scheduled_start_time, scheduled_end_time, profiles!client_id(full_name), services(name)')
-        .eq('worker_id', user.id)
-        .gte('scheduled_date', format(rangeStart, 'yyyy-MM-dd'))
-        .lte('scheduled_date', format(rangeEnd, 'yyyy-MM-dd'))
-        .order('scheduled_start_time', { ascending: true })
+      const fromStr = format(rangeStart, 'yyyy-MM-dd')
+      const toStr = format(rangeEnd, 'yyyy-MM-dd')
 
-      if (data) setBookings(data as unknown as CalendarBooking[])
+      // Load bookings and blocked dates in parallel
+      const [bookingsRes, blockedRes] = await Promise.all([
+        supabase
+          .from('bookings')
+          .select('id, status, scheduled_date, scheduled_start_time, scheduled_end_time, profiles!client_id(full_name), services(name)')
+          .eq('worker_id', user.id)
+          .gte('scheduled_date', fromStr)
+          .lte('scheduled_date', toStr)
+          .order('scheduled_start_time', { ascending: true }),
+        fetch(`/api/blocked-dates?worker_id=${user.id}&from=${fromStr}&to=${toStr}`).then(r => r.json()).catch(() => ({ blocked_dates: [] })),
+      ])
+
+      if (bookingsRes.data) setBookings(bookingsRes.data as unknown as CalendarBooking[])
+
+      const blocked = new Set<string>(
+        (blockedRes.blocked_dates || []).map((d: { blocked_date: string }) => d.blocked_date)
+      )
+      setBlockedDates(blocked)
       setIsLoading(false)
     }
 
-    if (!userLoading) loadBookings()
+    if (!userLoading) loadData()
   }, [user, userLoading, currentDate, viewMode, supabase])
 
   const navigateForward = () => {
@@ -118,6 +132,45 @@ export default function WorkerCalendarPage() {
     return bookings.filter(b => b.scheduled_date === dateStr)
   }
 
+  const isDateBlocked = (date: Date) => blockedDates.has(format(date, 'yyyy-MM-dd'))
+
+  const toggleBlockDate = async (date: Date) => {
+    if (!user) return
+    setBlockingDate(true)
+    const dateStr = format(date, 'yyyy-MM-dd')
+    const isBlocked = blockedDates.has(dateStr)
+
+    try {
+      if (isBlocked) {
+        await fetch('/api/blocked-dates', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ blocked_date: dateStr }),
+        })
+        setBlockedDates(prev => {
+          const next = new Set(prev)
+          next.delete(dateStr)
+          return next
+        })
+      } else {
+        await fetch('/api/blocked-dates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ blocked_date: dateStr, reason: 'Manually blocked' }),
+        })
+        setBlockedDates(prev => {
+          const next = new Set(prev)
+          next.add(dateStr)
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Failed to toggle blocked date:', err)
+    } finally {
+      setBlockingDate(false)
+    }
+  }
+
   const getDaysToDisplay = (): Date[] => {
     if (viewMode === 'month') {
       const monthStart = startOfMonth(currentDate)
@@ -137,6 +190,8 @@ export default function WorkerCalendarPage() {
   const selectedDateBookings = selectedDate
     ? getBookingsForDate(selectedDate)
     : []
+
+  const selectedDateIsBlocked = selectedDate ? isDateBlocked(selectedDate) : false
 
   if (userLoading || isLoading) {
     return (
@@ -239,6 +294,7 @@ export default function WorkerCalendarPage() {
               const isSelected = selectedDate && isSameDay(day, selectedDate)
               const isCurrentMonth = isSameMonth(day, currentDate)
               const today = isToday(day)
+              const blocked = isDateBlocked(day)
 
               return (
                 <button
@@ -246,38 +302,42 @@ export default function WorkerCalendarPage() {
                   onClick={() => setSelectedDate(day)}
                   className={cn(
                     'relative flex flex-col items-center justify-start p-1.5 rounded-lg transition-all min-h-[48px]',
-                    isSelected && 'bg-emerald-50 ring-2 ring-emerald-500',
-                    !isSelected && today && 'bg-muted',
-                    !isSelected && !today && 'hover:bg-muted/50',
+                    isSelected && !blocked && 'bg-emerald-50 ring-2 ring-emerald-500',
+                    isSelected && blocked && 'bg-red-50 ring-2 ring-red-400',
+                    !isSelected && today && !blocked && 'bg-muted',
+                    !isSelected && !today && !blocked && 'hover:bg-muted/50',
+                    !isSelected && blocked && 'bg-red-50 border border-red-200',
                     viewMode === 'month' && !isCurrentMonth && 'opacity-30'
                   )}
                 >
                   <span
                     className={cn(
                       'text-sm',
-                      today && 'font-bold text-emerald-600',
+                      today && !blocked && 'font-bold text-emerald-600',
+                      blocked && 'text-red-500',
                       isSelected && 'font-bold'
                     )}
                   >
                     {format(day, 'd')}
                   </span>
-                  {/* Booking Dots */}
-                  {dayBookings.length > 0 && (
-                    <div className="flex gap-0.5 mt-0.5">
-                      {dayBookings.slice(0, 3).map((b, i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            'w-1.5 h-1.5 rounded-full',
-                            statusColors[b.status] || 'bg-emerald-600'
-                          )}
-                        />
-                      ))}
-                      {dayBookings.length > 3 && (
-                        <span className="text-[8px] text-muted-foreground">+{dayBookings.length - 3}</span>
-                      )}
-                    </div>
-                  )}
+                  {/* Dots */}
+                  <div className="flex gap-0.5 mt-0.5">
+                    {blocked && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    )}
+                    {dayBookings.slice(0, blocked ? 2 : 3).map((b, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          'w-1.5 h-1.5 rounded-full',
+                          statusColors[b.status] || 'bg-emerald-600'
+                        )}
+                      />
+                    ))}
+                    {dayBookings.length > (blocked ? 2 : 3) && (
+                      <span className="text-[8px] text-muted-foreground">+{dayBookings.length - (blocked ? 2 : 3)}</span>
+                    )}
+                  </div>
                 </button>
               )
             })}
@@ -285,7 +345,7 @@ export default function WorkerCalendarPage() {
         </CardContent>
       </Card>
 
-      {/* Selected Date Bookings */}
+      {/* Selected Date Panel */}
       {selectedDate && (
         <motion.div
           key={selectedDate.toISOString()}
@@ -293,14 +353,38 @@ export default function WorkerCalendarPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <CalendarDays className="w-4 h-4 text-muted-foreground" />
-            <h2 className="font-semibold">
-              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-            </h2>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-muted-foreground" />
+              <h2 className="font-semibold">
+                {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              </h2>
+            </div>
+            {/* Block / Unblock toggle */}
+            <Button
+              variant={selectedDateIsBlocked ? 'destructive' : 'outline'}
+              size="sm"
+              className="gap-1.5"
+              onClick={() => toggleBlockDate(selectedDate)}
+              disabled={blockingDate}
+            >
+              {blockingDate ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Ban className="w-3.5 h-3.5" />
+              )}
+              {selectedDateIsBlocked ? 'Unblock' : 'Block Date'}
+            </Button>
           </div>
 
-          {selectedDateBookings.length === 0 ? (
+          {selectedDateIsBlocked && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-2 flex items-center gap-2">
+              <Ban className="w-4 h-4 text-red-500 shrink-0" />
+              <p className="text-sm text-red-700">This date is blocked. Clients cannot book you on this day.</p>
+            </div>
+          )}
+
+          {selectedDateBookings.length === 0 && !selectedDateIsBlocked ? (
             <Card>
               <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground text-sm">No bookings on this day</p>
@@ -356,6 +440,9 @@ export default function WorkerCalendarPage() {
         </span>
         <span className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-gray-400" /> Completed
+        </span>
+        <span className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-red-500" /> Blocked
         </span>
       </div>
     </div>

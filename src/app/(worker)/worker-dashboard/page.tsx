@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
+import { useOnboarding } from '@/lib/hooks/use-onboarding'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,8 +59,17 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
 
 export default function WorkerDashboard() {
   const { user, profile, isLoading: userLoading } = useUser()
+  const { needsOnboarding, checked: onboardingChecked } = useOnboarding()
+  const dashboardRouter = useRouter()
   const { t } = useTranslation()
   const supabase = createClient()
+
+  // Redirect to onboarding if needed
+  useEffect(() => {
+    if (onboardingChecked && needsOnboarding) {
+      dashboardRouter.replace('/worker-onboarding')
+    }
+  }, [onboardingChecked, needsOnboarding, dashboardRouter])
 
   const [workerProfile, setWorkerProfile] = useState<WorkerProfileData | null>(null)
   const [upcomingBookings, setUpcomingBookings] = useState<DashboardBooking[]>([])

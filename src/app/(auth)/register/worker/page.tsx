@@ -294,7 +294,7 @@ export default function WorkerRegisterPage() {
       }
 
       localStorage.removeItem('worker-registration')
-      router.push('/worker-dashboard')
+      router.push('/worker-onboarding')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {

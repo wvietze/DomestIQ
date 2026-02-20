@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
+import { useOnboarding } from '@/lib/hooks/use-onboarding'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -112,8 +113,16 @@ function getIconConfig(type: string): IconConfig { return notificationIconMap[ty
 
 export default function ClientDashboard() {
   const { user, profile, isLoading: userLoading } = useUser()
+  const { needsOnboarding, checked: onboardingChecked } = useOnboarding()
   const router = useRouter()
   const supabase = createClient()
+
+  // Redirect to onboarding if needed
+  useEffect(() => {
+    if (onboardingChecked && needsOnboarding) {
+      router.replace('/onboarding')
+    }
+  }, [onboardingChecked, needsOnboarding, router])
   const [bookings, setBookings] = useState<DashboardBooking[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadMessages, setUnreadMessages] = useState(0)
