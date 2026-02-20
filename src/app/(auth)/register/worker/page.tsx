@@ -78,6 +78,9 @@ export default function WorkerRegisterPage() {
   // Step 6: Documents
   const [idDocument, setIdDocument] = useState<File | null>(null)
 
+  // Referral Code (optional, entered in Step 1)
+  const [referralCode, setReferralCode] = useState('')
+
   // Step 7: Consent
   const [popiConsent, setPopiConsent] = useState(false)
   const [termsConsent, setTermsConsent] = useState(false)
@@ -92,6 +95,7 @@ export default function WorkerRegisterPage() {
         if (data.selectedServices) setSelectedServices(data.selectedServices)
         if (data.availableDays) setAvailableDays(data.availableDays)
         if (data.city) setCity(data.city)
+        if (data.referralCode) setReferralCode(data.referralCode)
         if (data.step) setStep(data.step)
       } catch { /* ignore */ }
     }
@@ -99,9 +103,9 @@ export default function WorkerRegisterPage() {
 
   useEffect(() => {
     localStorage.setItem('worker-registration', JSON.stringify({
-      fullName, selectedServices, availableDays, city, step
+      fullName, selectedServices, availableDays, city, referralCode, step
     }))
-  }, [fullName, selectedServices, availableDays, city, step])
+  }, [fullName, selectedServices, availableDays, city, referralCode, step])
 
   const handleSendOtp = async () => {
     setError('')
@@ -273,6 +277,22 @@ export default function WorkerRegisterPage() {
         })
       }
 
+      // Record referral if a code was provided
+      if (referralCode.trim()) {
+        try {
+          await fetch('/api/referrals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              referral_code: referralCode.trim(),
+              referred_user_id: user.id,
+            }),
+          })
+        } catch {
+          // Referral recording is non-critical, don't block registration
+        }
+      }
+
       localStorage.removeItem('worker-registration')
       router.push('/worker-dashboard')
     } catch (err) {
@@ -356,6 +376,15 @@ export default function WorkerRegisterPage() {
                 </button>
               </div>
             )}
+            <div className="pt-2 border-t border-border">
+              <Input
+                placeholder="Got a referral code? (optional)"
+                value={referralCode}
+                onChange={e => setReferralCode(e.target.value.toUpperCase().slice(0, 10))}
+                className="text-center tracking-wider h-12"
+                maxLength={10}
+              />
+            </div>
           </div>
         )
 

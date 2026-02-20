@@ -20,16 +20,16 @@ const sizeConfig = {
 function LogoMark({ size = 'default', light = false, className }: Omit<LogoProps, 'href'>) {
   const { box, text } = sizeConfig[size]
   return (
-    <div className={cn('flex items-center gap-2.5', className)}>
+    <div className={cn('flex items-center gap-2.5 min-w-0', className)}>
       <Image
         src="/icons/icon-512x512.png"
         alt="DomestIQ"
         width={box}
         height={box}
-        className="rounded-lg"
+        className="rounded-lg shrink-0"
         priority
       />
-      <span className={cn(text, 'font-extrabold tracking-tight', light ? 'text-white' : 'text-foreground')}>
+      <span className={cn(text, 'font-extrabold tracking-tight truncate', light ? 'text-white' : 'text-foreground')}>
         domest<span className="text-emerald-600">IQ</span>
       </span>
     </div>

@@ -12,7 +12,7 @@ import { StarRating } from '@/components/ui/star-rating'
 import {
   CalendarDays, Star, ClipboardList, User, ChevronRight,
   Clock, CheckCircle2, XCircle, Loader2, Briefcase,
-  TrendingUp, AlertCircle
+  TrendingUp, AlertCircle, Gift, Copy, MessageCircle, Share2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -36,6 +36,14 @@ interface WorkerProfileData {
   total_reviews: number
   profile_completeness: number
   is_active: boolean
+  referral_code: string | null
+}
+
+interface ReferralStatsData {
+  total_referrals: number
+  qualified_referrals: number
+  total_earned: number
+  referral_code: string
 }
 
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'> = {
@@ -56,6 +64,8 @@ export default function WorkerDashboard() {
   const [upcomingBookings, setUpcomingBookings] = useState<DashboardBooking[]>([])
   const [pendingBookings, setPendingBookings] = useState<DashboardBooking[]>([])
   const [totalBookings, setTotalBookings] = useState(0)
+  const [referralStats, setReferralStats] = useState<ReferralStatsData | null>(null)
+  const [codeCopied, setCodeCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -66,7 +76,7 @@ export default function WorkerDashboard() {
       // Get worker profile
       const { data: wp } = await supabase
         .from('worker_profiles')
-        .select('id, bio, hourly_rate, overall_rating, total_reviews, profile_completeness, is_active')
+        .select('id, bio, hourly_rate, overall_rating, total_reviews, profile_completeness, is_active, referral_code')
         .eq('user_id', user.id)
         .single()
 
@@ -108,6 +118,17 @@ export default function WorkerDashboard() {
         .limit(5)
 
       if (pending) setPendingBookings(pending as unknown as DashboardBooking[])
+
+      // Fetch referral stats
+      try {
+        const res = await fetch('/api/referrals')
+        if (res.ok) {
+          const data = await res.json()
+          setReferralStats(data.stats)
+        }
+      } catch {
+        // Non-critical, ignore
+      }
 
       setIsLoading(false)
     }
@@ -179,6 +200,28 @@ export default function WorkerDashboard() {
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there'
   const completeness = workerProfile?.profile_completeness || 0
+  const referralCode = referralStats?.referral_code || workerProfile?.referral_code || ''
+  const appUrl = 'https://domestiq-sa.vercel.app'
+
+  const shareMessage = `Join DomestIQ and find work! Use my code ${referralCode} when you sign up. Download at ${appUrl}`
+
+  const copyReferralCode = async () => {
+    try {
+      await navigator.clipboard.writeText(referralCode)
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = referralCode
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    }
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -265,6 +308,84 @@ export default function WorkerDashboard() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Refer & Earn Card */}
+      {referralCode && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.12 }}
+        >
+          <Card className="overflow-hidden border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Gift className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Refer &amp; Earn R2</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Earn R2 when your referral gets a 5-star review
+                  </p>
+                </div>
+              </div>
+
+              {/* Referral Code Display */}
+              <div className="bg-muted rounded-lg p-3 flex items-center justify-between mb-3">
+                <span className="text-xl font-bold tracking-widest font-mono">{referralCode}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={copyReferralCode}
+                  className="h-8 px-3"
+                >
+                  <Copy className="w-4 h-4 mr-1" />
+                  {codeCopied ? 'Copied!' : 'Copy'}
+                </Button>
+              </div>
+
+              {/* Share Buttons */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 text-green-700 border-green-200 hover:bg-green-50"
+                  asChild
+                >
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    WhatsApp
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10"
+                  asChild
+                >
+                  <a href={`sms:?body=${encodeURIComponent(shareMessage)}`}>
+                    <Share2 className="w-4 h-4 mr-2" />
+                    SMS
+                  </a>
+                </Button>
+              </div>
+
+              {/* Stats Line */}
+              {referralStats && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {referralStats.total_referrals} referral{referralStats.total_referrals !== 1 ? 's' : ''}
+                  {' '}&middot;{' '}
+                  R{referralStats.total_earned.toFixed(0)} earned
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Quick Actions */}
       <motion.div

@@ -19,9 +19,9 @@ export default function WorkerLayout({
       <OfflineIndicator />
 
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-lg border-b border-gray-100">
-        <Logo size="sm" href="/worker-dashboard" />
-        <div className="flex items-center gap-2">
+      <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between gap-3 px-4 py-3 bg-white/90 backdrop-blur-lg border-b border-gray-100">
+        <Logo size="sm" href="/worker-dashboard" className="min-w-0" />
+        <div className="flex items-center gap-2 shrink-0">
           {user && <NotificationBell userId={user.id} notificationsHref="/worker-notifications" />}
           <LanguageSwitcher />
         </div>

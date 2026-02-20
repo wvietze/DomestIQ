@@ -17,6 +17,7 @@ export type WorkerProfile = {
   search_rank: number;
   profile_completeness: number;
   is_active: boolean;
+  referral_code: string | null;
   created_at: string;
   updated_at: string;
 };

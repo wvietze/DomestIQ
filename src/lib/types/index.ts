@@ -63,3 +63,10 @@ export {
   MIN_PLATFORM_FEE,
   MAX_PLATFORM_FEE,
 } from './payment';
+
+// Referral
+export type {
+  Referral,
+  ReferralStatus,
+  ReferralStats,
+} from './referral';
