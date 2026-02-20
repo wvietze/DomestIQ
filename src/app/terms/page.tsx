@@ -62,7 +62,7 @@ export default function TermsPage() {
               'Payments & Fees',
               'Commission Structure',
               'Verification & Trust',
-              'Income Verification & Data Sharing',
+              'Work History & Data Protection',
               'Reviews & Ratings',
               'Messaging & Communication',
               'Intellectual Property',
@@ -174,10 +174,10 @@ export default function TermsPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="font-semibold text-foreground min-w-fit">&quot;Paystack&quot;</span>
+                <span className="font-semibold text-foreground min-w-fit">&quot;Payment Processor&quot;</span>
                 <span>
-                  means Paystack Payments Limited, the third-party payment processor used by
-                  DomestIQ to facilitate financial transactions on the Platform.
+                  means the third-party payment processing service used by DomestIQ to facilitate
+                  financial transactions on the Platform, if and when payment processing is introduced.
                 </span>
               </li>
               <li className="flex gap-2">
@@ -522,16 +522,16 @@ export default function TermsPage() {
               infrastructure. The Platform Fee is not deducted from the Worker&apos;s Rate.
             </p>
             <p className="mb-3">
-              8.4. <strong>Payment Processing.</strong> All payments on the Platform are processed
-              through Paystack. By using the Platform, you agree to Paystack&apos;s terms of service
-              and privacy policy. DomestIQ is not responsible for any errors, delays, or failures
-              in payment processing caused by Paystack or your financial institution.
+              8.4. <strong>Payment Processing.</strong> If and when payment processing is introduced
+              on the Platform, it will be handled by a third-party payment processor. DomestIQ is
+              not responsible for any errors, delays, or failures in payment processing caused by
+              the payment processor or your financial institution.
             </p>
             <p className="mb-3">
               8.5. <strong>Payout to Workers.</strong> Workers receive payouts of their Worker&apos;s
               Rate after the Booking has been marked as completed. Payouts are processed within
               the timeframes displayed on the Platform, which are typically one (1) to three (3)
-              business days after completion, subject to Paystack&apos;s processing timelines.
+              business days after completion, subject to processing timelines.
             </p>
             <p className="mb-3">
               8.6. <strong>Refund Conditions.</strong> Refunds are issued in accordance with the
@@ -627,28 +627,26 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* ━━━ 11. INCOME VERIFICATION & DATA SHARING ━━━ */}
+          {/* ━━━ 11. WORK HISTORY & DATA PROTECTION ━━━ */}
           <section id="section-11">
             <h2 className="text-xl font-bold text-foreground mb-4">
-              11. Income Verification & Data Sharing
+              11. Work History & Data Protection
             </h2>
             <p className="mb-3">
-              11.1. <strong>Income Statements.</strong> Workers who use the Platform to receive
-              payments may generate verified income statements reflecting their earnings through
-              the Platform over a specified period. These statements are based on actual
-              transaction data recorded by the Platform.
+              11.1. <strong>Work History.</strong> Workers who use the Platform may generate
+              work history reports reflecting their completed bookings through the Platform
+              over a specified period. These reports are based on actual records maintained
+              by the Platform.
             </p>
             <p className="mb-3">
-              11.2. <strong>Opt-In Data Sharing.</strong> Workers may, at their sole discretion,
-              opt in to share their verified income data with DomestIQ&apos;s approved financial
-              partners, including but not limited to banks and financial institutions (such as
-              Capitec Bank, TymeBank, and others), for the purpose of facilitating access to
-              financial products and services such as loans, savings accounts, and insurance.
+              11.2. <strong>Your Data, Your Control.</strong> Workers retain full control over
+              their personal data at all times. Any sharing of personal data with third parties
+              requires the Worker&apos;s explicit, informed, and voluntary consent, obtained in
+              compliance with POPIA.
             </p>
             <p className="mb-3">
-              11.3. <strong>Explicit Consent.</strong> Data sharing under this section requires
-              the Worker&apos;s explicit, informed, and voluntary consent, obtained in compliance with
-              POPIA. Consent is obtained through the Platform&apos;s interface and clearly specifies:
+              11.3. <strong>Explicit Consent.</strong> Any data sharing requires the Worker&apos;s
+              consent, obtained through the Platform&apos;s interface, which clearly specifies:
             </p>
             <ul className="list-disc ml-6 space-y-1.5 mb-4">
               <li>What data will be shared;</li>
@@ -657,21 +655,21 @@ export default function TermsPage() {
               <li>The Worker&apos;s right to withdraw consent at any time.</li>
             </ul>
             <p className="mb-3">
-              11.4. <strong>Revocable Consent.</strong> Workers may withdraw their consent to data
-              sharing at any time through the Platform&apos;s settings. Withdrawal of consent will
-              take effect prospectively and will not affect data already shared prior to
+              11.4. <strong>Revocable Consent.</strong> Workers may withdraw their consent to any
+              data sharing at any time through the Platform&apos;s settings. Withdrawal of consent
+              will take effect prospectively and will not affect data already shared prior to
               withdrawal.
             </p>
             <p className="mb-3">
-              11.5. <strong>POPIA Compliance.</strong> All data sharing under this section is
-              conducted in strict compliance with POPIA. DomestIQ acts as the responsible party
-              and ensures that all financial partners who receive Worker data are bound by
-              appropriate data processing agreements.
+              11.5. <strong>POPIA Compliance.</strong> All data handling is conducted in strict
+              compliance with POPIA. DomestIQ acts as the responsible party and ensures that
+              any approved third parties who receive Worker data are bound by appropriate data
+              processing agreements.
             </p>
             <p>
-              11.6. <strong>No Obligation.</strong> Opting in to income data sharing is entirely
-              voluntary. A Worker&apos;s decision not to opt in will not affect their access to the
-              Platform, their visibility, or their ability to receive Bookings.
+              11.6. <strong>No Obligation.</strong> Any optional data sharing is entirely
+              voluntary. A Worker&apos;s decision not to participate will not affect their access
+              to the Platform, their visibility, or their ability to receive Bookings.
             </p>
           </section>
 
@@ -912,7 +910,7 @@ export default function TermsPage() {
               <li>Disputes between Clients and Workers;</li>
               <li>Losses caused by the actions or omissions of Workers or Clients;</li>
               <li>Losses arising from unauthorised access to or alteration of User data; or</li>
-              <li>Losses arising from payment processing errors or delays caused by Paystack or financial institutions.</li>
+              <li>Losses arising from payment processing errors or delays caused by third-party payment processors or financial institutions.</li>
             </ul>
             <p className="mb-3">
               17.4. <strong>Liability Cap.</strong> To the maximum extent permitted by law,

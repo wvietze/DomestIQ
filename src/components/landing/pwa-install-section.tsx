@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Smartphone, X, Download, Share } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 export function PwaInstallSection() {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null)
@@ -62,6 +63,8 @@ export function PwaInstallSection() {
     localStorage.setItem('domestiq_pwa_dismissed', 'true')
   }
 
+  const { t } = useTranslation()
+
   if (dismissed || !showPrompt) return null
 
   return (
@@ -86,9 +89,9 @@ export function PwaInstallSection() {
               <Smartphone className="w-5 h-5 text-emerald-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-sm">Add DomestIQ to Home Screen</h3>
+              <h3 className="font-bold text-sm">{t('landing.pwa.title', 'Add DomestIQ to Home Screen')}</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Get quick access to bookings, messages, and more.
+                {t('landing.pwa.desc', 'Get quick access to bookings, messages, and more.')}
               </p>
             </div>
           </div>
@@ -96,10 +99,10 @@ export function PwaInstallSection() {
           {isIOS ? (
             <div className="mt-3 bg-gray-50 rounded-lg p-3 space-y-2">
               <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
-                <Share className="w-3.5 h-3.5" /> Tap the share button
+                <Share className="w-3.5 h-3.5" /> {t('landing.pwa.ios_step1', 'Tap the share button')}
               </p>
               <p className="text-xs text-gray-600">
-                Then select &quot;Add to Home Screen&quot;
+                {t('landing.pwa.ios_step2', 'Then select "Add to Home Screen"')}
               </p>
             </div>
           ) : (
@@ -109,7 +112,7 @@ export function PwaInstallSection() {
               size="sm"
             >
               <Download className="w-4 h-4" />
-              Install App
+              {t('landing.pwa.install', 'Install App')}
             </Button>
           )}
         </div>

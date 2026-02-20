@@ -133,7 +133,7 @@ export default function PrivacyPage() {
               <li>
                 <strong>&quot;Operator&quot;</strong> means a person who processes personal information on
                 behalf of the Responsible Party in terms of a contract or mandate. Our Operators include
-                Supabase, Paystack, and Google Cloud.
+                Supabase, Google Cloud, and other service providers as needed.
               </li>
             </ul>
           </section>
@@ -194,17 +194,16 @@ export default function PrivacyPage() {
               <li>Service areas and suburbs (workers)</li>
             </ul>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">4.6 Financial Data</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">4.6 Booking &amp; Work Data</h3>
             <ul className="list-disc pl-6 space-y-1">
-              <li>Payment transaction records (amounts, dates, booking references)</li>
-              <li>Earnings records and income history (workers)</li>
-              <li>Paystack payment tokens (for recurring payment processing)</li>
-              <li>Platform fee records</li>
+              <li>Booking records (dates, services, references)</li>
+              <li>Work history records (workers)</li>
+              <li>Service rates and fee records</li>
             </ul>
             <p className="text-sm mt-2">
-              <strong>Important:</strong> DomestIQ does not store your full credit or debit card numbers.
-              Payment card information is processed and stored exclusively by our PCI DSS-compliant
-              payment processor, Paystack. We retain only tokenised references and transaction records.
+              <strong>Important:</strong> DomestIQ does not store sensitive financial information such
+              as credit or debit card numbers. If payment processing is introduced in future, it will
+              be handled by a PCI DSS-compliant payment processor.
             </p>
 
             <h3 className="text-lg font-semibold mt-6 mb-3">4.7 Communication Data</h3>
@@ -245,7 +244,7 @@ export default function PrivacyPage() {
             <p>
               Where you have given us voluntary, specific, and informed consent to process your personal
               information for a stated purpose. This applies to location tracking, identity verification,
-              criminal clearance checks, income data sharing with financial partners, and profile photo
+              criminal clearance checks, optional data sharing with approved third parties, and profile photo
               uploads. You may withdraw your consent at any time.
             </p>
 
@@ -288,8 +287,8 @@ export default function PrivacyPage() {
                 and completion of service bookings between clients and workers.
               </li>
               <li>
-                <strong>Payment Processing:</strong> Facilitating secure payments from clients to workers
-                through Paystack, including the worker&apos;s service rate and the DomestIQ platform fee.
+                <strong>Booking Facilitation:</strong> Managing service bookings between clients and workers,
+                including scheduling, confirmations, and service records.
               </li>
               <li>
                 <strong>Identity Verification:</strong> Confirming the identity of users through document
@@ -330,77 +329,63 @@ export default function PrivacyPage() {
           {/* 7. INCOME VERIFICATION & FINANCIAL DATA SHARING */}
           {/* ────────────────────────────────────────────────── */}
           <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">7. Income Verification &amp; Financial Data Sharing</h2>
+            <h2 className="text-2xl font-semibold mb-4">7. Work History &amp; Verification Records</h2>
             <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-6 border border-blue-200 dark:border-blue-900 not-prose mb-6">
               <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
                 Why this matters
               </p>
               <p className="text-sm text-blue-700 dark:text-blue-400">
-                Many domestic workers in South Africa struggle to access financial services because they
-                cannot provide formal proof of income. DomestIQ&apos;s income verification feature empowers
-                workers to build a verifiable financial record and, if they choose, share it with financial
-                institutions to access credit, banking products, and other financial services.
+                DomestIQ helps workers build a verifiable professional record. Your work history,
+                reviews, and verification status are yours &mdash; you can use them to grow your
+                reputation and access new opportunities.
               </p>
             </div>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">7.1 Income Record Generation</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">7.1 Work History Records</h3>
             <p>
-              DomestIQ automatically generates income records based on completed bookings and payments
-              processed through the platform. These records include the date of service, the amount
-              earned, and the type of service performed. Workers can view and download their income
-              history at any time from their profile.
+              DomestIQ tracks your completed bookings to build a work history record. These records
+              include the date of service, the type of service performed, and client reviews. Workers
+              can view and download their work history at any time from their profile.
             </p>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">7.2 Verified Income Statements</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">7.2 Work History Reports</h3>
             <p>
-              Workers may request a verified income statement from DomestIQ. This statement is digitally
-              signed by the platform and provides a summary of earnings over a specified period. Workers
-              may use this statement independently for any purpose, including applications for financial
-              services.
+              Workers may generate a work history report from DomestIQ. This report provides a
+              summary of completed work over a specified period. Workers may use this report
+              independently for any purpose, including job applications or service references.
             </p>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">7.3 Opt-In Financial Data Sharing</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">7.3 Optional Data Sharing</h3>
             <p>
-              Workers may choose to <strong>opt in</strong> to sharing their verified income data with
-              approved financial partners, such as banks (for example, Capitec, TymeBank) and other
-              financial service providers. This is an entirely voluntary feature.
+              In the future, workers may have the option to <strong>opt in</strong> to sharing their
+              verified work data with approved third parties. This will always be an entirely
+              voluntary feature.
             </p>
-            <p className="font-medium mt-3">The consent for financial data sharing is:</p>
+            <p className="font-medium mt-3">Any future data sharing will be:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li><strong>Granular:</strong> You choose exactly which partners may receive your data.</li>
-              <li><strong>Specific:</strong> Consent is given per partner, per request &mdash; not as a blanket authorisation.</li>
+              <li><strong>Granular:</strong> You choose exactly which parties may receive your data.</li>
+              <li><strong>Specific:</strong> Consent is given per party, per request &mdash; not as a blanket authorisation.</li>
               <li><strong>Informed:</strong> Before granting consent, you will see exactly what data will be shared and with whom.</li>
-              <li><strong>Revocable:</strong> You may withdraw your consent at any time through your consent dashboard in your worker profile settings.</li>
+              <li><strong>Revocable:</strong> You may withdraw your consent at any time through your settings.</li>
             </ul>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">7.4 What Financial Partners Receive</h3>
-            <p>When you grant consent, approved financial partners receive <strong>only</strong> the following:</p>
-            <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li>Verification of your income range (not exact amounts unless you consent)</li>
-              <li>Employment consistency score (regularity of bookings over time)</li>
-              <li>Platform tenure (how long you have been active on DomestIQ)</li>
-              <li>Account standing (whether your account is in good standing)</li>
-            </ul>
-
-            <h3 className="text-lg font-semibold mt-6 mb-3">7.5 What Financial Partners Do NOT Receive</h3>
-            <p>Financial partners will <strong>never</strong> receive the following, regardless of consent:</p>
+            <h3 className="text-lg font-semibold mt-6 mb-3">7.4 Your Privacy is Protected</h3>
+            <p>Your personal information is never shared without your explicit consent. The following will <strong>never</strong> be shared with third parties:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Personal messages or communication history</li>
               <li>Exact residential or work addresses</li>
-              <li>Review content or individual ratings</li>
               <li>Identity documents or their images</li>
               <li>Criminal clearance documentation</li>
               <li>Names or details of clients you have worked for</li>
             </ul>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">7.6 Consent Dashboard</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">7.5 Consent Dashboard</h3>
             <p>
               Your worker profile includes a dedicated <strong>Consent Dashboard</strong> where you can:
             </p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li>View all approved financial partners</li>
-              <li>See which partners have active data-sharing consent</li>
-              <li>Review the history of data-sharing requests</li>
+              <li>See your current consent settings</li>
+              <li>Review the history of any data-sharing requests</li>
               <li>Grant or revoke consent at any time with a single action</li>
               <li>Download a record of all consent actions for your own records</li>
             </ul>
@@ -417,11 +402,11 @@ export default function PrivacyPage() {
               the security of your personal information and to treat it in accordance with the law.
             </p>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">8.1 Paystack (Payment Processing)</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">8.1 Payment Processing</h3>
             <p>
-              Paystack processes all payments on the platform. Paystack receives the transaction amount,
-              payment tokens, and necessary payer information to facilitate secure transactions. Paystack
-              is PCI DSS-compliant and operates as an Operator under POPIA.
+              If payment processing is introduced on the platform, it will be handled by a PCI DSS-compliant
+              payment processor operating as an Operator under POPIA. The processor will receive only the
+              information necessary to facilitate secure transactions.
             </p>
 
             <h3 className="text-lg font-semibold mt-6 mb-3">8.2 Google Cloud Services</h3>
@@ -447,13 +432,12 @@ export default function PrivacyPage() {
               All data is encrypted at rest and in transit.
             </p>
 
-            <h3 className="text-lg font-semibold mt-6 mb-3">8.5 Approved Financial Partners</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-3">8.5 Approved Third Parties</h3>
             <p>
-              As described in Section 7, verified income data may be shared with approved financial
-              partners <strong>only</strong> when a worker has provided explicit, informed consent for
-              each specific partner and each specific request. Financial partners are contractually
-              bound to use this data solely for the purposes disclosed to the worker at the time of
-              consent.
+              As described in Section 7, personal data may only be shared with approved third
+              parties when a worker has provided explicit, informed consent for each specific party
+              and each specific request. Any approved third parties are contractually bound to use
+              this data solely for the purposes disclosed to the worker at the time of consent.
             </p>
 
             <h3 className="text-lg font-semibold mt-6 mb-3">8.6 Law Enforcement &amp; Legal Requirements</h3>

@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import { MapPin, ArrowRight } from 'lucide-react'
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 const cities = [
   { name: 'Johannesburg', province: 'Gauteng', workers: '120+', launched: true },
@@ -23,6 +24,7 @@ const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } }
 export function CityCoverageSection() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
+  const { t } = useTranslation()
 
   return (
     <section className="py-24 md:py-32 bg-gradient-to-b from-gray-50/80 to-white">
@@ -34,14 +36,14 @@ export function CityCoverageSection() {
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-sky-100 text-sky-800 border border-sky-200 mb-4">
-            <MapPin className="w-3.5 h-3.5" /> Coverage
+            <MapPin className="w-3.5 h-3.5" /> {t('landing.cities.badge', 'Coverage')}
           </span>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-            Across{' '}
-            <span className="bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">South Africa</span>
+            {t('landing.cities.heading_1', 'Across')}{' '}
+            <span className="bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">{t('landing.cities.heading_2', 'South Africa')}</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Workers and households connecting in major metros. Growing every week.
+            {t('landing.cities.subtext', 'Workers and households connecting in major metros. Growing every week.')}
           </p>
         </motion.div>
 
@@ -64,7 +66,7 @@ export function CityCoverageSection() {
                     <h3 className="font-bold">{city.name}</h3>
                     {!city.launched && (
                       <span className="text-[10px] font-semibold px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
-                        Launching Soon
+                        {t('landing.cities.launching_soon', 'Launching Soon')}
                       </span>
                     )}
                   </div>
@@ -72,7 +74,7 @@ export function CityCoverageSection() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-emerald-600">{city.workers}</p>
-                  <p className="text-[10px] text-muted-foreground">workers</p>
+                  <p className="text-[10px] text-muted-foreground">{t('landing.cities.workers', 'workers')}</p>
                 </div>
               </div>
             </motion.div>
@@ -85,12 +87,12 @@ export function CityCoverageSection() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="text-center mt-10"
         >
-          <p className="text-muted-foreground mb-4">Don&apos;t see your city? Register anyway — we&apos;re expanding fast!</p>
+          <p className="text-muted-foreground mb-4">{t('landing.cities.not_listed', "Don't see your city? Register anyway — we're expanding fast!")}</p>
           <Link
             href="/register"
             className="group inline-flex items-center gap-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-300 hover:-translate-y-0.5"
           >
-            Register Now
+            {t('landing.cities.cta', 'Register Now')}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>

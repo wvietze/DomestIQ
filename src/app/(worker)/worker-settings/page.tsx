@@ -110,14 +110,14 @@ const CONSENT_LABELS: Record<string, { label: string; description: string }> = {
       'Required under South African law (POPIA). Allows us to process your personal information for providing our services.',
   },
   income_data_sharing: {
-    label: 'Income Data Sharing',
+    label: 'Work Data Sharing',
     description:
-      'Allows verified partners (banks, lenders) to access your income statements for loan or credit applications. Expires after 1 year.',
+      'Allows approved third parties to verify your work history when you give explicit consent. Expires after 1 year.',
   },
   identity_sharing: {
     label: 'Identity Verification Sharing',
     description:
-      'Permits sharing your verified identity with third-party partners. Expires after 1 year.',
+      'Permits sharing your verified identity status with approved third parties when you give explicit consent. Expires after 1 year.',
   },
   marketing: {
     label: 'Marketing Communications',

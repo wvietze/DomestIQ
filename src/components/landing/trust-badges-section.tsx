@@ -1,17 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Lock, ShieldCheck, MessageSquare, Fingerprint, Users, Star } from 'lucide-react'
-
-const badges = [
-  { icon: Lock, title: 'POPIA Compliant', desc: 'Your data is protected under SA law', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  { icon: ShieldCheck, title: 'ID Verified Workers', desc: 'Document verification by our team', color: 'text-blue-600', bg: 'bg-blue-50' },
-  { icon: MessageSquare, title: 'Safe Messaging', desc: 'Chat securely through the platform', color: 'text-violet-600', bg: 'bg-violet-50' },
-  { icon: Fingerprint, title: 'Background Checks', desc: 'Criminal clearance certificates', color: 'text-amber-600', bg: 'bg-amber-50' },
-  { icon: Users, title: '500+ Workers', desc: 'Growing network across SA', color: 'text-rose-600', bg: 'bg-rose-50' },
-  { icon: Star, title: '4.8 Rating', desc: 'Average worker satisfaction score', color: 'text-sky-600', bg: 'bg-sky-50' },
-]
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 const scaleIn = { hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }
@@ -19,6 +11,16 @@ const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } }
 export function TrustBadgesSection() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
+  const { t } = useTranslation()
+
+  const badges = useMemo(() => [
+    { icon: Lock, title: t('landing.trust.t1_title', 'POPIA Compliant'), desc: t('landing.trust.t1_desc', 'Your data is protected under SA law'), color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { icon: ShieldCheck, title: t('landing.trust.t2_title', 'ID Verified Workers'), desc: t('landing.trust.t2_desc', 'Document verification by our team'), color: 'text-blue-600', bg: 'bg-blue-50' },
+    { icon: MessageSquare, title: t('landing.trust.t3_title', 'Safe Messaging'), desc: t('landing.trust.t3_desc', 'Chat securely through the platform'), color: 'text-violet-600', bg: 'bg-violet-50' },
+    { icon: Fingerprint, title: t('landing.trust.t4_title', 'Background Checks'), desc: t('landing.trust.t4_desc', 'Criminal clearance certificates'), color: 'text-amber-600', bg: 'bg-amber-50' },
+    { icon: Users, title: t('landing.trust.t5_title', '500+ Workers'), desc: t('landing.trust.t5_desc', 'Growing network across SA'), color: 'text-rose-600', bg: 'bg-rose-50' },
+    { icon: Star, title: t('landing.trust.t6_title', '4.8 Rating'), desc: t('landing.trust.t6_desc', 'Average worker satisfaction score'), color: 'text-sky-600', bg: 'bg-sky-50' },
+  ], [t])
 
   return (
     <section className="py-24 md:py-32">
@@ -30,11 +32,11 @@ export function TrustBadgesSection() {
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-4">
-            Trust & Safety
+            {t('landing.trust.badge', 'Trust & Safety')}
           </span>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-            Built on{' '}
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">trust</span>
+            {t('landing.trust.heading_1', 'Built on')}{' '}
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('landing.trust.heading_2', 'trust')}</span>
           </h2>
         </motion.div>
 

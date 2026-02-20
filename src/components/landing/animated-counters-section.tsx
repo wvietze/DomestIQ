@@ -1,15 +1,9 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Users, CalendarDays, MapPin, Star } from 'lucide-react'
-
-const counters = [
-  { icon: Users, value: 500, suffix: '+', label: 'Workers Registered', color: 'text-emerald-400' },
-  { icon: CalendarDays, value: 1200, suffix: '+', label: 'Bookings Made', color: 'text-sky-400' },
-  { icon: MapPin, value: 9, suffix: '', label: 'Cities Served', color: 'text-amber-400' },
-  { icon: Star, value: 4.8, suffix: '', label: 'Average Rating', color: 'text-rose-400', decimal: true },
-]
+import { useTranslation } from '@/lib/hooks/use-translation'
 
 function AnimatedCounter({ value, suffix, decimal, inView }: { value: number; suffix: string; decimal?: boolean; inView: boolean }) {
   const [count, setCount] = useState(0)
@@ -45,6 +39,14 @@ function AnimatedCounter({ value, suffix, decimal, inView }: { value: number; su
 export function AnimatedCountersSection() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-40px' })
+  const { t } = useTranslation()
+
+  const counters = useMemo(() => [
+    { icon: Users, value: 500, suffix: '+', label: t('landing.counters.c1', 'Workers Registered'), color: 'text-emerald-400' },
+    { icon: CalendarDays, value: 1200, suffix: '+', label: t('landing.counters.c2', 'Bookings Made'), color: 'text-sky-400' },
+    { icon: MapPin, value: 9, suffix: '', label: t('landing.counters.c3', 'Cities Served'), color: 'text-amber-400' },
+    { icon: Star, value: 4.8, suffix: '', label: t('landing.counters.c4', 'Average Rating'), color: 'text-rose-400', decimal: true },
+  ], [t])
 
   return (
     <section ref={ref} className="relative border-y bg-gradient-to-r from-gray-900 via-gray-900 to-emerald-950 text-white overflow-hidden">
@@ -60,8 +62,8 @@ export function AnimatedCountersSection() {
           className="text-center mb-10"
         >
           <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-            Growing every day across{' '}
-            <span className="bg-gradient-to-r from-amber-400 to-emerald-400 bg-clip-text text-transparent">Mzansi</span>
+            {t('landing.counters.heading_1', 'Growing every day across')}{' '}
+            <span className="bg-gradient-to-r from-amber-400 to-emerald-400 bg-clip-text text-transparent">{t('landing.counters.heading_2', 'Mzansi')}</span>
           </h2>
         </motion.div>
 

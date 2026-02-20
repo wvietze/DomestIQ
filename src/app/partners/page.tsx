@@ -495,7 +495,7 @@ export default function PartnersPage() {
                           required
                           value={formData.company_name}
                           onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                          placeholder="e.g. Capitec Bank"
+                          placeholder="Your Company Name"
                         />
                       </div>
                       <div>
