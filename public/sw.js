@@ -1,9 +1,9 @@
 // DomestIQ Service Worker — Push Notifications + Offline Cache
 
-const CACHE_NAME = 'domestiq-v1'
-const STATIC_ASSETS = ['/', '/manifest.json', '/icons/icon-192x192.png', '/icons/icon-512x512.png']
+const CACHE_NAME = 'domestiq-v2'
+const STATIC_ASSETS = ['/', '/offline', '/manifest.json', '/icons/icon-192x192.png', '/icons/icon-512x512.png']
 
-// Install — cache static assets
+// Install — cache static assets including offline fallback
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -32,7 +32,14 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
         return response
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request).then((cached) => {
+        if (cached) return cached
+        // For navigation requests, show offline page
+        if (event.request.mode === 'navigate') {
+          return caches.match('/offline')
+        }
+        return cached
+      }))
   )
 })
 

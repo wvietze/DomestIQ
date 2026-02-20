@@ -34,7 +34,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 sm:gap-1.5 rounded-lg border border-gray-200 bg-white p-1.5 sm:px-2.5 sm:py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+        className="flex items-center gap-1.5 rounded-full p-2 sm:rounded-lg sm:border sm:border-gray-200 sm:bg-white sm:px-2.5 sm:py-1.5 text-sm font-medium text-gray-700 sm:shadow-sm transition-colors hover:bg-gray-100 sm:hover:bg-gray-50"
         aria-label="Change language"
         aria-expanded={isOpen}
       >

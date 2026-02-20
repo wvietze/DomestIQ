@@ -19,6 +19,7 @@ import {
   CheckCircle2, XCircle, ArrowRight,
 } from 'lucide-react'
 import type { Notification } from '@/lib/types'
+import { PushPrompt } from '@/components/shared/push-prompt'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
@@ -197,6 +198,9 @@ export default function ClientDashboard() {
         <h1 className="text-2xl font-bold tracking-tight">{getGreeting()}, {firstName}!</h1>
         <p className="text-muted-foreground mt-0.5">What do you need help with today?</p>
       </motion.div>
+
+      {/* Push Notification Prompt */}
+      <motion.div variants={fadeUp}><PushPrompt /></motion.div>
 
       {/* Next Booking Hero */}
       {nextBooking && (

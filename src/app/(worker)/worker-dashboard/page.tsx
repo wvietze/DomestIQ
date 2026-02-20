@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslation } from '@/lib/hooks/use-translation'
+import { PushPrompt } from '@/components/shared/push-prompt'
 
 interface DashboardBooking {
   id: string
@@ -247,6 +248,9 @@ export default function WorkerDashboard() {
           Here&apos;s your work overview
         </p>
       </motion.div>
+
+      {/* Push Notification Prompt */}
+      <PushPrompt />
 
       {/* Profile Completeness */}
       {completeness < 100 && (
