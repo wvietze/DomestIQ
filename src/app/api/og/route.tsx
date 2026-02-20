@@ -3,6 +3,8 @@ import { ImageResponse } from 'next/og'
 export const runtime = 'edge'
 
 export async function GET() {
+  const logoUrl = 'https://domestiq-kappa.vercel.app/icons/icon-512x512.png'
+
   return new ImageResponse(
     (
       <div
@@ -35,28 +37,20 @@ export async function GET() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 16,
+            gap: 20,
             marginBottom: 32,
           }}
         >
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              background: 'linear-gradient(135deg, #059669, #10b981)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: 36,
-              fontWeight: 800,
-            }}
-          >
-            D
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoUrl}
+            width={88}
+            height={88}
+            alt="DomestIQ"
+            style={{ borderRadius: 22 }}
+          />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 48, fontWeight: 800, color: '#111827', letterSpacing: -1 }}>
+            <span style={{ fontSize: 52, fontWeight: 800, color: '#111827', letterSpacing: -1 }}>
               domest<span style={{ color: '#059669' }}>IQ</span>
             </span>
           </div>
