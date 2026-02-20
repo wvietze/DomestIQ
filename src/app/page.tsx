@@ -98,9 +98,9 @@ export default function LandingPage() {
             <a href="#stories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Stories</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <LanguageSwitcher className="hidden sm:block" />
-            <Link href="/login" className="hidden sm:inline text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Log In</Link>
-            <Link href="/register" className="text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">Get Started</Link>
+            <LanguageSwitcher />
+            <Link href="/login" className="hidden sm:inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Log In</Link>
+            <Link href="/register" className="inline-flex items-center justify-center text-sm font-semibold leading-none bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 h-9 sm:px-5 sm:h-10 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">Get Started</Link>
           </div>
         </div>
       </motion.header>
