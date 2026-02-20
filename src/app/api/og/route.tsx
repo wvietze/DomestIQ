@@ -78,7 +78,7 @@ export async function GET() {
 
         {/* Feature pills */}
         <div style={{ display: 'flex', gap: 16 }}>
-          {['ID Verified', 'Secure Payments', 'Real Reviews', '11 Languages'].map(
+          {['ID Verified', 'Real Reviews', '11 Languages', 'Free for Workers'].map(
             (label) => (
               <div
                 key={label}

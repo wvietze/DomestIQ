@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://domestiq-kappa.vercel.app";
+const APP_URL = "https://domestiq-kappa.vercel.app";
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | DomestIQ",
   },
   description:
-    "Connect with verified maids, gardeners, painters, and more. Trusted by South African households. ID-verified workers, secure payments, real reviews.",
+    "Connect with verified maids, gardeners, painters, and more. Trusted by South African households. ID-verified workers, real reviews. Always free for workers.",
   keywords: [
     "domestic workers South Africa", "find a maid", "find a gardener",
     "home services SA", "cleaning services", "trusted workers",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     siteName: "DomestIQ",
     title: "DomestIQ - Find Trusted Domestic Workers in South Africa",
     description:
-      "Connect with verified maids, gardeners, painters, and more. ID-verified, secure payments, real reviews.",
+      "Connect with verified maids, gardeners, painters, and more. ID-verified workers, real reviews. Built for Mzansi.",
     url: APP_URL,
     images: [
       {
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "DomestIQ - Find Trusted Domestic Workers",
     description:
-      "ID-verified workers, secure payments, real reviews. Built for Mzansi.",
+      "ID-verified workers, real reviews, 11 SA languages. Built for Mzansi.",
     images: [`${APP_URL}/api/og`],
   },
   robots: {
