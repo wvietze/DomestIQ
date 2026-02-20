@@ -34,15 +34,15 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+        className="flex items-center gap-1 sm:gap-1.5 rounded-lg border border-gray-200 bg-white p-1.5 sm:px-2.5 sm:py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
         aria-label="Change language"
         aria-expanded={isOpen}
       >
         <Globe className="h-4 w-4" />
-        <span className="uppercase">{currentLanguage.code}</span>
+        <span className="hidden sm:inline uppercase">{currentLanguage.code}</span>
         <ChevronDown
           className={cn(
-            'h-3.5 w-3.5 transition-transform',
+            'hidden sm:block h-3.5 w-3.5 transition-transform',
             isOpen && 'rotate-180'
           )}
         />

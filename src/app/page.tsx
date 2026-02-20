@@ -89,18 +89,18 @@ export default function LandingPage() {
       {/* ━━━ Navigation ━━━ */}
       <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}
         className="fixed top-0 left-0 right-0 z-50 glass-strong">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/"><Logo /></Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+          <Link href="/" className="shrink-0"><Logo /></Link>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#for-workers" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Workers</a>
             <a href="#for-households" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">For Households</a>
             <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Services</a>
             <a href="#stories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Stories</a>
           </nav>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Log In</Link>
-            <Link href="/register" className="text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">Get Started</Link>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <LanguageSwitcher className="hidden sm:block" />
+            <Link href="/login" className="hidden sm:inline text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Log In</Link>
+            <Link href="/register" className="text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">Get Started</Link>
           </div>
         </div>
       </motion.header>
