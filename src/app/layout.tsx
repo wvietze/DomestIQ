@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 import { PopiConsentBanner } from "@/components/shared/popi-consent-banner";
 import { ServiceWorkerRegister } from "@/components/shared/sw-register";
@@ -15,14 +16,53 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://domestiq-kappa.vercel.app";
+
 export const metadata: Metadata = {
-  title: "DomestIQ - Find Trusted Workers",
+  title: {
+    default: "DomestIQ - Find Trusted Domestic Workers in South Africa",
+    template: "%s | DomestIQ",
+  },
   description:
-    "Connect with trusted domestic workers in South Africa",
+    "Connect with verified maids, gardeners, painters, and more. Trusted by South African households. ID-verified workers, secure payments, real reviews.",
+  keywords: [
+    "domestic workers South Africa", "find a maid", "find a gardener",
+    "home services SA", "cleaning services", "trusted workers",
+    "verified domestic workers", "Johannesburg", "Cape Town", "Durban",
+  ],
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",
     apple: "/icons/icon-192x192.png",
+  },
+  metadataBase: new URL(APP_URL),
+  openGraph: {
+    type: "website",
+    locale: "en_ZA",
+    siteName: "DomestIQ",
+    title: "DomestIQ - Find Trusted Domestic Workers in South Africa",
+    description:
+      "Connect with verified maids, gardeners, painters, and more. ID-verified, secure payments, real reviews.",
+    url: APP_URL,
+    images: [
+      {
+        url: `${APP_URL}/api/og`,
+        width: 1200,
+        height: 630,
+        alt: "DomestIQ - Trusted Domestic Workers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DomestIQ - Find Trusted Domestic Workers",
+    description:
+      "ID-verified workers, secure payments, real reviews. Built for Mzansi.",
+    images: [`${APP_URL}/api/og`],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -48,6 +88,7 @@ export default function RootLayout({
           {children}
           <PopiConsentBanner />
           <ServiceWorkerRegister />
+          <Analytics />
           <ToastViewport />
         </ToastProvider>
       </body>
