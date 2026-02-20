@@ -1,14 +1,4 @@
-import webPush from 'web-push'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-// Configure web-push with VAPID keys
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
-const VAPID_SUBJECT = `mailto:support@domestiq.co.za`
-
-if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-  webPush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
-}
 
 export interface PushPayload {
   title: string
@@ -19,10 +9,25 @@ export interface PushPayload {
 }
 
 /**
+ * Lazily load and configure web-push (Node.js only, heavy crypto deps)
+ */
+async function getWebPush() {
+  const webPush = await import('web-push')
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
+  const privateKey = process.env.VAPID_PRIVATE_KEY || ''
+  if (publicKey && privateKey) {
+    webPush.setVapidDetails('mailto:support@domestiq.co.za', publicKey, privateKey)
+  }
+  return { webPush, configured: !!(publicKey && privateKey) }
+}
+
+/**
  * Send a push notification to a specific user (all their devices)
  */
 export async function sendPushToUser(userId: string, payload: PushPayload) {
-  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+  const { webPush, configured } = await getWebPush()
+
+  if (!configured) {
     console.warn('VAPID keys not configured — skipping push notification')
     return { sent: 0, failed: 0 }
   }
