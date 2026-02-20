@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { HandHeart } from 'lucide-react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
@@ -12,21 +12,25 @@ interface LogoProps {
 }
 
 const sizeConfig = {
-  sm: { box: 'w-8 h-8', icon: 'w-4 h-4', text: 'text-lg' },
-  default: { box: 'w-9 h-9', icon: 'w-5 h-5', text: 'text-xl' },
-  large: { box: 'w-11 h-11', icon: 'w-6 h-6', text: 'text-2xl' },
+  sm: { box: 32, text: 'text-lg' },
+  default: { box: 36, text: 'text-xl' },
+  large: { box: 44, text: 'text-2xl' },
 }
 
 function LogoMark({ size = 'default', light = false, className }: Omit<LogoProps, 'href'>) {
-  const { box, icon, text } = sizeConfig[size]
+  const { box, text } = sizeConfig[size]
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
-      <div className={cn(box, 'rounded-xl bg-gradient-to-br from-amber-500 via-emerald-600 to-sky-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 relative overflow-hidden')}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-        <HandHeart className={cn(icon, 'text-white relative z-10')} />
-      </div>
+      <Image
+        src="/icons/icon-512x512.png"
+        alt="DomestIQ"
+        width={box}
+        height={box}
+        className="rounded-lg"
+        priority
+      />
       <span className={cn(text, 'font-extrabold tracking-tight', light ? 'text-white' : 'text-foreground')}>
-        Domest<span className="text-emerald-600">IQ</span>
+        domest<span className="text-emerald-600">IQ</span>
       </span>
     </div>
   )

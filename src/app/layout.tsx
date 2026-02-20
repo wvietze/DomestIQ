@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   description:
     "Connect with trusted domestic workers in South Africa",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -26,7 +30,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#2563eb",
+  themeColor: "#059669",
 };
 
 export default function RootLayout({
