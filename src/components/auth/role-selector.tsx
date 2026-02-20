@@ -21,7 +21,7 @@ export function RoleSelector() {
       icon: Home,
       color: 'from-blue-500 to-blue-600',
       borderColor: 'border-blue-500',
-      features: ['Search verified workers', 'Book & schedule', 'Pay securely', 'Rate & review'],
+      features: ['Search verified workers', 'Book & schedule', 'Message directly', 'Rate & review'],
     },
     {
       id: 'worker' as Role,

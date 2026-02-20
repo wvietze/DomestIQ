@@ -8,6 +8,9 @@ import {
   Users,
   ShieldCheck,
   Flag,
+  Handshake,
+  Award,
+  Megaphone,
   Menu,
   X,
 } from 'lucide-react'
@@ -26,6 +29,9 @@ const adminNavItems: AdminNavItem[] = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Verifications', href: '/admin/verifications', icon: ShieldCheck },
   { label: 'Moderation', href: '/admin/moderation', icon: Flag },
+  { label: 'Partners', href: '/admin/partners', icon: Handshake },
+  { label: 'Sponsors', href: '/admin/sponsors', icon: Award },
+  { label: 'Ads', href: '/admin/ads', icon: Megaphone },
 ]
 
 export default function AdminLayout({

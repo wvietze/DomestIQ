@@ -348,8 +348,8 @@ export default function WorkerNotificationsPage() {
               No notifications
             </h3>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              When you receive booking requests, messages, reviews, or payment
-              updates, they will appear here.
+              When you receive booking requests, messages, or reviews, they
+              will appear here.
             </p>
           </CardContent>
         </Card>

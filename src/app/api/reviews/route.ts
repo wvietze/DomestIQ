@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { REVIEW_TRAITS, type ReviewTrait } from '@/lib/types/review'
 
 /**
  * GET /api/reviews
@@ -102,10 +103,21 @@ export async function POST(request: NextRequest) {
       booking_id,
       rating,
       comment,
+      traits,
       professionalism_rating,
       punctuality_rating,
       quality_rating,
     } = body
+
+    // Validate traits if provided
+    const validTraits: ReviewTrait[] = []
+    if (traits && Array.isArray(traits)) {
+      for (const t of traits) {
+        if (REVIEW_TRAITS.includes(t as ReviewTrait)) {
+          validTraits.push(t as ReviewTrait)
+        }
+      }
+    }
 
     // Validate required fields
     if (!booking_id || !rating) {
@@ -202,6 +214,7 @@ export async function POST(request: NextRequest) {
         reviewee_id: booking.worker_id,
         rating,
         comment: comment || null,
+        traits: validTraits,
         professionalism_rating: professionalism_rating || null,
         punctuality_rating: punctuality_rating || null,
         quality_rating: quality_rating || null,
@@ -217,11 +230,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Mark matching review_request as completed
+    await supabase
+      .from('review_requests')
+      .update({ status: 'completed' })
+      .eq('booking_id', booking_id)
+      .eq('client_id', user.id)
+      .eq('status', 'pending')
+
     // Notify the worker
+    const traitText = validTraits.length > 0
+      ? ` Traits: ${validTraits.slice(0, 3).join(', ')}`
+      : ''
     await supabase.from('notifications').insert({
       user_id: booking.worker_id,
       title: 'New Review',
-      body: `You received a ${rating}-star review.`,
+      body: `You received a ${rating}-star review.${traitText}`,
       type: 'review',
       data: { review_id: review.id, booking_id },
       channel: 'in_app',

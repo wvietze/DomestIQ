@@ -122,12 +122,13 @@ export default function ClientBookingsPage() {
               </Button>
             )}
 
-            {booking.total_amount > 0 && (
+            {/* Payment: Amount display hidden for now — payments not yet active */}
+            {/* {booking.total_amount > 0 && (
               <div className="mt-3 pt-3 border-t flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="font-bold text-emerald-700">R{booking.total_amount.toFixed(2)}</span>
               </div>
-            )}
+            )} */}
           </CardContent>
         </Card>
       </Link>

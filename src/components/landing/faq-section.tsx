@@ -28,7 +28,7 @@ const faqs = [
   },
   {
     q: 'How does the booking process work?',
-    a: 'Households search for workers by service type and location, view profiles and reviews, then book a date and time. Workers receive the request and can accept or decline. Payment is handled securely through the platform.',
+    a: 'Households search for workers by service type and location, view profiles and reviews, then book a date and time. Workers receive the request and can accept or decline. You can also message workers directly to discuss details before booking.',
   },
   {
     q: 'Can I book a worker for a once-off job?',

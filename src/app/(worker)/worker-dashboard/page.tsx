@@ -14,11 +14,14 @@ import { StarRating } from '@/components/ui/star-rating'
 import {
   CalendarDays, Star, ClipboardList, User, ChevronRight,
   Clock, CheckCircle2, XCircle, Loader2, Briefcase,
-  TrendingUp, AlertCircle, Gift, Copy, MessageCircle, Share2
+  TrendingUp, AlertCircle, Gift, Copy, MessageCircle, Share2,
+  FileText, Users
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { PushPrompt } from '@/components/shared/push-prompt'
+import { SponsorBadge } from '@/components/shared/sponsor-badge'
+import { DashboardAd } from '@/components/shared/dashboard-ad'
 
 interface DashboardBooking {
   id: string
@@ -252,6 +255,9 @@ export default function WorkerDashboard() {
       {/* Push Notification Prompt */}
       <PushPrompt />
 
+      {/* Sponsor Badge */}
+      <SponsorBadge placement="dashboard_worker" />
+
       {/* Profile Completeness */}
       {completeness < 100 && (
         <motion.div
@@ -338,9 +344,9 @@ export default function WorkerDashboard() {
                   <Gift className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Refer &amp; Earn R2</h3>
+                  <h3 className="font-semibold">Refer a Friend</h3>
                   <p className="text-xs text-muted-foreground">
-                    Earn R2 when your referral gets a 5-star review
+                    Help fellow workers join DomestIQ
                   </p>
                 </div>
               </div>
@@ -392,9 +398,9 @@ export default function WorkerDashboard() {
               {/* Stats Line */}
               {referralStats && (
                 <p className="text-xs text-muted-foreground text-center">
-                  {referralStats.total_referrals} referral{referralStats.total_referrals !== 1 ? 's' : ''}
+                  {referralStats.total_referrals} referred
                   {' '}&middot;{' '}
-                  R{referralStats.total_earned.toFixed(0)} earned
+                  {referralStats.qualified_referrals} qualified
                 </p>
               )}
             </CardContent>
@@ -429,7 +435,30 @@ export default function WorkerDashboard() {
             </CardContent>
           </Card>
         </Link>
+        <Link href="/worker-cv">
+          <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer h-full">
+            <CardContent className="p-4 flex flex-col items-center justify-center gap-2 text-center">
+              <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
+                <FileText className="w-6 h-6 text-purple-600" />
+              </div>
+              <span className="font-medium text-sm">Build Your CV</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/worker-references">
+          <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer h-full">
+            <CardContent className="p-4 flex flex-col items-center justify-center gap-2 text-center">
+              <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-amber-600" />
+              </div>
+              <span className="font-medium text-sm">References</span>
+            </CardContent>
+          </Card>
+        </Link>
       </motion.div>
+
+      {/* Dashboard Ad */}
+      <DashboardAd placement="worker_dashboard" role="worker" />
 
       {/* New Booking Requests */}
       {pendingBookings.length > 0 && (

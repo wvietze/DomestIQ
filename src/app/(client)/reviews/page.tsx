@@ -11,7 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/ui/star-rating'
 import { Separator } from '@/components/ui/separator'
-import { Star, ChevronRight, MessageSquareOff } from 'lucide-react'
+import { Star, ChevronRight, MessageSquareOff, MessageSquare } from 'lucide-react'
 
 interface ReviewItem {
   id: string
@@ -23,10 +23,20 @@ interface ReviewItem {
     communication: number
   }
   comment: string | null
+  traits: string[]
   created_at: string
   worker_name: string
   worker_avatar: string | null
   service_name: string
+}
+
+interface ReviewRequestItem {
+  id: string
+  booking_id: string
+  worker_id: string
+  created_at: string
+  worker_name: string
+  worker_avatar: string | null
 }
 
 interface UnreviewedBooking {
@@ -41,6 +51,7 @@ export default function ClientReviewsPage() {
   const { user, isLoading: userLoading } = useUser()
   const [reviews, setReviews] = useState<ReviewItem[]>([])
   const [unreviewedBookings, setUnreviewedBookings] = useState<UnreviewedBooking[]>([])
+  const [reviewRequests, setReviewRequests] = useState<ReviewRequestItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -52,7 +63,7 @@ export default function ClientReviewsPage() {
         const { data: reviewData } = await supabase
           .from('reviews')
           .select(`
-            id, booking_id, overall_rating, sub_ratings, comment, created_at,
+            id, booking_id, overall_rating, sub_ratings, comment, traits, created_at,
             profiles!reviewee_id(full_name, avatar_url),
             bookings!inner(services(name))
           `)
@@ -69,6 +80,7 @@ export default function ClientReviewsPage() {
               overall_rating: r.overall_rating,
               sub_ratings: r.sub_ratings as unknown as ReviewItem['sub_ratings'],
               comment: r.comment,
+              traits: (r.traits as string[]) || [],
               created_at: r.created_at,
               worker_name: worker?.full_name || 'Unknown',
               worker_avatar: worker?.avatar_url || null,
@@ -102,6 +114,29 @@ export default function ClientReviewsPage() {
             setUnreviewedBookings(unreviewed)
           }
         }
+
+        // Fetch review requests from workers
+        const { data: requestData } = await supabase
+          .from('review_requests')
+          .select('id, booking_id, worker_id, created_at, profiles!worker_id(full_name, avatar_url)')
+          .eq('client_id', user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+
+        if (requestData) {
+          const requests: ReviewRequestItem[] = requestData.map(r => {
+            const worker = r.profiles as unknown as { full_name: string; avatar_url: string | null }
+            return {
+              id: r.id,
+              booking_id: r.booking_id,
+              worker_id: r.worker_id,
+              created_at: r.created_at,
+              worker_name: worker?.full_name || 'Unknown',
+              worker_avatar: worker?.avatar_url || null,
+            }
+          })
+          setReviewRequests(requests)
+        }
       } catch (err) {
         console.error('Reviews load error:', err)
       } finally {
@@ -126,6 +161,48 @@ export default function ClientReviewsPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">My Reviews</h1>
+
+      {/* Review Requests from Workers */}
+      {reviewRequests.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-emerald-500" />
+            Review Requests ({reviewRequests.length})
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            These workers have requested your feedback
+          </p>
+          <div className="space-y-2">
+            {reviewRequests.map(req => (
+              <Link key={req.id} href={`/bookings/${req.booking_id}#review`}>
+                <Card className="hover:shadow-md transition-shadow border-emerald-100 bg-emerald-50/30">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={req.worker_avatar || undefined} />
+                        <AvatarFallback>
+                          {req.worker_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{req.worker_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Requested {new Date(req.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="default" size="sm" className="gap-1 bg-emerald-600 hover:bg-emerald-700">
+                      Write Review
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+          <Separator />
+        </div>
+      )}
 
       {/* Pending Reviews */}
       {unreviewedBookings.length > 0 && (
@@ -213,6 +290,16 @@ export default function ClientReviewsPage() {
                   <span>Quality: {review.sub_ratings.quality}/5</span>
                   <span>Communication: {review.sub_ratings.communication}/5</span>
                 </div>
+
+                {review.traits && review.traits.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {review.traits.map((trait: string) => (
+                      <span key={trait} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
+                        {trait.replace(/-/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
+import { LegalLanguageNotice } from '@/components/legal/legal-language-notice'
 
 export const metadata = {
   title: 'Privacy Policy | DomestIQ',
@@ -31,6 +32,8 @@ export default function PrivacyPage() {
 
       {/* ─── Content ─── */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+        <LegalLanguageNotice documentType="privacy" />
+
         {/* Title Block */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Privacy Policy</h1>

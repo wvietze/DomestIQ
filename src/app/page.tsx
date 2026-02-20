@@ -15,6 +15,7 @@ import { AnimatedCountersSection } from '@/components/landing/animated-counters-
 import { TrustBadgesSection } from '@/components/landing/trust-badges-section'
 import { CityCoverageSection } from '@/components/landing/city-coverage-section'
 import { FaqSection } from '@/components/landing/faq-section'
+import { PartnersSection } from '@/components/landing/partners-section'
 import { PwaInstallSection } from '@/components/landing/pwa-install-section'
 
 /* ─── Animation Variants ─── */
@@ -102,6 +103,7 @@ export default function LandingPage() {
             <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Services</a>
             <a href="#stories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Stories</a>
             <a href="#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
+            <Link href="/partners" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Partners</Link>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <LanguageSwitcher />
@@ -142,7 +144,7 @@ export default function LandingPage() {
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
               className="mt-8 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              DomestIQ empowers domestic workers to find consistent, safe work — and helps households hire with confidence.
+              DomestIQ empowers domestic workers to find consistent, safe work — and helps households find help with confidence.
               Phone-first. All 11 SA languages. Always free for workers.
             </motion.p>
 
@@ -207,7 +209,7 @@ export default function LandingPage() {
                 <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
                   Millions of domestic workers across South Africa rely on word-of-mouth to find their next job.
                   When one employer cuts ties, it can mean weeks without income. DomestIQ changes that.
-                  Build your profile once. Get found. Get booked. Get paid.
+                  Build your profile once. Get found. Get booked. Get reviewed.
                 </p>
                 <div className="mt-8">
                   <Link href="/register/worker"
@@ -266,12 +268,12 @@ export default function LandingPage() {
                   <Users className="w-3.5 h-3.5" /> For Households
                 </span>
                 <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
-                  Hire with{' '}
+                  Find help with{' '}
                   <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">confidence</span>
                 </h2>
                 <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
                   No more relying on word-of-mouth and hoping for the best. Browse verified, rated professionals near you.
-                  See their work history, read honest reviews, and book in minutes.
+                  See their work history, read honest reviews, and connect in minutes.
                 </p>
                 <div className="mt-8">
                   <Link href="/register"
@@ -333,7 +335,7 @@ export default function LandingPage() {
                   {[
                     { step: '1', title: 'Search your area', desc: 'Filter by service, distance, rating, and availability.' },
                     { step: '2', title: 'Review profiles', desc: 'Check ratings, reviews, and verification badges.' },
-                    { step: '3', title: 'Book and pay', desc: 'Pick a date and time. Pay securely through the app.' },
+                    { step: '3', title: 'Connect & schedule', desc: 'Send a message or request a booking. Arrange the details directly.' },
                     { step: '4', title: 'Rate honestly', desc: 'Your review helps the community and rewards good workers.' },
                   ].map((s) => (
                     <div key={s.step} className="flex gap-4">
@@ -416,6 +418,9 @@ export default function LandingPage() {
 
       {/* ━━━ City Coverage ━━━ */}
       <CityCoverageSection />
+
+      {/* ━━━ Partners ━━━ */}
+      <PartnersSection />
 
       {/* ━━━ FAQ ━━━ */}
       <FaqSection />
@@ -504,11 +509,11 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-sm">Legal</h4>
+              <h4 className="font-semibold mb-4 text-sm">Business</h4>
               <ul className="space-y-3">
+                <li><Link href="/partners" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Partners</Link></li>
                 <li><Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
                 <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
-                <li><span className="text-sm text-muted-foreground">POPI Act Compliant</span></li>
               </ul>
             </div>
           </div>

@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       'popi_consent',
       'income_data_sharing',
       'identity_sharing',
+      'cv_data_sharing',
       'marketing',
       'location_tracking',
     ]
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate expiry (income sharing expires after 1 year, others don't expire)
-    const expiresAt = ['income_data_sharing', 'identity_sharing'].includes(consent_type)
+    const expiresAt = ['income_data_sharing', 'identity_sharing', 'cv_data_sharing'].includes(consent_type)
       ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
       : null
 

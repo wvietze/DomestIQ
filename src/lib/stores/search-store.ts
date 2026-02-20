@@ -15,6 +15,7 @@ interface SearchFilters {
   maxPrice: number | null
   sortBy: SortOption
   verifiedOnly: boolean
+  estateId: string | null
 }
 
 interface SearchState {
@@ -39,6 +40,7 @@ const defaultFilters: SearchFilters = {
   maxPrice: null,
   sortBy: 'relevance',
   verifiedOnly: false,
+  estateId: null,
 }
 
 export const useSearchStore = create<SearchState>((set) => ({

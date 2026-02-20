@@ -16,6 +16,9 @@ import {
   Briefcase, Award, ChevronLeft, ChevronRight, X
 } from 'lucide-react'
 import { FavoriteButton } from '@/components/shared/favorite-button'
+import { TraitSummary } from '@/components/review/trait-summary'
+import { ReferenceCard } from '@/components/reference/reference-card'
+import { EstateTag } from '@/components/estate/estate-tag'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
@@ -52,6 +55,10 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [jobsCompleted, setJobsCompleted] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [topTraits, setTopTraits] = useState<Record<string, number>>({})
+  const [references, setReferences] = useState<Array<{ id: string; reference_text: string; relationship: 'employer' | 'client' | 'regular_client'; duration_months: number | null; created_at: string; client?: { full_name: string; avatar_url: string | null } }>>([])
+  const [estateRegistrations, setEstateRegistrations] = useState<Array<{ id: string; estate: { id: string; name: string; suburb: string; city: string } }>>([])
+
 
   useEffect(() => {
     async function loadWorker() {
@@ -90,6 +97,29 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
         .limit(10)
 
       if (reviewData) setReviews(reviewData as unknown as ReviewData[])
+
+      // Fetch top traits from worker_profiles
+      const { data: wpTraits } = await supabase
+        .from('worker_profiles')
+        .select('top_traits')
+        .eq('user_id', id)
+        .single()
+      if (wpTraits?.top_traits) setTopTraits(wpTraits.top_traits as Record<string, number>)
+
+      // Fetch references
+      try {
+        const refRes = await fetch(`/api/references?workerId=${id}`)
+        const refData = await refRes.json()
+        if (refData.references) setReferences(refData.references)
+      } catch { /* silent */ }
+
+      // Fetch estate registrations
+      try {
+        const estateRes = await fetch(`/api/worker-estates?workerId=${id}`)
+        const estateData = await estateRes.json()
+        if (estateData.registrations) setEstateRegistrations(estateData.registrations)
+      } catch { /* silent */ }
+
       setIsLoading(false)
     }
     loadWorker()
@@ -165,6 +195,22 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
           </div>
         </motion.div>
 
+        {/* Top Traits */}
+        {Object.keys(topTraits).length > 0 && (
+          <motion.div variants={fadeUp}>
+            <TraitSummary topTraits={topTraits} />
+          </motion.div>
+        )}
+
+        {/* Estate Tags */}
+        {estateRegistrations.length > 0 && (
+          <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
+            {estateRegistrations.map(reg => (
+              <EstateTag key={reg.id} name={reg.estate.name} suburb={reg.estate.suburb} />
+            ))}
+          </motion.div>
+        )}
+
         {/* Quick Stats Row */}
         <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
           <div className="text-center p-3 bg-muted/50 rounded-xl">
@@ -218,7 +264,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
         <motion.div variants={fadeUp}>
           <Card>
             <CardContent className="p-4">
-              <h2 className="font-semibold mb-3">Services &amp; Pricing</h2>
+              <h2 className="font-semibold mb-3">Services</h2>
               <div className="space-y-2">
                 {worker.worker_services.map(ws => (
                   <div key={ws.services.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
@@ -257,6 +303,18 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* References */}
+        {references.length > 0 && (
+          <motion.div variants={fadeUp}>
+            <h2 className="font-semibold mb-3">References ({references.length})</h2>
+            <div className="space-y-3">
+              {references.slice(0, 3).map(ref => (
+                <ReferenceCard key={ref.id} reference={ref} />
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Reviews */}
         <motion.div variants={fadeUp}>
@@ -301,13 +359,13 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t p-4 z-30">
         <div className="max-w-2xl mx-auto flex gap-3">
           <FavoriteButton workerId={id} size="md" className="h-12 w-12 border border-gray-200 rounded-xl" />
-          <Button variant="outline" className="h-12 px-5" onClick={() => router.push(`/messages?with=${id}`)}>
-            <MessageSquare className="w-5 h-5" />
+          <Button variant="outline" className="h-12 px-5" onClick={() => router.push(`/bookings/new?worker=${id}`)}>
+            <Calendar className="w-5 h-5" />
           </Button>
           <Button className="flex-1 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-base font-semibold"
-            onClick={() => router.push(`/bookings/new?worker=${id}`)}>
-            <Calendar className="w-5 h-5 mr-2" /> Book Now
-            {worker.hourly_rate && <span className="ml-2 opacity-80">· R{worker.hourly_rate}/hr</span>}
+            onClick={() => router.push(`/messages?with=${id}`)}>
+            <MessageSquare className="w-5 h-5 mr-2" /> Connect with {profile.full_name.split(' ')[0]}
+            {worker.hourly_rate && <span className="ml-2 opacity-80">· From R{worker.hourly_rate}/hr</span>}
           </Button>
         </div>
       </div>

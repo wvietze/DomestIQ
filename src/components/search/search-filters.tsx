@@ -9,7 +9,10 @@ import { StarRating } from '@/components/ui/star-rating'
 import { Search, SlidersHorizontal, X, MapPin, ShieldCheck, ArrowUpDown } from 'lucide-react'
 import { useSearchStore, type SortOption } from '@/lib/stores/search-store'
 import { SERVICE_TYPES } from '@/lib/utils/constants'
+import { EstateSearchInput } from '@/components/estate/estate-search-input'
+import { EstateTag } from '@/components/estate/estate-tag'
 import { cn } from '@/lib/utils'
+import type { Estate } from '@/lib/types/estate'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -24,6 +27,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 export function SearchFilters() {
   const { filters, setFilter, resetFilters } = useSearchStore()
   const [showFilters, setShowFilters] = useState(false)
+  const [selectedEstate, setSelectedEstate] = useState<Estate | null>(null)
 
   const activeFilterCount = [
     filters.minRating > 0,
@@ -33,6 +37,7 @@ export function SearchFilters() {
     filters.minPrice !== null,
     filters.maxPrice !== null,
     filters.verifiedOnly,
+    filters.estateId !== null,
   ].filter(Boolean).length
 
   return (
@@ -228,6 +233,30 @@ export function SearchFilters() {
               <MapPin className="w-4 h-4 mr-2" />
               {filters.locationLat ? 'Location Set' : 'Detect Location'}
             </Button>
+          </div>
+
+          {/* Estate Filter */}
+          <div>
+            <Label>Estate/Complex</Label>
+            {selectedEstate ? (
+              <div className="mt-1">
+                <EstateTag
+                  name={selectedEstate.name}
+                  suburb={selectedEstate.suburb}
+                  onRemove={() => { setSelectedEstate(null); setFilter('estateId', null) }}
+                />
+              </div>
+            ) : (
+              <div className="mt-1">
+                <EstateSearchInput
+                  placeholder="Filter by estate..."
+                  onSelect={(estate: Estate) => {
+                    setSelectedEstate(estate)
+                    setFilter('estateId', estate.id)
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

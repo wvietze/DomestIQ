@@ -28,7 +28,8 @@ export type {
 } from './booking';
 
 // Review
-export type { Review, ReviewSubRatings } from './review';
+export type { Review, ReviewSubRatings, ReviewTrait, ReviewRequest } from './review';
+export { REVIEW_TRAITS, TRAIT_LABELS, TRAIT_EMOJIS } from './review';
 
 // Message & Conversation
 export type {
@@ -76,3 +77,41 @@ export type { PortfolioImage } from './portfolio';
 
 // Favorite
 export type { FavoriteWorker, FavoriteWorkerWithProfile } from './favorite';
+
+// Reference
+export type {
+  WorkerReference,
+  ReferenceRequest,
+  ReferenceShareToken,
+  ReferenceRelationship,
+} from './reference';
+export { RELATIONSHIP_LABELS } from './reference';
+
+// CV
+export type {
+  WorkHistoryEntry,
+  EducationEntry,
+  WorkerCvData,
+  CvRenderData,
+} from './cv';
+
+// Estate
+export type {
+  Estate,
+  WorkerEstateRegistration,
+  SAProvince,
+} from './estate';
+
+// Partner, Sponsorship & Advertising
+export type {
+  PartnerApplication,
+  PartnerApplicationStatus,
+  CompanyType,
+  PartnerInterest,
+  Sponsorship,
+  SponsorshipPlacement,
+  Ad,
+  AdPlacement,
+  AdTargetRole,
+  PlatformStats,
+} from './partner';

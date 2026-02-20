@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { VerificationBadge } from '@/components/worker/verification-badge'
+import { SponsorBadge } from '@/components/shared/sponsor-badge'
 import {
   ShieldCheck, FileText, Upload, CheckCircle2,
   XCircle, Clock, Loader2, AlertTriangle, Eye, ArrowLeft
@@ -331,6 +332,9 @@ export default function WorkerVerificationPage() {
           <p className="text-sm text-emerald-800">
             Verified workers get up to 3x more bookings. Clients trust the gold shield badge and are more likely to book you.
           </p>
+        </div>
+        <div className="mt-3">
+          <SponsorBadge placement="verification" />
         </div>
       </motion.div>
 

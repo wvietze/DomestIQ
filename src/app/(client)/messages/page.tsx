@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Loader2 } from 'lucide-react'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }
@@ -25,10 +26,73 @@ interface ConversationItem {
 }
 
 export default function ClientMessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-2xl mx-auto space-y-1">
+        <h1 className="text-2xl font-bold mb-4">Messages</h1>
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="flex items-center gap-3 p-4">
+            <Skeleton className="w-12 h-12 rounded-full" />
+            <div className="flex-1 space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-48" /></div>
+            <Skeleton className="h-3 w-12" />
+          </div>
+        ))}
+      </div>
+    }>
+      <ClientMessagesContent />
+    </Suspense>
+  )
+}
+
+function ClientMessagesContent() {
   const supabase = createClient()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isLoading: userLoading } = useUser()
   const [conversations, setConversations] = useState<ConversationItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isConnecting, setIsConnecting] = useState(false)
+
+  // Handle ?with={userId} param to auto-create/find conversation
+  useEffect(() => {
+    const withUserId = searchParams.get('with')
+    if (!withUserId || !user || userLoading) return
+
+    setIsConnecting(true)
+    async function connectWithUser() {
+      try {
+        // Check for existing conversation in either direction
+        const { data: existing } = await supabase
+          .from('conversations')
+          .select('id')
+          .or(`and(participant_1.eq.${user!.id},participant_2.eq.${withUserId}),and(participant_1.eq.${withUserId},participant_2.eq.${user!.id})`)
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle()
+
+        if (existing) {
+          router.replace(`/messages/${existing.id}`)
+          return
+        }
+
+        // Create new conversation
+        const { data: newConvo } = await supabase
+          .from('conversations')
+          .insert({ participant_1: user!.id, participant_2: withUserId, status: 'active' })
+          .select('id')
+          .single()
+
+        if (newConvo) {
+          router.replace(`/messages/${newConvo.id}`)
+          return
+        }
+      } catch (err) {
+        console.error('Connect error:', err)
+      }
+      setIsConnecting(false)
+    }
+    connectWithUser()
+  }, [searchParams, user, userLoading, supabase, router])
 
   useEffect(() => {
     async function loadConversations() {
@@ -95,6 +159,15 @@ export default function ClientMessagesPage() {
     if (diffDays === 1) return 'Yesterday'
     if (diffDays < 7) return date.toLocaleDateString([], { weekday: 'short' })
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  }
+
+  if (isConnecting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        <p className="text-muted-foreground">Opening conversation...</p>
+      </div>
+    )
   }
 
   if (userLoading || isLoading) {

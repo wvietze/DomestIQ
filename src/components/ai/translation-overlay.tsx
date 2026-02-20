@@ -25,7 +25,7 @@ export function TranslationOverlay({ text, className }: TranslationOverlayProps)
     try {
       const res = await fetch('/api/ai/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, targetLanguage: language }) })
       const data = await res.json()
-      if (data.translatedText) { setTranslated(data.translatedText); setShow(true) }
+      if (data.translation) { setTranslated(data.translation); setShow(true) }
     } catch { /* silent */ }
     setLoading(false)
   }

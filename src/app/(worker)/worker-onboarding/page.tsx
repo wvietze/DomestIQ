@@ -135,7 +135,7 @@ export default function WorkerOnboardingPage() {
               {[
                 { key: 'hasPhoto', icon: Camera, label: 'Add a profile photo', href: '/worker-profile/edit', done: profileChecks.hasPhoto },
                 { key: 'hasBio', icon: FileText, label: 'Write a short bio', href: '/worker-profile/edit', done: profileChecks.hasBio },
-                { key: 'hasRate', icon: DollarSign, label: 'Set your hourly rate', href: '/worker-profile/edit', done: profileChecks.hasRate },
+                { key: 'hasRate', icon: DollarSign, label: 'Set your rate', href: '/worker-profile/edit', done: profileChecks.hasRate },
                 { key: 'hasId', icon: ShieldCheck, label: 'Upload your ID document', href: '/worker-verification', done: profileChecks.hasId },
               ].map(item => {
                 const Icon = item.icon
@@ -177,7 +177,7 @@ export default function WorkerOnboardingPage() {
           <div className="space-y-5">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold">Invite Other Workers</h2>
-              <p className="text-muted-foreground">Earn R2 when your referral gets a 5-star review</p>
+              <p className="text-muted-foreground">Help fellow workers join DomestIQ</p>
             </div>
             {referralCode ? (
               <>

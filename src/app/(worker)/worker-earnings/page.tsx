@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import {
   TrendingUp, DollarSign, Calendar, FileText, Download,
-  ChevronRight, Loader2, ShieldCheck, Banknote, Wallet,
+  ChevronRight, Loader2, ShieldCheck, Banknote, Briefcase,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -144,9 +144,9 @@ export default function WorkerEarningsPage() {
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-            <Wallet className="w-5 h-5 text-emerald-600" />
+            <Briefcase className="w-5 h-5 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold">My Earnings</h1>
+          <h1 className="text-2xl font-bold">Work History</h1>
         </div>
         <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
           {(['week', 'month', 'year', 'all'] as Period[]).map((p) => (
@@ -174,7 +174,7 @@ export default function WorkerEarningsPage() {
             <p className="text-2xl font-bold text-emerald-600">
               {summary ? formatCurrency(summary.total_earnings) : 'R0.00'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Total Earned</p>
+            <p className="text-xs text-muted-foreground mt-1">Total Income</p>
           </CardContent>
         </Card>
         <Card className="overflow-hidden">
@@ -184,7 +184,7 @@ export default function WorkerEarningsPage() {
             <p className="text-2xl font-bold">
               {summary?.total_bookings || 0}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Bookings</p>
+            <p className="text-xs text-muted-foreground mt-1">Jobs Completed</p>
           </CardContent>
         </Card>
         <Card className="overflow-hidden">
@@ -194,7 +194,7 @@ export default function WorkerEarningsPage() {
             <p className="text-2xl font-bold">
               {summary ? formatCurrency(summary.avg_booking_value) : 'R0.00'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Avg / Booking</p>
+            <p className="text-xs text-muted-foreground mt-1">Avg per Job</p>
           </CardContent>
         </Card>
       </div>
@@ -207,8 +207,8 @@ export default function WorkerEarningsPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-blue-900">Income Verification</h3>
               <p className="text-sm text-blue-700 mt-1">
-                Your earnings on DomestIQ are verified and recorded. You can generate
-                an income statement for loan applications, rental agreements, or bank accounts.
+                Your work on DomestIQ is tracked and verified. Generate a work history
+                report for loan applications, rental agreements, or bank accounts.
               </p>
               <Button
                 size="sm"
@@ -222,7 +222,7 @@ export default function WorkerEarningsPage() {
                 ) : (
                   <FileText className="w-4 h-4" />
                 )}
-                {isGenerating ? 'Generating...' : 'Generate This Month\'s Statement'}
+                {isGenerating ? 'Generating...' : 'Generate This Month\'s Report'}
               </Button>
             </div>
           </div>
@@ -236,7 +236,7 @@ export default function WorkerEarningsPage() {
             <div className="flex items-center justify-between">
               <h2 className="font-semibold flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                Income Statements
+                Work History Reports
               </h2>
             </div>
 
@@ -251,7 +251,7 @@ export default function WorkerEarningsPage() {
                       {formatMonthYear(stmt.period_start)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {stmt.total_bookings} bookings
+                      {stmt.total_bookings} jobs
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -275,16 +275,16 @@ export default function WorkerEarningsPage() {
           <div className="flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
               <Banknote className="w-5 h-5" />
-              Recent Payments
+              Recent Jobs
             </h2>
           </div>
 
           {transactions.length === 0 ? (
             <div className="text-center py-8">
-              <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">No payments yet</p>
+              <Briefcase className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-muted-foreground">No completed jobs yet</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Completed bookings with payments will appear here
+                Your completed work will be tracked here
               </p>
             </div>
           ) : (
@@ -296,7 +296,7 @@ export default function WorkerEarningsPage() {
                 >
                   <div>
                     <p className="font-medium text-sm">
-                      Booking Payment
+                      Completed Job
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {tx.paid_at ? formatDate(tx.paid_at) : 'Pending'}
@@ -315,6 +315,8 @@ export default function WorkerEarningsPage() {
         </CardContent>
       </Card>
 
+      {false && (
+      <>
       <Separator />
 
       {/* Bank Details CTA */}
@@ -337,6 +339,8 @@ export default function WorkerEarningsPage() {
           </div>
         </CardContent>
       </Card>
+      </>
+      )}
     </div>
   )
 }

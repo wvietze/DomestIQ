@@ -14,7 +14,8 @@ import {
   ArrowLeft, MapPin, Clock, CalendarDays, Navigation,
   CheckCircle2, XCircle, Play, Flag, Loader2,
   Phone, FileText, DollarSign, MessageSquare, Star,
-  Hourglass, ShieldCheck, CreditCard
+  Hourglass, ShieldCheck
+  // CreditCard — commented out while payments are inactive
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -593,8 +594,9 @@ export default function WorkerBookingDetailPage({
         </motion.div>
       )}
 
-      {/* Payment Info -- if a transaction exists */}
-      {transaction && (
+      {/* Payment: Payment card (earnings, client paid, platform fee, Paystack reference)
+       * commented out for future restoration. See git history for full implementation. */}
+      {/* {transaction && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -670,7 +672,7 @@ export default function WorkerBookingDetailPage({
             </CardContent>
           </Card>
         </motion.div>
-      )}
+      )} */}
 
       {/* Action Buttons -- fixed at bottom */}
       <motion.div

@@ -19,9 +19,12 @@ import {
 } from '@/components/ui/dialog'
 import {
   ArrowLeft, CalendarDays, Clock, MapPin, MessageSquare,
-  XCircle, Loader2, CheckCircle2, AlertTriangle, FileText, CreditCard
+  XCircle, Loader2, CheckCircle2, AlertTriangle, FileText
 } from 'lucide-react'
-import { calculatePlatformFee } from '@/lib/types/payment'
+
+// Payment imports — commented out for future restoration
+// import { CreditCard } from 'lucide-react'
+// import { calculatePlatformFee } from '@/lib/types/payment'
 
 interface BookingDetail {
   id: string
@@ -110,7 +113,8 @@ export default function BookingDetailPage({
   const [review, setReview] = useState<ExistingReview | null>(null)
   const [transaction, setTransaction] = useState<BookingTransaction | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isPaymentLoading, setIsPaymentLoading] = useState(false)
+  // Payment: isPaymentLoading state commented out for future restoration
+  // const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
@@ -163,18 +167,18 @@ export default function BookingDetailPage({
             }
           }
 
-          // Fetch transaction for this booking
-          const { data: txData } = await supabase
-            .from('transactions')
-            .select('id, booking_id, worker_amount, platform_fee, total_amount, platform_fee_percent, currency, status, paystack_reference, paid_at, created_at')
-            .eq('booking_id', id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single()
-
-          if (txData) {
-            setTransaction(txData as unknown as BookingTransaction)
-          }
+          // Payment: Transaction fetch commented out for future restoration
+          // const { data: txData } = await supabase
+          //   .from('transactions')
+          //   .select('id, booking_id, worker_amount, platform_fee, total_amount, platform_fee_percent, currency, status, paystack_reference, paid_at, created_at')
+          //   .eq('booking_id', id)
+          //   .order('created_at', { ascending: false })
+          //   .limit(1)
+          //   .single()
+          //
+          // if (txData) {
+          //   setTransaction(txData as unknown as BookingTransaction)
+          // }
         }
       } catch (err) {
         console.error('Booking detail load error:', err)
@@ -278,34 +282,35 @@ export default function BookingDetailPage({
     }
   }
 
-  const handlePayNow = async () => {
-    if (!booking) return
-    setIsPaymentLoading(true)
-
-    try {
-      const res = await fetch('/api/payments/initialize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ booking_id: booking.id }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        console.error('Payment init failed:', data.error)
-        return
-      }
-
-      // Redirect to Paystack checkout
-      if (data.authorization_url) {
-        window.location.href = data.authorization_url
-      }
-    } catch (err) {
-      console.error('Payment initialization error:', err)
-    } finally {
-      setIsPaymentLoading(false)
-    }
-  }
+  // Payment: handlePayNow commented out for future restoration
+  // const handlePayNow = async () => {
+  //   if (!booking) return
+  //   setIsPaymentLoading(true)
+  //
+  //   try {
+  //     const res = await fetch('/api/payments/initialize', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ booking_id: booking.id }),
+  //     })
+  //
+  //     const data = await res.json()
+  //
+  //     if (!res.ok) {
+  //       console.error('Payment init failed:', data.error)
+  //       return
+  //     }
+  //
+  //     // Redirect to Paystack checkout
+  //     if (data.authorization_url) {
+  //       window.location.href = data.authorization_url
+  //     }
+  //   } catch (err) {
+  //     console.error('Payment initialization error:', err)
+  //   } finally {
+  //     setIsPaymentLoading(false)
+  //   }
+  // }
 
   const formatCurrency = (amount: number) => {
     return `R${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -464,8 +469,8 @@ export default function BookingDetailPage({
         </Card>
       )}
 
-      {/* Payment Summary */}
-      {booking.total_amount > 0 && (
+      {/* Payment: Original Payment Summary and Payment Status sections commented out for future restoration */}
+      {/* {booking.total_amount > 0 && (
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -476,132 +481,25 @@ export default function BookingDetailPage({
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
 
-      {/* Payment Status Section */}
-      {transaction ? (
+      {/* Payment: Original Payment Status section (transaction display + Pay Now card) commented out
+       * for future restoration. See git history for full Paystack payment flow. */}
+
+      {/* Estimated Rate — informational only */}
+      {booking.total_amount > 0 && (
         <Card>
-          <CardContent className="p-4 space-y-4">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-muted-foreground" />
-                <h3 className="font-semibold">Payment Status</h3>
-              </div>
-              <Badge
-                className={
-                  transaction.status === 'pending'
-                    ? 'bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400'
-                    : transaction.status === 'processing'
-                    ? 'bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
-                    : transaction.status === 'completed'
-                    ? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400'
-                    : transaction.status === 'failed'
-                    ? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400'
-                }
-              >
-                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-              </Badge>
+              <span className="text-sm text-muted-foreground">Estimated rate</span>
+              <span className="font-medium text-emerald-700">R{booking.total_amount}</span>
             </div>
-
-            <Separator />
-
-            {/* Price Breakdown */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Worker&apos;s rate</span>
-                <span>{formatCurrency(transaction.worker_amount)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Platform fee ({transaction.platform_fee_percent}%)</span>
-                <span>{formatCurrency(transaction.platform_fee)}</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between font-semibold">
-                <span>Total paid</span>
-                <span className="text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(transaction.total_amount)}
-                </span>
-              </div>
-            </div>
-
-            {/* Payment Reference */}
-            {transaction.paystack_reference && (
-              <>
-                <Separator />
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Payment reference</span>
-                  <span className="font-mono text-xs">{transaction.paystack_reference}</span>
-                </div>
-              </>
-            )}
-
-            {/* Paid Date */}
-            {transaction.paid_at && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Paid on</span>
-                <span>
-                  {new Date(transaction.paid_at).toLocaleDateString(undefined, {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              Payment is arranged directly between you and the worker.
+            </p>
           </CardContent>
         </Card>
-      ) : ['pending', 'accepted', 'confirmed'].includes(booking.status) && booking.total_amount > 0 ? (
-        (() => {
-          const feeBreakdown = calculatePlatformFee(booking.total_amount)
-          return (
-            <Card className="border-emerald-200 dark:border-emerald-800">
-              <CardContent className="p-4 space-y-4">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <h3 className="font-semibold">Pay for this booking</h3>
-                </div>
-
-                <Separator />
-
-                {/* Price Breakdown */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Worker&apos;s rate</span>
-                    <span>{formatCurrency(feeBreakdown.workerAmount)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Platform fee ({feeBreakdown.feePercent}%)</span>
-                    <span>{formatCurrency(feeBreakdown.platformFee)}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between font-semibold">
-                    <span>Total</span>
-                    <span className="text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(feeBreakdown.totalAmount)}
-                    </span>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={handlePayNow}
-                  disabled={isPaymentLoading}
-                >
-                  {isPaymentLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <CreditCard className="w-4 h-4" />
-                  )}
-                  {isPaymentLoading ? 'Initializing payment...' : `Pay Now - ${formatCurrency(feeBreakdown.totalAmount)}`}
-                </Button>
-              </CardContent>
-            </Card>
-          )
-        })()
-      ) : null}
+      )}
 
       {/* Cancellation Info */}
       {booking.status === 'cancelled' && booking.cancellation_reason && (

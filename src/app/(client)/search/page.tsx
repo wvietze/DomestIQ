@@ -100,7 +100,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     searchWorkers(true)
-  }, [filters.serviceId, filters.minRating, filters.availableDay, filters.maxDistance, filters.locationLat, filters.locationLng]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filters.serviceId, filters.minRating, filters.availableDay, filters.maxDistance, filters.locationLat, filters.locationLng, filters.estateId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <motion.div initial="hidden" animate="visible" variants={stagger}

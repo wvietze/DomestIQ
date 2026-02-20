@@ -8,8 +8,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { StarRating } from '@/components/ui/star-rating'
-import { Star, MessageSquare, Clock, ThumbsUp, Award } from 'lucide-react'
+import { Star, MessageSquare } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { TRAIT_LABELS, TRAIT_EMOJIS } from '@/lib/types/review'
+import { Badge } from '@/components/ui/badge'
 
 interface ReviewItem {
   id: string
@@ -17,6 +19,7 @@ interface ReviewItem {
   punctuality_rating: number | null
   quality_rating: number | null
   professionalism_rating: number | null
+  traits: string[]
   comment: string | null
   created_at: string
   profiles: { full_name: string; avatar_url: string | null }
@@ -25,9 +28,7 @@ interface ReviewItem {
 interface RatingStats {
   overall: number
   totalReviews: number
-  punctuality: number
-  quality: number
-  professionalism: number
+  topTraits: Record<string, number>
 }
 
 export default function WorkerReviewsPage() {
@@ -38,9 +39,7 @@ export default function WorkerReviewsPage() {
   const [stats, setStats] = useState<RatingStats>({
     overall: 0,
     totalReviews: 0,
-    punctuality: 0,
-    quality: 0,
-    professionalism: 0,
+    topTraits: {},
   })
   const [isLoading, setIsLoading] = useState(true)
 
@@ -51,7 +50,7 @@ export default function WorkerReviewsPage() {
       // Get reviews where this worker is the reviewee
       const { data: reviewData } = await supabase
         .from('reviews')
-        .select('id, rating, punctuality_rating, quality_rating, professionalism_rating, comment, created_at, profiles!reviewer_id(full_name, avatar_url)')
+        .select('id, rating, punctuality_rating, quality_rating, professionalism_rating, traits, comment, created_at, profiles!reviewer_id(full_name, avatar_url)')
         .eq('reviewee_id', user.id)
         .eq('is_public', true)
         .order('created_at', { ascending: false })
@@ -64,27 +63,20 @@ export default function WorkerReviewsPage() {
         const totalReviews = typedReviews.length
         const avgOverall = typedReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
 
-        const punctualityReviews = typedReviews.filter(r => r.punctuality_rating != null)
-        const avgPunctuality = punctualityReviews.length > 0
-          ? punctualityReviews.reduce((sum, r) => sum + (r.punctuality_rating || 0), 0) / punctualityReviews.length
-          : 0
-
-        const qualityReviews = typedReviews.filter(r => r.quality_rating != null)
-        const avgQuality = qualityReviews.length > 0
-          ? qualityReviews.reduce((sum, r) => sum + (r.quality_rating || 0), 0) / qualityReviews.length
-          : 0
-
-        const professionalismReviews = typedReviews.filter(r => r.professionalism_rating != null)
-        const avgProfessionalism = professionalismReviews.length > 0
-          ? professionalismReviews.reduce((sum, r) => sum + (r.professionalism_rating || 0), 0) / professionalismReviews.length
-          : 0
+        // Aggregate trait counts across all reviews
+        const traitCounts: Record<string, number> = {}
+        typedReviews.forEach(r => {
+          if (r.traits && Array.isArray(r.traits)) {
+            r.traits.forEach(trait => {
+              traitCounts[trait] = (traitCounts[trait] || 0) + 1
+            })
+          }
+        })
 
         setStats({
           overall: avgOverall,
           totalReviews,
-          punctuality: avgPunctuality,
-          quality: avgQuality,
-          professionalism: avgProfessionalism,
+          topTraits: traitCounts,
         })
       }
 
@@ -148,76 +140,39 @@ export default function WorkerReviewsPage() {
             </Card>
           </motion.div>
 
-          {/* Sub-Ratings */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Rating Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Punctuality */}
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-sky-50 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-4 h-4 text-sky-500" />
+          {/* Top Traits */}
+          {Object.keys(stats.topTraits).length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Top Traits</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(stats.topTraits)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([trait, count]) => (
+                        <Badge
+                          key={trait}
+                          variant="secondary"
+                          className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200 px-3 py-1.5 text-sm font-medium"
+                        >
+                          {TRAIT_EMOJIS[trait as keyof typeof TRAIT_EMOJIS]}{' '}
+                          {TRAIT_LABELS[trait as keyof typeof TRAIT_LABELS] || trait}
+                          <span className="ml-1.5 bg-emerald-200 text-emerald-800 rounded-full px-1.5 py-0.5 text-xs font-semibold">
+                            {count}
+                          </span>
+                        </Badge>
+                      ))}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">Punctuality</span>
-                      <span className="text-sm font-semibold">{stats.punctuality.toFixed(1)}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-sky-500 h-2 rounded-full transition-all"
-                        style={{ width: `${(stats.punctuality / 5) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quality */}
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Award className="w-4 h-4 text-emerald-500" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">Quality</span>
-                      <span className="text-sm font-semibold">{stats.quality.toFixed(1)}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-emerald-500 h-2 rounded-full transition-all"
-                        style={{ width: `${(stats.quality / 5) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Professionalism / Communication */}
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-amber-50 rounded-full flex items-center justify-center flex-shrink-0">
-                    <ThumbsUp className="w-4 h-4 text-amber-500" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">Communication</span>
-                      <span className="text-sm font-semibold">{stats.professionalism.toFixed(1)}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-amber-500 h-2 rounded-full transition-all"
-                        style={{ width: `${(stats.professionalism / 5) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* Individual Reviews */}
           <div>
@@ -258,6 +213,15 @@ export default function WorkerReviewsPage() {
                               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                                 {review.comment}
                               </p>
+                            )}
+                            {review.traits && review.traits.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {review.traits.map(trait => (
+                                  <span key={trait} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
+                                    {TRAIT_EMOJIS[trait as keyof typeof TRAIT_EMOJIS]} {TRAIT_LABELS[trait as keyof typeof TRAIT_LABELS] || trait}
+                                  </span>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>

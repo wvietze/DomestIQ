@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, CalendarDays, ClipboardList,
-  MessageSquare, Wallet,
+  MessageSquare, Briefcase,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
   { labelKey: 'nav.calendar', fallback: 'Calendar', href: '/worker-calendar', icon: CalendarDays },
   { labelKey: 'nav.bookings', fallback: 'Bookings', href: '/worker-bookings', icon: ClipboardList },
   { labelKey: 'nav.messages', fallback: 'Messages', href: '/worker-messages', icon: MessageSquare, showBadge: true },
-  { labelKey: 'nav.earnings', fallback: 'Earnings', href: '/worker-earnings', icon: Wallet },
+  { labelKey: 'nav.history', fallback: 'History', href: '/worker-earnings', icon: Briefcase },
 ]
 
 interface WorkerBottomNavProps {

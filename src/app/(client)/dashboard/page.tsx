@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import type { Notification } from '@/lib/types'
 import { PushPrompt } from '@/components/shared/push-prompt'
+import { DashboardAd } from '@/components/shared/dashboard-ad'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }
@@ -261,6 +262,9 @@ export default function ClientDashboard() {
         })}
       </motion.div>
 
+      {/* Dashboard Ad */}
+      <motion.div variants={fadeUp}><DashboardAd placement="client_dashboard" role="client" /></motion.div>
+
       {/* Upcoming Bookings */}
       <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-3">
@@ -284,7 +288,7 @@ export default function ClientDashboard() {
           <Card>
             <CardContent className="p-5 text-center text-sm text-muted-foreground">
               No other upcoming bookings.{' '}
-              <Link href="/search" className="text-emerald-600 font-medium hover:underline">Book another service</Link>
+              <Link href="/search" className="text-emerald-600 font-medium hover:underline">Find another worker</Link>
             </CardContent>
           </Card>
         ) : (

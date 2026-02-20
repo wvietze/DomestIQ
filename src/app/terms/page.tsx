@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
+import { LegalLanguageNotice } from '@/components/legal/legal-language-notice'
 
 export default function TermsPage() {
   return (
@@ -26,6 +27,8 @@ export default function TermsPage() {
 
       {/* ━━━ Content ━━━ */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+        <LegalLanguageNotice documentType="terms" />
+
         {/* Title Block */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">

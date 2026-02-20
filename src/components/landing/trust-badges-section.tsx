@@ -2,12 +2,12 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Lock, ShieldCheck, CreditCard, Fingerprint, Users, Star } from 'lucide-react'
+import { Lock, ShieldCheck, MessageSquare, Fingerprint, Users, Star } from 'lucide-react'
 
 const badges = [
   { icon: Lock, title: 'POPIA Compliant', desc: 'Your data is protected under SA law', color: 'text-emerald-600', bg: 'bg-emerald-50' },
   { icon: ShieldCheck, title: 'ID Verified Workers', desc: 'Document verification by our team', color: 'text-blue-600', bg: 'bg-blue-50' },
-  { icon: CreditCard, title: 'Secure Payments', desc: 'Powered by Paystack encryption', color: 'text-violet-600', bg: 'bg-violet-50' },
+  { icon: MessageSquare, title: 'Safe Messaging', desc: 'Chat securely through the platform', color: 'text-violet-600', bg: 'bg-violet-50' },
   { icon: Fingerprint, title: 'Background Checks', desc: 'Criminal clearance certificates', color: 'text-amber-600', bg: 'bg-amber-50' },
   { icon: Users, title: '500+ Workers', desc: 'Growing network across SA', color: 'text-rose-600', bg: 'bg-rose-50' },
   { icon: Star, title: '4.8 Rating', desc: 'Average worker satisfaction score', color: 'text-sky-600', bg: 'bg-sky-50' },

@@ -13,12 +13,15 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { EstateSearchInput } from '@/components/estate/estate-search-input'
+import { EstateTag } from '@/components/estate/estate-tag'
+import type { Estate, WorkerEstateRegistration } from '@/lib/types/estate'
 import {
   Camera, Save, Loader2, CheckCircle2, ArrowLeft,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
   Wrench, Baby, Dog, ShieldCheck, MapPin, Navigation,
-  ImagePlus, X, GripVertical
+  ImagePlus, X, GripVertical, Building2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -79,6 +82,8 @@ export default function WorkerProfileEditPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [portfolioImages, setPortfolioImages] = useState<Array<{ id: string; image_url: string; caption: string | null }>>([])
   const [portfolioUploading, setPortfolioUploading] = useState(false)
+  const [estateRegistrations, setEstateRegistrations] = useState<Array<{ id: string; estate: { id: string; name: string; suburb: string } }>>([])
+  const [estateLoading, setEstateLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -160,6 +165,21 @@ export default function WorkerProfileEditPage() {
           .eq('worker_profile_id', wp.id)
           .order('sort_order')
         if (portfolio) setPortfolioImages(portfolio)
+      }
+
+      // Load estate registrations
+      const { data: estates } = await supabase
+        .from('worker_estate_registrations')
+        .select('id, estates(id, name, suburb)')
+        .eq('worker_id', user.id)
+
+      if (estates) {
+        setEstateRegistrations(
+          estates.map(e => ({
+            id: e.id,
+            estate: e.estates as unknown as { id: string; name: string; suburb: string },
+          }))
+        )
       }
 
       // Set avatar preview from current profile
@@ -287,6 +307,48 @@ export default function WorkerProfileEditPage() {
       setPortfolioImages(prev => prev.filter(img => img.id !== imageId))
     } catch {
       setError('Failed to delete image')
+    }
+  }
+
+  const handleAddEstate = async (estate: Estate) => {
+    if (!user) return
+    setEstateLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('worker_estate_registrations')
+        .insert({ worker_id: user.id, estate_id: estate.id })
+        .select('id')
+        .single()
+
+      if (error) {
+        if (error.code === '23505') {
+          setError('You are already registered at this estate')
+        } else {
+          throw error
+        }
+      } else if (data) {
+        setEstateRegistrations(prev => [...prev, {
+          id: data.id,
+          estate: { id: estate.id, name: estate.name, suburb: estate.suburb },
+        }])
+      }
+    } catch {
+      setError('Failed to add estate registration')
+    } finally {
+      setEstateLoading(false)
+    }
+  }
+
+  const handleRemoveEstate = async (registrationId: string) => {
+    try {
+      await supabase
+        .from('worker_estate_registrations')
+        .delete()
+        .eq('id', registrationId)
+
+      setEstateRegistrations(prev => prev.filter(e => e.id !== registrationId))
+    } catch {
+      setError('Failed to remove estate registration')
     }
   }
 
@@ -439,7 +501,7 @@ export default function WorkerProfileEditPage() {
           </CardHeader>
           <CardContent>
             <Textarea
-              placeholder="Tell clients about yourself, your experience, and why they should hire you..."
+              placeholder="Tell clients about yourself, your experience, and what makes your work stand out..."
               value={bio}
               onChange={e => setBio(e.target.value)}
               rows={4}
@@ -719,6 +781,50 @@ export default function WorkerProfileEditPage() {
             </label>
             <p className="text-xs text-muted-foreground text-center">
               {portfolioImages.length}/12 photos &middot; Tap &amp; hold to remove
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Estate Registrations */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.27 }}
+      >
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-emerald-600" />
+              Estate Registrations
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Add estates and complexes where you are registered to work. This helps clients in those areas find you.
+            </p>
+
+            {/* Current registrations */}
+            {estateRegistrations.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {estateRegistrations.map(reg => (
+                  <EstateTag
+                    key={reg.id}
+                    name={reg.estate.name}
+                    suburb={reg.estate.suburb}
+                    onRemove={() => handleRemoveEstate(reg.id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Search to add */}
+            <EstateSearchInput
+              placeholder="Search for an estate..."
+              onSelect={(estate: Estate) => handleAddEstate(estate)}
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              {estateRegistrations.length} estate{estateRegistrations.length !== 1 ? 's' : ''} registered
             </p>
           </CardContent>
         </Card>
