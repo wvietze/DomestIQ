@@ -10,11 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Mail, Phone, Loader2, ArrowRight } from 'lucide-react'
+import { Mail, Phone, Loader2, ArrowRight, IdCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
-type AuthTab = 'email' | 'phone'
+type AuthTab = 'email' | 'phone' | 'worker-id'
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
 
@@ -32,10 +32,12 @@ function LoginForm() {
   const redirectTo = searchParams.get('redirect') || '/dashboard'
   const { t } = useTranslation()
 
-  const [activeTab, setActiveTab] = useState<AuthTab>('email')
+  const [activeTab, setActiveTab] = useState<AuthTab>('worker-id')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')
+  const [workerCode, setWorkerCode] = useState('')
+  const [workerPassword, setWorkerPassword] = useState('')
   const [otp, setOtp] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -50,6 +52,25 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError(error.message); setLoading(false); return }
     router.push(redirectTo)
+  }
+
+  async function handleWorkerIdLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    // Convert Worker ID (e.g. "DQ12345") to internal email
+    const code = workerCode.toUpperCase().replace(/\s/g, '')
+    const internalEmail = `${code.toLowerCase()}@domestiq.app`
+    const { error } = await supabase.auth.signInWithPassword({
+      email: internalEmail,
+      password: workerPassword,
+    })
+    if (error) {
+      setError('Invalid Worker ID or password. Check your card and try again.')
+      setLoading(false)
+      return
+    }
+    router.push(redirectTo.includes('dashboard') ? '/worker-dashboard' : redirectTo)
   }
 
   async function handleSendOtp(e: React.FormEvent) {
@@ -96,17 +117,21 @@ function LoginForm() {
         <div className="p-6 space-y-5">
           {/* Tab Toggle */}
           <div className="flex rounded-xl border bg-muted/50 p-1 gap-1">
-            {(['email', 'phone'] as const).map(tab => (
-              <button key={tab} type="button"
-                onClick={() => { setActiveTab(tab); setError(null) }}
+            {([
+              { key: 'worker-id' as const, icon: IdCard, label: 'Worker ID' },
+              { key: 'email' as const, icon: Mail, label: t('auth.email', 'Email') },
+              { key: 'phone' as const, icon: Phone, label: t('auth.phone', 'Phone') },
+            ]).map(tab => (
+              <button key={tab.key} type="button"
+                onClick={() => { setActiveTab(tab.key); setError(null) }}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                  activeTab === tab
+                  activeTab === tab.key
                     ? 'bg-white text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 )}>
-                {tab === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-                {tab === 'email' ? t('auth.email', 'Email') : t('auth.phone', 'Phone')}
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
               </button>
             ))}
           </div>
@@ -117,6 +142,28 @@ function LoginForm() {
               className="rounded-xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {error}
             </motion.div>
+          )}
+
+          {/* Worker ID Login */}
+          {activeTab === 'worker-id' && (
+            <motion.form key="worker-id" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2 }} onSubmit={handleWorkerIdLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="workerCode">Worker ID</Label>
+                <Input id="workerCode" type="text" placeholder="e.g. DQ12345" value={workerCode}
+                  onChange={e => setWorkerCode(e.target.value.toUpperCase())} required autoComplete="username"
+                  className="h-12 text-center text-lg font-mono tracking-widest" maxLength={7} />
+                <p className="text-xs text-muted-foreground">The code from your registration card</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="workerPwd">{t('auth.password', 'Password')}</Label>
+                <Input id="workerPwd" type="password" placeholder="Enter your password" value={workerPassword}
+                  onChange={e => setWorkerPassword(e.target.value)} required autoComplete="current-password" className="h-12" />
+              </div>
+              <Button type="submit" className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" disabled={loading}>
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>}
+              </Button>
+            </motion.form>
           )}
 
           {/* Email Login */}
