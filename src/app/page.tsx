@@ -8,7 +8,7 @@ import {
   Search, Shield, Star, MapPin, MessageSquare, Clock,
   ArrowRight, Phone, Globe, CheckCircle2,
   Heart, Users, Zap, Eye, Lock, ChevronRight,
-  Briefcase, TrendingUp, Award,
+  Briefcase, TrendingUp, Award, Gift, FileText, Download,
 } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
@@ -60,6 +60,8 @@ export default function LandingPage() {
     { icon: Phone, title: t('landing.worker.b4_title', 'Phone-Only Registration'), desc: t('landing.worker.b4_desc', 'No email needed. No typing. Just tap icons and take a selfie.') },
     { icon: Globe, title: t('landing.worker.b5_title', 'Use Your Language'), desc: t('landing.worker.b5_desc', 'Register and chat in Zulu, Xhosa, Sotho, Afrikaans — 11 SA languages.') },
     { icon: Heart, title: t('landing.worker.b6_title', 'Always Free'), desc: t('landing.worker.b6_desc', '100% free for workers. You keep every rand you earn. No commission taken from you.') },
+    { icon: Gift, title: t('landing.worker.b7_title', 'Refer & Earn'), desc: t('landing.worker.b7_desc', 'Know someone looking for work? Share your code. When they sign up, you earn cash. Grow your community and your pocket.') },
+    { icon: FileText, title: t('landing.worker.b8_title', 'Free CV Builder'), desc: t('landing.worker.b8_desc', 'Build a professional CV in a few taps. Download it as a PDF and use it for any job — not just DomestIQ.') },
   ], [t])
 
   const clientBenefits = useMemo(() => [
@@ -240,6 +242,94 @@ export default function LandingPage() {
               })}
             </motion.div>
           </div>
+
+          {/* ── CV Builder Visual Callout ── */}
+          <Section delay={0.2}>
+            <div className="mt-16 rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50/80 via-white to-amber-50/50 p-8 md:p-10 overflow-hidden">
+              <div className="grid md:grid-cols-2 gap-10 items-center">
+                {/* Steps */}
+                <div>
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-4">
+                    <FileText className="w-3 h-3" /> {t('landing.cv.badge', 'Free for Every Worker')}
+                  </span>
+                  <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                    {t('landing.cv.heading_1', 'Build a CV in')}{' '}
+                    <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('landing.cv.heading_2', '3 easy steps')}</span>
+                  </h3>
+                  <p className="mt-3 text-muted-foreground leading-relaxed">
+                    {t('landing.cv.body', 'Your work history, skills, and reviews — packed into one professional document. Download it. Print it. Hand it to anyone.')}
+                  </p>
+                  <div className="mt-6 space-y-4">
+                    {[
+                      { step: '1', text: t('landing.cv.step1', 'Fill in your details — we pre-fill what we can') },
+                      { step: '2', text: t('landing.cv.step2', 'Preview your CV on screen') },
+                      { step: '3', text: t('landing.cv.step3', 'Download your PDF — free, forever') },
+                    ].map((s) => (
+                      <div key={s.step} className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
+                        <span className="text-sm font-medium">{s.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-5 text-xs text-muted-foreground italic">
+                    {t('landing.cv.portable', 'Not locked to DomestIQ. Your CV is yours to use everywhere.')}
+                  </p>
+                </div>
+
+                {/* Mini CV Mockup Graphic */}
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="w-[240px] bg-white rounded-xl shadow-xl border border-gray-200 p-5 transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                      {/* CV Header */}
+                      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500" />
+                        <div className="space-y-1.5">
+                          <div className="h-2.5 w-20 bg-gray-800 rounded-sm" />
+                          <div className="h-2 w-14 bg-gray-300 rounded-sm" />
+                        </div>
+                      </div>
+                      {/* Skills */}
+                      <div className="mb-3">
+                        <div className="h-2 w-10 bg-emerald-600 rounded-sm mb-2" />
+                        <div className="flex flex-wrap gap-1">
+                          <span className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[8px] text-emerald-700 font-medium">Cleaning</span>
+                          <span className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[8px] text-emerald-700 font-medium">Ironing</span>
+                          <span className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[8px] text-emerald-700 font-medium">Cooking</span>
+                        </div>
+                      </div>
+                      {/* Experience lines */}
+                      <div className="mb-3">
+                        <div className="h-2 w-14 bg-emerald-600 rounded-sm mb-2" />
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-full bg-gray-100 rounded-sm" />
+                          <div className="h-1.5 w-4/5 bg-gray-100 rounded-sm" />
+                          <div className="h-1.5 w-3/5 bg-gray-100 rounded-sm" />
+                        </div>
+                      </div>
+                      {/* Rating */}
+                      <div className="flex items-center gap-0.5 mt-3 pt-2 border-t border-gray-100">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        ))}
+                        <span className="text-[9px] text-muted-foreground ml-1">4.9</span>
+                      </div>
+                    </div>
+
+                    {/* Download badge */}
+                    <div className="absolute -bottom-3 -right-3 bg-emerald-600 text-white rounded-full p-2.5 shadow-lg shadow-emerald-500/30">
+                      <Download className="w-4 h-4" />
+                    </div>
+
+                    {/* "Use Anywhere" floating tag */}
+                    <div className="absolute -top-3 -left-3 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg shadow-amber-500/30 -rotate-6">
+                      {t('landing.cv.tag', 'Use Anywhere!')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Section>
+
         </div>
       </section>
 
