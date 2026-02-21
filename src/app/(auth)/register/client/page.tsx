@@ -87,6 +87,9 @@ export default function ClientRegistrationPage() {
 
     setSuccess(true)
     setLoading(false)
+
+    // Auto-confirm is enabled — redirect to dashboard after short delay
+    setTimeout(() => router.push("/login"), 1500)
   }
 
   if (success) {
@@ -94,37 +97,26 @@ export default function ClientRegistrationPage() {
       <Card>
         <CardContent className="p-6 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
               <svg
-                className="h-8 w-8 text-primary"
+                className="h-8 w-8 text-emerald-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </div>
           <h3 className="text-lg font-semibold text-foreground">
-            Check your email
+            Account created!
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            We sent a verification link to{" "}
-            <span className="font-medium text-foreground">{email}</span>. Click
-            the link to verify your account and get started.
+            Welcome to DomestIQ,{" "}
+            <span className="font-medium text-foreground">{fullName}</span>.
+            Redirecting you to log in...
           </p>
-          <Button
-            variant="outline"
-            className="mt-6"
-            onClick={() => router.push("/login")}
-          >
-            Back to Log In
-          </Button>
         </CardContent>
       </Card>
     )

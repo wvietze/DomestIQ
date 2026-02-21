@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Phone, Camera, CheckCircle2, MapPin, FileText, Shield,
-  ChevronLeft, ChevronRight, User, Loader2,
+  ChevronLeft, ChevronRight, User, Loader2, Mail,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
   Wrench, Baby, Dog, ShieldCheck
@@ -53,10 +53,13 @@ export default function WorkerRegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Step 1: Phone
+  // Step 1: Auth (phone or email)
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
   const [phone, setPhone] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [otp, setOtp] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   // Step 2: Name + Photo
   const [fullName, setFullName] = useState('')
@@ -141,6 +144,29 @@ export default function WorkerRegisterPage() {
     }
   }
 
+  const handleEmailSignUp = async () => {
+    setError('')
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+    setIsLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: '', role: 'worker' } },
+      })
+      if (error) throw error
+      if (!data.user) throw new Error('Signup failed')
+      setStep(1)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -195,7 +221,8 @@ export default function WorkerRegisterPage() {
         id: user.id,
         role: 'worker' as const,
         full_name: fullName,
-        phone: phone.startsWith('+') ? phone : `+27${phone.replace(/^0/, '')}`,
+        email: email || undefined,
+        phone: phone ? (phone.startsWith('+') ? phone : `+27${phone.replace(/^0/, '')}`) : undefined,
         popi_consent: popiConsent,
         preferred_language: 'en',
       })
@@ -316,7 +343,7 @@ export default function WorkerRegisterPage() {
 
   const canProceed = () => {
     switch (step) {
-      case 0: return otpSent ? otp.length >= 4 : phone.length >= 9
+      case 0: return authMethod === 'email' ? (email.includes('@') && password.length >= 6) : (otpSent ? otp.length >= 4 : phone.length >= 9)
       case 1: return fullName.length >= 2
       case 2: return selectedServices.length > 0
       case 3: return availableDays.length > 0
@@ -334,47 +361,101 @@ export default function WorkerRegisterPage() {
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <Phone className="w-8 h-8 text-primary" />
+                {authMethod === 'email' ? <Mail className="w-8 h-8 text-primary" /> : <Phone className="w-8 h-8 text-primary" />}
               </div>
-              <h2 className="text-2xl font-bold">Your Phone Number</h2>
-              <p className="text-muted-foreground">We&apos;ll send you a verification code</p>
+              <h2 className="text-2xl font-bold">Create Your Account</h2>
+              <p className="text-muted-foreground">Sign up to get started</p>
             </div>
-            {!otpSent ? (
+
+            {/* Auth method toggle */}
+            <div className="flex rounded-lg border overflow-hidden">
+              <button
+                onClick={() => setAuthMethod('email')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors",
+                  authMethod === 'email' ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                )}
+              >
+                <Mail className="w-4 h-4" /> Email
+              </button>
+              <button
+                onClick={() => setAuthMethod('phone')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors",
+                  authMethod === 'phone' ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                )}
+              >
+                <Phone className="w-4 h-4" /> WhatsApp / Phone
+              </button>
+            </div>
+
+            {authMethod === 'email' ? (
               <div className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="flex items-center px-3 bg-muted rounded-lg text-sm font-medium">+27</div>
-                  <Input
-                    type="tel"
-                    placeholder="Phone number"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="text-lg h-14"
-                  />
-                </div>
-                <Button onClick={handleSendOtp} disabled={isLoading || phone.length < 9} className="w-full h-14 text-lg">
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="text-lg h-14"
+                  autoComplete="email"
+                />
+                <Input
+                  type="password"
+                  placeholder="Create password (min 6 chars)"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="text-lg h-14"
+                  autoComplete="new-password"
+                  minLength={6}
+                />
+                <Button onClick={handleEmailSignUp} disabled={isLoading || !email.includes('@') || password.length < 6} className="w-full h-14 text-lg">
                   {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
-                  Send Code
+                  Sign Up
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Enter 6-digit code"
-                  value={otp}
-                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="text-center text-2xl tracking-widest h-16"
-                  maxLength={6}
-                />
-                <Button onClick={handleVerifyOtp} disabled={isLoading || otp.length < 4} className="w-full h-14 text-lg">
-                  {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
-                  Verify
-                </Button>
-                <button onClick={() => setOtpSent(false)} className="text-sm text-primary w-full text-center">
-                  Change number
-                </button>
-              </div>
+              <>
+                {!otpSent ? (
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <div className="flex items-center px-3 bg-muted rounded-lg text-sm font-medium">+27</div>
+                      <Input
+                        type="tel"
+                        placeholder="Phone number"
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                        className="text-lg h-14"
+                      />
+                    </div>
+                    <Button onClick={handleSendOtp} disabled={isLoading || phone.length < 9} className="w-full h-14 text-lg">
+                      {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+                      Send Code
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center">
+                      WhatsApp OTP coming soon. Use email for now.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Enter 6-digit code"
+                      value={otp}
+                      onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="text-center text-2xl tracking-widest h-16"
+                      maxLength={6}
+                    />
+                    <Button onClick={handleVerifyOtp} disabled={isLoading || otp.length < 4} className="w-full h-14 text-lg">
+                      {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+                      Verify
+                    </Button>
+                    <button onClick={() => setOtpSent(false)} className="text-sm text-primary w-full text-center">
+                      Change number
+                    </button>
+                  </div>
+                )}
+              </>
             )}
             <div className="pt-2 border-t border-border">
               <Input
