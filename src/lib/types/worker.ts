@@ -11,6 +11,7 @@ export type WorkerProfile = {
   total_reviews: number;
   location_lat: number | null;
   location_lng: number | null;
+  location_name: string | null;
   service_radius_km: number;
   id_verified: boolean;
   criminal_check_clear: boolean;

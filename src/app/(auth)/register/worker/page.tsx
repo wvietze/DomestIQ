@@ -12,10 +12,12 @@ import {
   ChevronLeft, ChevronRight, User, Mail,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
-  Wrench, Baby, Dog, ShieldCheck
+  Wrench, Baby, Dog, ShieldCheck, Navigation, Search, Loader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WaveBars } from '@/components/loading'
+import { SA_CITIES, getCitiesByProvince } from '@/lib/data/sa-cities'
+import { reverseGeocode } from '@/lib/maps/geocoding'
 
 const SERVICE_OPTIONS = [
   { id: 'domestic-worker', name: 'Domestic Worker', icon: Home },
@@ -37,13 +39,6 @@ const SERVICE_OPTIONS = [
 ]
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-const SA_CITIES = [
-  'Johannesburg', 'Cape Town', 'Durban', 'Pretoria', 'Port Elizabeth',
-  'Bloemfontein', 'East London', 'Pietermaritzburg', 'Polokwane', 'Nelspruit',
-  'Kimberley', 'Rustenburg', 'Soweto', 'Sandton', 'Centurion',
-  'Midrand', 'Randburg', 'Roodepoort', 'Benoni', 'Springs'
-]
 
 const TOTAL_STEPS = 7
 
@@ -74,9 +69,11 @@ export default function WorkerRegisterPage() {
   const [availableDays, setAvailableDays] = useState<number[]>([1, 2, 3, 4, 5])
 
   // Step 5: Location
-  const [city, setCity] = useState('')
+  const [selectedCities, setSelectedCities] = useState<string[]>([])
+  const [citySearch, setCitySearch] = useState('')
   const [locationLat, setLocationLat] = useState<number | null>(null)
   const [locationLng, setLocationLng] = useState<number | null>(null)
+  const [locationName, setLocationName] = useState('')
   const [locationDetecting, setLocationDetecting] = useState(false)
 
   // Step 6: Documents
@@ -98,7 +95,7 @@ export default function WorkerRegisterPage() {
         if (data.fullName) setFullName(data.fullName)
         if (data.selectedServices) setSelectedServices(data.selectedServices)
         if (data.availableDays) setAvailableDays(data.availableDays)
-        if (data.city) setCity(data.city)
+        if (data.selectedCities) setSelectedCities(data.selectedCities)
         if (data.referralCode) setReferralCode(data.referralCode)
         if (data.step) setStep(data.step)
       } catch { /* ignore */ }
@@ -107,9 +104,9 @@ export default function WorkerRegisterPage() {
 
   useEffect(() => {
     localStorage.setItem('worker-registration', JSON.stringify({
-      fullName, selectedServices, availableDays, city, referralCode, step
+      fullName, selectedServices, availableDays, selectedCities, referralCode, step
     }))
-  }, [fullName, selectedServices, availableDays, city, referralCode, step])
+  }, [fullName, selectedServices, availableDays, selectedCities, referralCode, step])
 
   const handleSendOtp = async () => {
     setError('')
@@ -197,16 +194,35 @@ export default function WorkerRegisterPage() {
     }
     setLocationDetecting(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocationLat(pos.coords.latitude)
-        setLocationLng(pos.coords.longitude)
+      async (pos) => {
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        setLocationLat(lat)
+        setLocationLng(lng)
+        try {
+          const result = await reverseGeocode(lat, lng)
+          if (result) {
+            const name = [result.suburb, result.city].filter(Boolean).join(', ') || result.formattedAddress
+            setLocationName(name)
+          } else {
+            setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+          }
+        } catch {
+          setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        }
         setLocationDetecting(false)
       },
       () => {
-        setError('Could not detect location. Please select a city.')
+        setError('Could not detect location. Please select cities instead.')
         setLocationDetecting(false)
       },
       { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  const toggleCity = (cityName: string) => {
+    setSelectedCities(prev =>
+      prev.includes(cityName) ? prev.filter(c => c !== cityName) : prev.length < 10 ? [...prev, cityName] : prev
     )
   }
 
@@ -244,6 +260,7 @@ export default function WorkerRegisterPage() {
         user_id: user.id,
         location_lat: locationLat,
         location_lng: locationLng,
+        location_name: locationName || null,
         profile_completeness: calculateCompleteness(),
       }).select().single()
 
@@ -278,6 +295,23 @@ export default function WorkerRegisterPage() {
         }))
         if (availabilityRecords.length > 0) {
           await supabase.from('worker_availability').insert(availabilityRecords)
+        }
+
+        // Save service areas from selected cities
+        if (selectedCities.length > 0) {
+          const areaRecords = selectedCities.map(cityName => {
+            const cityData = SA_CITIES.find(c => c.name === cityName)
+            return cityData ? {
+              worker_id: workerProfile.id,
+              area_name: cityData.name,
+              center_lat: cityData.lat,
+              center_lng: cityData.lng,
+              radius_km: 25,
+            } : null
+          }).filter(Boolean)
+          if (areaRecords.length > 0) {
+            await supabase.from('worker_service_areas').insert(areaRecords)
+          }
         }
       }
 
@@ -336,7 +370,7 @@ export default function WorkerRegisterPage() {
     if (avatarFile) score += 20
     if (selectedServices.length > 0) score += 20
     if (availableDays.length > 0) score += 15
-    if (city || locationLat) score += 15
+    if (selectedCities.length > 0 || locationLat) score += 15
     if (idDocument) score += 10
     if (popiConsent) score += 5
     return score
@@ -348,7 +382,7 @@ export default function WorkerRegisterPage() {
       case 1: return fullName.length >= 2
       case 2: return selectedServices.length > 0
       case 3: return availableDays.length > 0
-      case 4: return city !== '' || locationLat !== null
+      case 4: return selectedCities.length > 0 || locationLat !== null
       case 5: return true // Documents optional
       case 6: return popiConsent && termsConsent
       default: return false
@@ -576,63 +610,110 @@ export default function WorkerRegisterPage() {
           </div>
         )
 
-      case 4:
+      case 4: {
+        const citiesByProvince = getCitiesByProvince()
+        const q = citySearch.toLowerCase().trim()
+        const filteredProvinces = q
+          ? Object.fromEntries(
+              Object.entries(citiesByProvince)
+                .map(([prov, cities]) => [prov, cities.filter(c => c.name.toLowerCase().includes(q) || prov.toLowerCase().includes(q))])
+                .filter(([, cities]) => (cities as typeof SA_CITIES).length > 0)
+            )
+          : citiesByProvince
         return (
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                 <MapPin className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold">Your Location</h2>
-              <p className="text-muted-foreground">Where are you based?</p>
+              <h2 className="text-2xl font-bold">Your Work Areas</h2>
+              <p className="text-muted-foreground">Select cities where you work or detect your GPS location</p>
             </div>
             <div className="space-y-4">
+              {/* GPS Detect */}
               <Button
                 variant="outline"
                 onClick={detectLocation}
                 disabled={locationDetecting}
-                className="w-full h-14 text-base"
+                className="w-full h-12 text-base gap-2"
               >
                 {locationDetecting ? (
-                  <WaveBars size="sm" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <MapPin className="mr-2" />
+                  <Navigation className="w-4 h-4" />
                 )}
-                {locationLat ? 'Location Detected!' : 'Detect My Location'}
+                {locationLat ? 'Re-detect Location' : 'Detect My Location'}
               </Button>
-              {locationLat && (
-                <p className="text-sm text-center text-secondary">
-                  <CheckCircle2 className="inline w-4 h-4 mr-1" />
-                  GPS location saved
-                </p>
-              )}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+              {locationLat && locationName && (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <p className="text-sm font-medium text-emerald-900">{locationName}</p>
+                  </div>
                 </div>
+              )}
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">or select city</span>
+                  <span className="bg-background px-2 text-muted-foreground">select your cities</span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-                {SA_CITIES.map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setCity(c)}
-                    className={cn(
-                      "p-3 text-sm rounded-lg border transition-all text-left",
-                      city === c
-                        ? "border-primary bg-primary/10 text-primary font-medium"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    {c}
-                  </button>
+
+              {/* City search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search cities..."
+                  value={citySearch}
+                  onChange={e => setCitySearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-background"
+                />
+              </div>
+
+              {/* City grid grouped by province */}
+              <div className="max-h-56 overflow-y-auto space-y-3 pr-1">
+                {Object.entries(filteredProvinces).map(([province, cities]) => (
+                  <div key={province}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 px-1">
+                      {province}
+                    </p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {(cities as typeof SA_CITIES).map(city => {
+                        const selected = selectedCities.includes(city.name)
+                        return (
+                          <button
+                            key={city.name}
+                            onClick={() => toggleCity(city.name)}
+                            disabled={!selected && selectedCities.length >= 10}
+                            className={cn(
+                              'flex items-center gap-1.5 px-2.5 py-2 text-sm rounded-lg border transition-all text-left',
+                              selected
+                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-medium'
+                                : 'border-border hover:border-emerald-300',
+                              !selected && selectedCities.length >= 10 && 'opacity-50 cursor-not-allowed'
+                            )}
+                          >
+                            {selected && <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />}
+                            <span className="truncate">{city.name}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
                 ))}
               </div>
+
+              {selectedCities.length > 0 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {selectedCities.length}/10 cities selected
+                </p>
+              )}
             </div>
           </div>
         )
+      }
 
       case 5:
         return (

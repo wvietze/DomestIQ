@@ -10,12 +10,15 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Phone, User, Camera, Briefcase, Calendar, MapPin,
-  FileText, ShieldCheck, ArrowRight, ArrowLeft, Check
+  FileText, ShieldCheck, ArrowRight, ArrowLeft, Check,
+  Navigation, Search, Loader2, CheckCircle2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WaveBars } from '@/components/loading'
 import { SERVICE_TYPES } from '@/lib/utils/constants'
 import { createClient } from '@/lib/supabase/client'
+import { SA_CITIES, getCitiesByProvince } from '@/lib/data/sa-cities'
+import { reverseGeocode } from '@/lib/maps/geocoding'
 
 const STEPS = [
   { id: 'phone', label: 'Phone', icon: Phone },
@@ -32,13 +35,6 @@ const DAYS = [
   { short: 'Thu', idx: 4 }, { short: 'Fri', idx: 5 }, { short: 'Sat', idx: 6 }, { short: 'Sun', idx: 0 },
 ]
 
-const SA_CITIES = [
-  'Johannesburg', 'Cape Town', 'Durban', 'Pretoria', 'Port Elizabeth',
-  'Bloemfontein', 'Nelspruit', 'Polokwane', 'Kimberley', 'East London',
-  'Pietermaritzburg', 'Rustenburg', 'Soweto', 'Sandton', 'Centurion',
-  'Midrand', 'Benoni', 'Boksburg', 'Roodepoort', 'Randburg',
-]
-
 const SERVICE_EMOJIS: Record<string, string> = {
   'domestic-worker': '🏠', gardener: '🌿', painter: '🎨', welder: '🔧',
   electrician: '⚡', plumber: '🔧', carpenter: '🪚', tiler: '🧱',
@@ -51,10 +47,15 @@ export function WorkerRegisterWizard() {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [citySearch, setCitySearch] = useState('')
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
+  const [locationName, setLocationName] = useState('')
+  const [locationDetecting, setLocationDetecting] = useState(false)
   const [formData, setFormData] = useState({
     phone: '', fullName: '', avatarUrl: '',
     selectedServices: [] as string[], availableDays: [] as number[],
-    city: '', bio: '', agreeTerms: false, agreePrivacy: false,
+    selectedCities: [] as string[], bio: '', agreeTerms: false, agreePrivacy: false,
   })
 
   const updateField = useCallback(<K extends keyof typeof formData>(key: K, value: typeof formData[K]) => {
@@ -69,13 +70,45 @@ export function WorkerRegisterWizard() {
     ...prev, availableDays: prev.availableDays.includes(idx) ? prev.availableDays.filter(d => d !== idx) : [...prev.availableDays, idx]
   }))
 
+  const toggleCitySelection = (cityName: string) => setFormData(prev => ({
+    ...prev, selectedCities: prev.selectedCities.includes(cityName)
+      ? prev.selectedCities.filter(c => c !== cityName)
+      : prev.selectedCities.length < 10 ? [...prev.selectedCities, cityName] : prev.selectedCities
+  }))
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) return
+    setLocationDetecting(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        setLocationLat(lat)
+        setLocationLng(lng)
+        try {
+          const result = await reverseGeocode(lat, lng)
+          if (result) {
+            setLocationName([result.suburb, result.city].filter(Boolean).join(', ') || result.formattedAddress)
+          } else {
+            setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+          }
+        } catch {
+          setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        }
+        setLocationDetecting(false)
+      },
+      () => setLocationDetecting(false),
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
   const canProceed = () => {
     switch (step) {
       case 0: return formData.phone.length >= 10
       case 1: return formData.fullName.length >= 2
       case 2: return formData.selectedServices.length > 0
       case 3: return formData.availableDays.length > 0
-      case 4: return formData.city.length > 0
+      case 4: return formData.selectedCities.length > 0 || locationLat !== null
       case 5: return true
       case 6: return formData.agreeTerms && formData.agreePrivacy
       default: return false
@@ -89,7 +122,24 @@ export function WorkerRegisterWizard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       await supabase.from('profiles').upsert({ id: user.id, full_name: formData.fullName, phone: formData.phone, role: 'worker', preferred_language: 'en', popi_consent: true, avatar_url: formData.avatarUrl || null })
-      await supabase.from('worker_profiles').upsert({ user_id: user.id, bio: formData.bio || null, is_active: true })
+      const { data: wp } = await supabase.from('worker_profiles').upsert({
+        user_id: user.id, bio: formData.bio || null, is_active: true,
+        location_lat: locationLat, location_lng: locationLng, location_name: locationName || null,
+      }).select('id').single()
+
+      // Save service areas from selected cities
+      if (wp && formData.selectedCities.length > 0) {
+        const areaRecords = formData.selectedCities.map(cityName => {
+          const cityData = SA_CITIES.find(c => c.name === cityName)
+          return cityData ? {
+            worker_id: wp.id, area_name: cityData.name,
+            center_lat: cityData.lat, center_lng: cityData.lng, radius_km: 25,
+          } : null
+        }).filter(Boolean)
+        if (areaRecords.length > 0) {
+          await supabase.from('worker_service_areas').insert(areaRecords)
+        }
+      }
       router.push('/worker-dashboard')
     } catch { setLoading(false) }
   }
@@ -191,25 +241,76 @@ export function WorkerRegisterWizard() {
           )}
 
           {/* Step 4: Location */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3"><MapPin className="w-8 h-8 text-primary" /></div>
-                <h2 className="text-xl font-bold">Your Area</h2>
-                <p className="text-sm text-muted-foreground">Where do you work?</p>
+          {step === 4 && (() => {
+            const citiesByProvince = getCitiesByProvince()
+            const q = citySearch.toLowerCase().trim()
+            const filteredProvinces = q
+              ? Object.fromEntries(
+                  Object.entries(citiesByProvince)
+                    .map(([prov, cities]) => [prov, cities.filter(c => c.name.toLowerCase().includes(q) || prov.toLowerCase().includes(q))])
+                    .filter(([, cities]) => (cities as typeof SA_CITIES).length > 0)
+                )
+              : citiesByProvince
+            return (
+              <div className="space-y-4">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3"><MapPin className="w-8 h-8 text-primary" /></div>
+                  <h2 className="text-xl font-bold">Your Work Areas</h2>
+                  <p className="text-sm text-muted-foreground">Select cities or detect your location</p>
+                </div>
+
+                {/* GPS Detect */}
+                <Button variant="outline" className="w-full h-12 text-base gap-2" onClick={detectLocation} disabled={locationDetecting}>
+                  {locationDetecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+                  {locationLat ? 'Re-detect Location' : 'Detect My Location'}
+                </Button>
+                {locationLat && locationName && (
+                  <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <p className="text-sm font-medium text-emerald-900">{locationName}</p>
+                  </div>
+                )}
+
+                <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">select your cities</span></div></div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input type="text" placeholder="Search cities..." value={citySearch} onChange={e => setCitySearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-background" />
+                </div>
+
+                {/* City grid */}
+                <div className="max-h-52 overflow-y-auto space-y-3 pr-1">
+                  {Object.entries(filteredProvinces).map(([province, cities]) => (
+                    <div key={province}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 px-1">{province}</p>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {(cities as typeof SA_CITIES).map(city => {
+                          const selected = formData.selectedCities.includes(city.name)
+                          return (
+                            <button key={city.name} type="button" onClick={() => toggleCitySelection(city.name)}
+                              disabled={!selected && formData.selectedCities.length >= 10}
+                              className={cn(
+                                'flex items-center gap-1.5 px-2.5 py-2 text-sm rounded-lg border transition-all text-left',
+                                selected ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-medium' : 'border-gray-200 hover:border-gray-300',
+                                !selected && formData.selectedCities.length >= 10 && 'opacity-50 cursor-not-allowed'
+                              )}>
+                              {selected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                              <span className="truncate">{city.name}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {formData.selectedCities.length > 0 && (
+                  <p className="text-sm text-center text-muted-foreground">{formData.selectedCities.length}/10 cities selected</p>
+                )}
               </div>
-              <Button variant="outline" className="w-full h-14 text-base" onClick={() => navigator.geolocation.getCurrentPosition(() => updateField('city', 'Location detected'), () => {}, { enableHighAccuracy: true })}>
-                <MapPin className="w-5 h-5 mr-2" /> Detect My Location
-              </Button>
-              <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">or select a city</span></div></div>
-              <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                {SA_CITIES.map(city => (
-                  <button key={city} type="button" onClick={() => updateField('city', city)}
-                    className={cn('p-3 rounded-xl border text-sm font-medium transition-all text-left', formData.city === city ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300')}>{city}</button>
-                ))}
-              </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* Step 5: Documents (optional) */}
           {step === 5 && (
