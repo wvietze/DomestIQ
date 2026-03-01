@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
-import { Sparkles, Loader2, Copy, Check } from 'lucide-react'
+import { Sparkles, Copy, Check } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 
 interface AiProfileAssistantProps {
   workerName: string
@@ -39,7 +40,7 @@ export function AiProfileAssistant({ workerName, services, yearsExperience, onBi
         </div>
         <Textarea placeholder="Tell us about yourself, your experience, what makes you great... (optional)" value={extraInfo} onChange={e => setExtraInfo(e.target.value)} rows={2} className="text-sm" />
         <Button onClick={handleGenerate} disabled={loading} className="w-full" variant="outline">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+          {loading ? <WaveBars size="sm" /> : <Sparkles className="w-4 h-4 mr-2" />}
           {loading ? 'Writing...' : 'Generate Bio'}
         </Button>
         {generatedBio && (

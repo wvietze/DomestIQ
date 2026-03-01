@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Send, Quote } from 'lucide-react'
+import { Send, Quote } from 'lucide-react'
+import { WaveBars, StackingBlocks } from '@/components/loading'
 
 function WriteReferenceContent() {
   const searchParams = useSearchParams()
@@ -145,7 +146,7 @@ function WriteReferenceContent() {
             className="w-full h-12"
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <WaveBars size="sm" />
             ) : (
               <><Send className="w-4 h-4 mr-2" />Submit Reference</>
             )}
@@ -158,7 +159,7 @@ function WriteReferenceContent() {
 
 export default function WriteReferencePage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><StackingBlocks size="md" /></div>}>
       <WriteReferenceContent />
     </Suspense>
   )

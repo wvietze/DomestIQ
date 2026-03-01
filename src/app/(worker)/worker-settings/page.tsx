@@ -36,7 +36,6 @@ import {
   Star,
   CalendarCheck,
   Megaphone,
-  Loader2,
   CheckCircle2,
   AlertTriangle,
   ExternalLink,
@@ -49,6 +48,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { WaveBars } from '@/components/loading'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -625,7 +625,7 @@ export default function WorkerSettingsPage() {
           <Button onClick={handleSaveBank} disabled={isSavingBank} className="w-full">
             {isSavingBank ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <WaveBars size="sm" />
                 Saving...
               </>
             ) : (
@@ -711,7 +711,7 @@ export default function WorkerSettingsPage() {
                         className="shrink-0 text-destructive border-destructive/30 hover:bg-destructive/10"
                       >
                         {isRevoking ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <WaveBars size="sm" />
                         ) : (
                           <ShieldX className="w-3 h-3" />
                         )}
@@ -778,7 +778,7 @@ export default function WorkerSettingsPage() {
             <Button onClick={handleSaveNotifications} disabled={isSavingNotifs} variant="outline" className="w-full">
               {isSavingNotifs ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <WaveBars size="sm" />
                   Saving...
                 </>
               ) : (
@@ -908,7 +908,7 @@ export default function WorkerSettingsPage() {
                 >
                   {isDeleting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <WaveBars size="sm" />
                       Deleting...
                     </>
                   ) : (

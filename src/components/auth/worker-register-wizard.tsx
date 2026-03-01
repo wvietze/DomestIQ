@@ -10,9 +10,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Phone, User, Camera, Briefcase, Calendar, MapPin,
-  FileText, ShieldCheck, ArrowRight, ArrowLeft, Check, Loader2
+  FileText, ShieldCheck, ArrowRight, ArrowLeft, Check
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { WaveBars } from '@/components/loading'
 import { SERVICE_TYPES } from '@/lib/utils/constants'
 import { createClient } from '@/lib/supabase/client'
 
@@ -255,7 +256,7 @@ export function WorkerRegisterWizard() {
       <div className="flex gap-3">
         {step > 0 && <Button variant="outline" className="h-12 px-6" onClick={back}><ArrowLeft className="w-5 h-5 mr-1" /> Back</Button>}
         <Button className="flex-1 h-12 text-base" disabled={!canProceed() || loading} onClick={next}>
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : step === STEPS.length - 1 ? 'Complete Registration' : <>Next <ArrowRight className="w-5 h-5 ml-1" /></>}
+          {loading ? <WaveBars size="sm" /> : step === STEPS.length - 1 ? 'Complete Registration' : <>Next <ArrowRight className="w-5 h-5 ml-1" /></>}
         </Button>
       </div>
     </div>

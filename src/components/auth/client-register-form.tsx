@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { Mail, Lock, User, Loader2, Phone } from 'lucide-react'
+import { Mail, Lock, User, Phone } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import { createClient } from '@/lib/supabase/client'
 
 export function ClientRegisterForm() {
@@ -91,7 +92,7 @@ export function ClientRegisterForm() {
             By signing up you agree to our <a href="/terms" className="text-primary underline">Terms</a> and <a href="/privacy" className="text-primary underline">Privacy Policy</a>
           </div>
           <Button type="submit" className="w-full h-12 text-base" disabled={loading}>
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
+            {loading ? <WaveBars size="sm" /> : 'Create Account'}
           </Button>
         </form>
       </CardContent>

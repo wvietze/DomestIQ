@@ -13,7 +13,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select'
-import { Loader2, CheckCircle2, Send, MessageSquare } from 'lucide-react'
+import { CheckCircle2, Send, MessageSquare } from 'lucide-react'
+import { WaveBars, BouncingDots } from '@/components/loading'
 import { cn } from '@/lib/utils'
 
 // Payment imports — commented out for future restoration
@@ -366,8 +367,8 @@ function NewBookingForm() {
       >
         {isLoading ? (
           <>
-            <Loader2 className="animate-spin mr-2" />
-            Sending...
+            <WaveBars size="sm" />
+            <span className="ml-2">Sending...</span>
           </>
         ) : (
           <>
@@ -382,7 +383,7 @@ function NewBookingForm() {
 
 export default function NewBookingPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><BouncingDots size="md" /></div>}>
       <NewBookingForm />
     </Suspense>
   )

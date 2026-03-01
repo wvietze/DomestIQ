@@ -9,12 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Phone, Camera, CheckCircle2, MapPin, FileText, Shield,
-  ChevronLeft, ChevronRight, User, Loader2, Mail,
+  ChevronLeft, ChevronRight, User, Mail,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
   Wrench, Baby, Dog, ShieldCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { WaveBars } from '@/components/loading'
 
 const SERVICE_OPTIONS = [
   { id: 'domestic-worker', name: 'Domestic Worker', icon: Home },
@@ -409,7 +410,7 @@ export default function WorkerRegisterPage() {
                   minLength={6}
                 />
                 <Button onClick={handleEmailSignUp} disabled={isLoading || !email.includes('@') || password.length < 6} className="w-full h-14 text-lg">
-                  {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+                  {isLoading ? <WaveBars size="sm" /> : null}
                   Sign Up
                 </Button>
               </div>
@@ -428,7 +429,7 @@ export default function WorkerRegisterPage() {
                       />
                     </div>
                     <Button onClick={handleSendOtp} disabled={isLoading || phone.length < 9} className="w-full h-14 text-lg">
-                      {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+                      {isLoading ? <WaveBars size="sm" /> : null}
                       Send Code
                     </Button>
                     <p className="text-xs text-muted-foreground text-center">
@@ -447,7 +448,7 @@ export default function WorkerRegisterPage() {
                       maxLength={6}
                     />
                     <Button onClick={handleVerifyOtp} disabled={isLoading || otp.length < 4} className="w-full h-14 text-lg">
-                      {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+                      {isLoading ? <WaveBars size="sm" /> : null}
                       Verify
                     </Button>
                     <button onClick={() => setOtpSent(false)} className="text-sm text-primary w-full text-center">
@@ -593,7 +594,7 @@ export default function WorkerRegisterPage() {
                 className="w-full h-14 text-base"
               >
                 {locationDetecting ? (
-                  <Loader2 className="animate-spin mr-2" />
+                  <WaveBars size="sm" />
                 ) : (
                   <MapPin className="mr-2" />
                 )}
@@ -792,7 +793,7 @@ export default function WorkerRegisterPage() {
               className="flex-1 h-14 text-lg"
             >
               {isLoading ? (
-                <Loader2 className="animate-spin mr-2" />
+                <WaveBars size="sm" />
               ) : null}
               {step === TOTAL_STEPS - 1 ? 'Complete' : 'Next'}
               {step < TOTAL_STEPS - 1 && <ChevronRight className="w-5 h-5" />}

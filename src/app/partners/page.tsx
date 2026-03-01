@@ -6,8 +6,9 @@ import { motion, useInView } from 'framer-motion'
 import {
   ArrowRight, Database, Award, Megaphone, Shield, Lock,
   CheckCircle2, BarChart3, Users, Globe, TrendingUp,
-  FileText, Eye, Handshake, Send, Loader2, ChevronLeft,
+  FileText, Eye, Handshake, Send, ChevronLeft,
 } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import { Logo } from '@/components/shared/logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -601,7 +602,7 @@ export default function PartnersPage() {
                     >
                       {submitting ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <WaveBars size="sm" />
                           Submitting...
                         </>
                       ) : (

@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { MapPin, Loader2, Minus, Plus } from 'lucide-react'
+import { MapPin, Minus, Plus } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import { cn } from '@/lib/utils'
 
 interface MapAreaPickerProps {
@@ -52,7 +53,7 @@ export function MapAreaPicker({ center, radius, onCenterChange, onRadiusChange, 
       <Label>Search Area</Label>
       {!center ? (
         <Button type="button" variant="outline" className="w-full h-14" onClick={detectLocation} disabled={detecting}>
-          {detecting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MapPin className="w-5 h-5 mr-2" />}
+          {detecting ? <WaveBars size="sm" /> : <MapPin className="w-5 h-5 mr-2" />}
           {detecting ? 'Detecting...' : 'Set My Location'}
         </Button>
       ) : (

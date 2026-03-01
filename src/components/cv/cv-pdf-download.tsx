@@ -3,7 +3,8 @@
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import { CvPdfTemplate } from './cv-pdf-template'
 import { Button } from '@/components/ui/button'
-import { Download, Loader2 } from 'lucide-react'
+import { Download } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import type { CvRenderData } from '@/lib/types/cv'
 
 interface CvPdfDownloadProps {
@@ -19,7 +20,7 @@ export function CvPdfDownload({ data, fileName }: CvPdfDownloadProps) {
     >
       {({ loading: pdfLoading }) => (
         <Button disabled={pdfLoading} className="gap-2">
-          {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          {pdfLoading ? <WaveBars size="sm" /> : <Download className="w-4 h-4" />}
           Download PDF
         </Button>
       )}

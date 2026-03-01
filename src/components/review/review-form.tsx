@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { StarRating } from '@/components/ui/star-rating'
 import { TraitBadge } from './trait-badge'
-import { Loader2, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import { REVIEW_TRAITS, type ReviewTrait } from '@/lib/types/review'
 
 interface ReviewFormProps {
@@ -89,7 +90,7 @@ export function ReviewForm({ bookingId, revieweeId, onSubmit, onCancel }: Review
           className="flex-1 h-12 text-base"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <WaveBars size="sm" />
           ) : (
             <>
               <Send className="w-4 h-4 mr-2" />

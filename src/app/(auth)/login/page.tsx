@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Mail, Phone, Loader2, ArrowRight, IdCard } from 'lucide-react'
+import { Mail, Phone, ArrowRight, IdCard } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
@@ -161,7 +162,7 @@ function LoginForm() {
                   onChange={e => setWorkerPassword(e.target.value)} required autoComplete="current-password" className="h-12" />
               </div>
               <Button type="submit" className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" disabled={loading}>
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>}
+                {loading ? <WaveBars size="sm" /> : <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>}
               </Button>
             </motion.form>
           )}
@@ -184,7 +185,7 @@ function LoginForm() {
                   onChange={e => setPassword(e.target.value)} required autoComplete="current-password" className="h-12" />
               </div>
               <Button type="submit" className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" disabled={loading}>
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>}
+                {loading ? <WaveBars size="sm" /> : <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>}
               </Button>
             </motion.form>
           )}
@@ -201,7 +202,7 @@ function LoginForm() {
                     <p className="text-xs text-muted-foreground">South African numbers will be prefixed with +27 automatically.</p>
                   </div>
                   <Button type="submit" className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" disabled={loading}>
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('auth.send_otp', 'Send Code')}
+                    {loading ? <WaveBars size="sm" /> : t('auth.send_otp', 'Send Code')}
                   </Button>
                 </form>
               ) : (
@@ -215,7 +216,7 @@ function LoginForm() {
                     </p>
                   </div>
                   <Button type="submit" className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700" disabled={loading}>
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('auth.verify', 'Verify')}
+                    {loading ? <WaveBars size="sm" /> : t('auth.verify', 'Verify')}
                   </Button>
                   <Button type="button" variant="ghost" className="w-full" onClick={() => { setOtpSent(false); setOtp(''); setError(null) }}>
                     Use a different number

@@ -19,8 +19,9 @@ import {
 } from '@/components/ui/dialog'
 import {
   ArrowLeft, CalendarDays, Clock, MapPin, MessageSquare,
-  XCircle, Loader2, CheckCircle2, AlertTriangle, FileText
+  XCircle, CheckCircle2, AlertTriangle, FileText
 } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 
 // Payment imports — commented out for future restoration
 // import { CreditCard } from 'lucide-react'
@@ -552,7 +553,7 @@ export default function BookingDetailPage({
                 disabled={isCancelling}
               >
                 {isCancelling ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <WaveBars size="sm" />
                 ) : null}
                 Confirm Cancellation
               </Button>
@@ -653,7 +654,7 @@ export default function BookingDetailPage({
                     disabled={overallRating === 0 || isSubmittingReview}
                   >
                     {isSubmittingReview ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <WaveBars size="sm" />
                     ) : (
                       <CheckCircle2 className="w-4 h-4 mr-2" />
                     )}

@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
-  Award, Plus, X, Eye, MousePointerClick, Loader2, Edit2, Power,
+  Award, Plus, X, Eye, MousePointerClick, Edit2, Power,
 } from 'lucide-react'
+import { WaveBars } from '@/components/loading'
 import type { Sponsorship } from '@/lib/types'
 
 const placementOptions = [
@@ -200,7 +201,7 @@ export default function AdminSponsorsPage() {
               </div>
 
               <Button type="submit" disabled={saving}>
-                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {saving ? <WaveBars size="sm" /> : null}
                 {editingId ? 'Update Sponsorship' : 'Create Sponsorship'}
               </Button>
             </form>

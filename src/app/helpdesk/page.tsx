@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Camera, CheckCircle2, MapPin, FileText, Shield,
-  ChevronLeft, ChevronRight, User, Loader2, UserPlus,
+  ChevronLeft, ChevronRight, User, UserPlus,
   Home, Flower2, Paintbrush, Flame, Zap, Droplets,
   Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
   Wrench, Baby, Dog, ShieldCheck, Phone, Copy, RefreshCw,
   IdCard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { WaveBars } from '@/components/loading'
 
 const SERVICE_OPTIONS = [
   { id: 'domestic-worker', name: 'Domestic Worker', icon: Home },
@@ -689,7 +690,7 @@ export default function HelpdeskRegistrationPage() {
             className="flex-1 h-16 text-xl rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
           >
             {isLoading ? (
-              <Loader2 className="w-6 h-6 animate-spin mr-3" />
+              <WaveBars size="sm" />
             ) : null}
             {step === TOTAL_STEPS - 1
               ? isLoading

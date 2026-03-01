@@ -7,7 +7,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { ReferenceCard } from '@/components/reference/reference-card'
-import { Loader2, Star, Sparkles, ArrowRight } from 'lucide-react'
+import { Star, Sparkles, ArrowRight } from 'lucide-react'
+import { ProgressSweep } from '@/components/loading'
 
 interface SharedData {
   worker: {
@@ -58,7 +59,7 @@ export default function PublicReferencePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <ProgressSweep size="md" />
       </div>
     )
   }

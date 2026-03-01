@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MessageBubble } from './message-bubble'
-import { Send, ImagePlus, Loader2 } from 'lucide-react'
+import { Send, ImagePlus } from 'lucide-react'
+import { WaveBars, BouncingDots } from '@/components/loading'
 import { createClient } from '@/lib/supabase/client'
 
 interface ChatMessage {
@@ -60,7 +61,7 @@ export function ChatThread({ conversationId, currentUserId, currentLanguage = 'e
     } catch { return null }
   }
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+  if (loading) return <div className="flex items-center justify-center h-64"><BouncingDots size="md" /></div>
 
   return (
     <div className="flex flex-col h-full">
@@ -74,7 +75,7 @@ export function ChatThread({ conversationId, currentUserId, currentLanguage = 'e
           <Button variant="ghost" size="icon" className="shrink-0"><ImagePlus className="w-5 h-5" /></Button>
           <Input placeholder="Type a message..." value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }} className="h-11 text-base" />
           <Button size="icon" className="shrink-0 h-11 w-11" onClick={handleSend} disabled={!newMessage.trim() || sending}>
-            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            {sending ? <WaveBars size="sm" /> : <Send className="w-5 h-5" />}
           </Button>
         </div>
       </div>
