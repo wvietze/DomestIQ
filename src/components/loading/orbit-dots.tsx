@@ -1,22 +1,28 @@
 'use client'
 
+import { Home, Flower2, Wrench } from 'lucide-react'
+
 type Size = 'sm' | 'md' | 'lg' | 'full'
 
-const sizeConfig: Record<Size, { box: number; dot: number; radius: number }> = {
-  sm: { box: 24, dot: 4, radius: 8 },
-  md: { box: 48, dot: 6, radius: 16 },
-  lg: { box: 80, dot: 10, radius: 28 },
-  full: { box: 120, dot: 14, radius: 42 },
+const sizeConfig: Record<Size, { box: number; icon: number; radius: number }> = {
+  sm: { box: 24, icon: 8, radius: 8 },
+  md: { box: 48, icon: 14, radius: 16 },
+  lg: { box: 80, icon: 20, radius: 28 },
+  full: { box: 120, icon: 26, radius: 42 },
 }
 
-const colors = ['#047857', '#0d9488', '#D97706']
+const icons = [
+  { Icon: Home, color: '#047857' },
+  { Icon: Flower2, color: '#0d9488' },
+  { Icon: Wrench, color: '#D97706' },
+]
 
 export function OrbitDots({ size = 'full' }: { size?: Size }) {
   const cfg = sizeConfig[size]
 
   const content = (
     <div className="relative" style={{ width: cfg.box, height: cfg.box }}>
-      {colors.map((color, i) => (
+      {icons.map(({ Icon, color }, i) => (
         <div
           key={i}
           className="absolute inset-0 flex items-center justify-center"
@@ -26,17 +32,14 @@ export function OrbitDots({ size = 'full' }: { size?: Size }) {
             animationDelay: `${i * -0.4}s`,
           }}
         >
-          <div
-            className="rounded-full"
-            style={{ width: cfg.dot, height: cfg.dot, background: color }}
-          />
+          <Icon size={cfg.icon} color={color} strokeWidth={2.5} />
         </div>
       ))}
     </div>
   )
 
   if (size === 'full') {
-    return <div className="flex items-center justify-center h-screen w-full">{content}</div>
+    return <div className="flex items-center justify-center h-screen w-full gradient-mesh bg-dots">{content}</div>
   }
 
   return <div className="flex items-center justify-center" style={{ width: cfg.box, height: cfg.box }}>{content}</div>
