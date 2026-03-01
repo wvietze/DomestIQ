@@ -11,7 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { WorkHistoryForm } from '@/components/cv/work-history-form'
 import { EducationForm } from '@/components/cv/education-form'
 import { CvPreview } from '@/components/cv/cv-preview'
-import { Loader2, Save, FileText, Eye } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, Save, FileText, Eye, MapPin } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import type { WorkerCvData, CvRenderData, WorkHistoryEntry, EducationEntry } from '@/lib/types/cv'
 
 // Dynamic import for PDF download wrapper (client-only, heavy)
@@ -45,6 +47,7 @@ export default function WorkerCvPage() {
     review_count: 0,
     top_traits: {} as Record<string, number>,
   })
+  const [serviceAreas, setServiceAreas] = useState<string[]>([])
 
   useEffect(() => {
     loadData()
@@ -63,6 +66,95 @@ export default function WorkerCvPage() {
         setPersonalStatement(cv.personal_statement || '')
       }
     } catch { /* fresh form */ }
+
+    // Load profile data from Supabase for the CV
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Fetch profile (name, phone, email, location)
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('full_name, phone, email')
+          .eq('id', user.id)
+          .single()
+
+        // Fetch worker profile (rating, reviews, years)
+        const { data: wp } = await supabase
+          .from('worker_profiles')
+          .select('id, overall_rating, total_reviews, years_experience, bio')
+          .eq('user_id', user.id)
+          .single()
+
+        // Fetch client_profiles for suburb/city
+        const { data: cp } = await supabase
+          .from('client_profiles')
+          .select('suburb, city')
+          .eq('user_id', user.id)
+          .single()
+
+        // Fetch worker services
+        let serviceNames: string[] = []
+        if (wp) {
+          const { data: wsSvc } = await supabase
+            .from('worker_services')
+            .select('service:services(name)')
+            .eq('worker_id', wp.id)
+          if (wsSvc) {
+            serviceNames = wsSvc
+              .map((ws: { service: unknown }) => {
+                const svc = ws.service as { name: string } | { name: string }[] | null
+                return Array.isArray(svc) ? svc[0]?.name : svc?.name
+              })
+              .filter(Boolean) as string[]
+          }
+
+          // Fetch service areas
+          const { data: areas } = await supabase
+            .from('worker_service_areas')
+            .select('city')
+            .eq('worker_profile_id', wp.id)
+          if (areas) {
+            setServiceAreas([...new Set(areas.map((a: { city: string }) => a.city).filter(Boolean))])
+          }
+
+          // Fetch top review traits
+          const { data: traits } = await supabase
+            .from('review_traits')
+            .select('trait, count')
+            .eq('worker_id', user.id)
+            .order('count', { ascending: false })
+            .limit(5)
+          const topTraits: Record<string, number> = {}
+          if (traits) {
+            for (const t of traits) {
+              topTraits[t.trait] = t.count
+            }
+          }
+
+          setProfileData({
+            full_name: prof?.full_name || '',
+            phone: prof?.phone || '',
+            email: prof?.email || '',
+            suburb: cp?.suburb || '',
+            city: cp?.city || (serviceAreas[0] || ''),
+            services: serviceNames,
+            years_experience: wp.years_experience || 0,
+            rating: wp.overall_rating || 0,
+            review_count: wp.total_reviews || 0,
+            top_traits: topTraits,
+          })
+
+          // Auto-populate personal statement from bio if CV has none
+          if (!personalStatement && wp.bio) {
+            setPersonalStatement(wp.bio)
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Profile data load error:', err)
+    }
+
     setLoading(false)
   }
 
@@ -93,6 +185,7 @@ export default function WorkerCvPage() {
     suburb: profileData.suburb,
     city: profileData.city,
     services: profileData.services,
+    service_areas: serviceAreas,
     years_experience: profileData.years_experience,
     work_history: workHistory,
     education,
@@ -196,6 +289,28 @@ export default function WorkerCvPage() {
               </div>
             </CardContent>
           </Card>
+          {/* Service Areas (read-only from profile) */}
+          {serviceAreas.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-emerald-600" /> Service Areas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {serviceAreas.map(city => (
+                    <Badge key={city} variant="secondary" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                      {city}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  These are pulled from your profile. Edit them in your worker profile settings.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="preview">

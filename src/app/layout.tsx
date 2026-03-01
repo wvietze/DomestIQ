@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 import { PopiConsentBanner } from "@/components/shared/popi-consent-banner";
 import { ServiceWorkerRegister } from "@/components/shared/sw-register";
+import { ThemeScript } from "@/components/ui/theme-toggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -80,10 +81,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
       >
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-medium">
+          Skip to content
+        </a>
         <ToastProvider>
           {children}
           <PopiConsentBanner />

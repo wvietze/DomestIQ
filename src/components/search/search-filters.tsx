@@ -243,7 +243,11 @@ export function SearchFilters() {
                 <EstateTag
                   name={selectedEstate.name}
                   suburb={selectedEstate.suburb}
-                  onRemove={() => { setSelectedEstate(null); setFilter('estateId', null) }}
+                  onRemove={() => {
+                    setSelectedEstate(null)
+                    setFilter('estateId', null)
+                    setFilter('maxDistance', 50)
+                  }}
                 />
               </div>
             ) : (
@@ -253,6 +257,12 @@ export function SearchFilters() {
                   onSelect={(estate: Estate) => {
                     setSelectedEstate(estate)
                     setFilter('estateId', estate.id)
+                    // Use estate location for proximity search
+                    if (estate.location_lat && estate.location_lng) {
+                      setFilter('locationLat', estate.location_lat)
+                      setFilter('locationLng', estate.location_lng)
+                      setFilter('maxDistance', 10)
+                    }
                   }}
                 />
               </div>

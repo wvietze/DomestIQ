@@ -105,6 +105,20 @@ export function CvPreview({ data }: CvPreviewProps) {
           )}
         </div>
 
+        {/* Service Areas */}
+        {data.service_areas && data.service_areas.length > 0 && (
+          <div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">Service Areas</h2>
+            <div className="flex flex-wrap gap-1.5">
+              {data.service_areas.map((area, i) => (
+                <span key={i} className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded text-xs">
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Top Traits */}
         {data.top_traits && Object.keys(data.top_traits).length > 0 && (
           <div>

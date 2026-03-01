@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPushToUser } from '@/lib/push/send'
 
 /**
  * GET /api/messages
@@ -189,6 +190,21 @@ export async function POST(request: NextRequest) {
       data: { conversation_id: conversationId, message_id: message.id },
       channel: 'in_app',
     })
+
+    // Push notification (fire-and-forget)
+    const { data: senderProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single()
+    const senderName = senderProfile?.full_name || 'Someone'
+
+    sendPushToUser(recipientId, {
+      title: `Message from ${senderName}`,
+      body: preview,
+      url: `/messages?conversation=${conversationId}`,
+      tag: `msg-${conversationId}`,
+    }).catch(() => {})
 
     return NextResponse.json({ message }, { status: 201 })
   } catch (error) {

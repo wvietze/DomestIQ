@@ -15,6 +15,7 @@ import { useUser } from '@/lib/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { NotificationBell } from './notification-bell'
 import { Logo } from '@/components/shared/logo'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface NavItem {
@@ -55,7 +56,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Logo & Notifications */}
       <div className="flex h-16 items-center justify-between px-5">
         <Logo size="sm" href="/dashboard" />
-        {user && <NotificationBell userId={user.id} />}
+        <div className="flex items-center gap-1">
+          {user && <NotificationBell userId={user.id} />}
+          <ThemeToggle />
+        </div>
       </div>
 
       <Separator />
@@ -70,8 +74,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               className={cn(
                 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
                 isActive
-                  ? 'bg-emerald-50 text-emerald-700 shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 shadow-sm'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}>
               <Icon className={cn('h-5 w-5 shrink-0', isActive && 'text-emerald-600')} />
               {t(item.labelKey, item.fallback)}
@@ -86,10 +90,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="p-4">
         {isLoading ? (
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
+            <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
             <div className="flex-1 space-y-1.5">
-              <div className="h-3.5 w-24 animate-pulse rounded bg-gray-200" />
-              <div className="h-3 w-32 animate-pulse rounded bg-gray-200" />
+              <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-32 animate-pulse rounded bg-muted" />
             </div>
           </div>
         ) : (
@@ -99,14 +103,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <AvatarFallback className="bg-emerald-50 text-emerald-700 font-semibold">{initials}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900">{profile?.full_name ?? 'User'}</p>
-              <p className="truncate text-xs text-gray-500">{user?.email ?? ''}</p>
+              <p className="truncate text-sm font-medium text-foreground">{profile?.full_name ?? 'User'}</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.email ?? ''}</p>
             </div>
           </div>
         )}
 
         <Button variant="ghost" size="sm"
-          className="mt-3 w-full justify-start gap-2 text-gray-600 hover:text-red-600"
+          className="mt-3 w-full justify-start gap-2 text-muted-foreground hover:text-red-600"
           onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           {t('auth.logout', 'Log Out')}
@@ -135,7 +139,7 @@ export function ClientSidebar() {
 
       {/* Mobile drawer */}
       <aside className={cn(
-        'fixed inset-y-0 left-0 z-50 w-64 transform border-r border-gray-200 bg-white/95 backdrop-blur-lg transition-transform duration-300 ease-in-out lg:hidden',
+        'fixed inset-y-0 left-0 z-50 w-64 transform border-r border-border bg-background/95 backdrop-blur-lg transition-transform duration-300 ease-in-out lg:hidden',
         isMobileOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
         <Button variant="ghost" size="icon" className="absolute right-3 top-3"
@@ -146,7 +150,7 @@ export function ClientSidebar() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-gray-200 bg-white/95 backdrop-blur-lg lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border bg-background/95 backdrop-blur-lg lg:block">
         <SidebarContent />
       </aside>
     </>

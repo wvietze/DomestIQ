@@ -6,6 +6,7 @@ import { NotificationBell } from '@/components/layout/notification-bell'
 import { OfflineIndicator } from '@/components/shared/offline-indicator'
 import { PushPrompt } from '@/components/shared/push-prompt'
 import { Logo } from '@/components/shared/logo'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useUser } from '@/lib/hooks/use-user'
 
 export default function WorkerLayout({
@@ -20,10 +21,11 @@ export default function WorkerLayout({
       <OfflineIndicator />
 
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between gap-3 px-4 py-3 bg-white/90 backdrop-blur-lg border-b border-gray-100">
+      <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between gap-3 px-4 py-3 bg-background/90 backdrop-blur-lg border-b border-border">
         <Logo size="sm" href="/worker-dashboard" className="min-w-0" />
         <div className="flex items-center gap-2 shrink-0">
           {user && <NotificationBell userId={user.id} notificationsHref="/worker-notifications" />}
+          <ThemeToggle />
           <LanguageSwitcher />
         </div>
       </div>
@@ -34,7 +36,7 @@ export default function WorkerLayout({
       </div>
 
       {/* Main content area with padding for bottom bar */}
-      <main className="flex-1 pb-20">{children}</main>
+      <main id="main" className="flex-1 pb-20">{children}</main>
 
       {/* Bottom navigation */}
       <WorkerBottomNav />

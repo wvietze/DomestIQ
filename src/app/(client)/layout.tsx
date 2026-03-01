@@ -16,7 +16,7 @@ export default function ClientLayout({
       <ClientSidebar />
 
       {/* Main content: offset on desktop for the 256px sidebar */}
-      <main className="min-h-screen lg:ml-64">
+      <main id="main" className="min-h-screen lg:ml-64">
         <div className="p-4 pt-16 sm:p-6 sm:pt-6 lg:p-8">{children}</div>
       </main>
     </div>

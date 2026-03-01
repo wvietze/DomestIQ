@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPushToUser } from '@/lib/push/send'
+import { sendEmail } from '@/lib/email/send'
+import { newBookingWorker } from '@/lib/email/templates'
 
 /**
  * GET /api/bookings
@@ -221,6 +224,42 @@ export async function POST(request: NextRequest) {
       data: { booking_id: booking.id },
       channel: 'in_app',
     })
+
+    // Push notification (fire-and-forget)
+    sendPushToUser(worker_id, {
+      title: 'New Booking Request',
+      body: `You have a new booking request for ${scheduled_date}.`,
+      url: `/worker-bookings/${booking.id}`,
+    }).catch(() => {})
+
+    // Email notification (fire-and-forget)
+    const { data: workerUser } = await supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', worker_id)
+      .single()
+    const { data: clientProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single()
+    const { data: svc } = await supabase
+      .from('services')
+      .select('name')
+      .eq('id', service_id)
+      .single()
+
+    if (workerUser?.email) {
+      const email = newBookingWorker({
+        workerName: workerUser.full_name || 'Worker',
+        clientName: clientProfile?.full_name || 'A client',
+        service: svc?.name || 'Service',
+        date: scheduled_date,
+        time: `${scheduled_start_time} - ${scheduled_end_time}`,
+        bookingId: booking.id,
+      })
+      sendEmail({ to: workerUser.email, ...email }).catch(() => {})
+    }
 
     return NextResponse.json({ booking }, { status: 201 })
   } catch (error) {

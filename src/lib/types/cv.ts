@@ -42,6 +42,7 @@ export type CvRenderData = {
   skills: string[];
   languages: string[];
   personal_statement: string | null;
+  service_areas?: string[];
   top_traits?: Record<string, number>;
   rating?: number;
   review_count?: number;

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPushToUser } from '@/lib/push/send'
+import { sendEmail } from '@/lib/email/send'
+import { bookingConfirmation } from '@/lib/email/templates'
 
 /**
  * GET /api/bookings/[id]
@@ -224,6 +227,49 @@ export async function PATCH(
       data: { booking_id: id, new_status: newStatus },
       channel: 'in_app',
     })
+
+    // Push notification (fire-and-forget)
+    sendPushToUser(notifyUserId, {
+      title: `Booking ${statusLabel}`,
+      body: `Your booking has been updated to: ${statusLabel}.`,
+      url: userRole === 'client' ? `/worker-bookings/${id}` : `/bookings/${id}`,
+    }).catch(() => {})
+
+    // Email on confirmation (fire-and-forget)
+    if (newStatus === 'confirmed' || newStatus === 'accepted') {
+      const { data: recipientProfile } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', notifyUserId)
+        .single()
+      const { data: otherProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+      const { data: bookingDetail } = await supabase
+        .from('bookings')
+        .select('service:services(name), scheduled_date, scheduled_start_time, scheduled_end_time, estimated_cost')
+        .eq('id', id)
+        .single()
+
+      if (recipientProfile?.email && bookingDetail) {
+        const svcRaw = bookingDetail.service as unknown
+        const svcName = Array.isArray(svcRaw)
+          ? (svcRaw[0] as { name: string })?.name || 'Service'
+          : (svcRaw as { name: string } | null)?.name || 'Service'
+        const email = bookingConfirmation({
+          clientName: recipientProfile.full_name || 'Client',
+          workerName: otherProfile?.full_name || 'Worker',
+          service: svcName,
+          date: bookingDetail.scheduled_date || '',
+          time: `${bookingDetail.scheduled_start_time || ''} - ${bookingDetail.scheduled_end_time || ''}`,
+          amount: String(bookingDetail.estimated_cost || '0'),
+          bookingId: id,
+        })
+        sendEmail({ to: recipientProfile.email, ...email }).catch(() => {})
+      }
+    }
 
     return NextResponse.json({ booking: updatedBooking })
   } catch (error) {

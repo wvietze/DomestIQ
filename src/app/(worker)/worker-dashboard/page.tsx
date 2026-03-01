@@ -15,7 +15,7 @@ import {
   CalendarDays, Star, ClipboardList, User, ChevronRight,
   Clock, CheckCircle2, XCircle, Loader2, Briefcase,
   TrendingUp, AlertCircle, Gift, Copy, MessageCircle, Share2,
-  FileText, Users
+  FileText, Users, MapPin
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -80,6 +80,8 @@ export default function WorkerDashboard() {
   const [pendingBookings, setPendingBookings] = useState<DashboardBooking[]>([])
   const [totalBookings, setTotalBookings] = useState(0)
   const [referralStats, setReferralStats] = useState<ReferralStatsData | null>(null)
+  const [serviceAreas, setServiceAreas] = useState<string[]>([])
+  const [completedBookings, setCompletedBookings] = useState(0)
   const [codeCopied, setCodeCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -109,6 +111,24 @@ export default function WorkerDashboard() {
         .in('status', ['confirmed', 'in_progress', 'completed'])
 
       setTotalBookings(count || 0)
+
+      // Get completed bookings count
+      const { count: doneCount } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('worker_id', user.id)
+        .eq('status', 'completed')
+      setCompletedBookings(doneCount || 0)
+
+      // Get service areas (city names)
+      const { data: areas } = await supabase
+        .from('worker_service_areas')
+        .select('city')
+        .eq('worker_profile_id', wp.id)
+      if (areas) {
+        const cities = [...new Set(areas.map((a: { city: string }) => a.city).filter(Boolean))]
+        setServiceAreas(cities)
+      }
 
       // Get upcoming bookings (confirmed/in_progress)
       const today = new Date().toISOString().split('T')[0]
@@ -294,12 +314,12 @@ export default function WorkerDashboard() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="grid grid-cols-3 gap-3"
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
       >
         <Card className="overflow-hidden">
           <CardContent className="p-4 text-center relative">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-            <div className="w-10 h-10 mx-auto bg-emerald-50 rounded-full flex items-center justify-center mb-2">
+            <div className="w-10 h-10 mx-auto bg-emerald-50 dark:bg-emerald-950 rounded-full flex items-center justify-center mb-2">
               <Briefcase className="w-5 h-5 text-emerald-600" />
             </div>
             <p className="text-2xl font-bold">{totalBookings}</p>
@@ -308,8 +328,18 @@ export default function WorkerDashboard() {
         </Card>
         <Card className="overflow-hidden">
           <CardContent className="p-4 text-center relative">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-600" />
+            <div className="w-10 h-10 mx-auto bg-green-50 dark:bg-green-950 rounded-full flex items-center justify-center mb-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+            </div>
+            <p className="text-2xl font-bold">{completedBookings}</p>
+            <p className="text-xs text-muted-foreground">Completed</p>
+          </CardContent>
+        </Card>
+        <Card className="overflow-hidden">
+          <CardContent className="p-4 text-center relative">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
-            <div className="w-10 h-10 mx-auto bg-amber-50 rounded-full flex items-center justify-center mb-2">
+            <div className="w-10 h-10 mx-auto bg-amber-50 dark:bg-amber-950 rounded-full flex items-center justify-center mb-2">
               <Star className="w-5 h-5 text-amber-500" />
             </div>
             <p className="text-2xl font-bold">
@@ -321,7 +351,7 @@ export default function WorkerDashboard() {
         <Card className="overflow-hidden">
           <CardContent className="p-4 text-center relative">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 to-blue-500" />
-            <div className="w-10 h-10 mx-auto bg-sky-50 rounded-full flex items-center justify-center mb-2">
+            <div className="w-10 h-10 mx-auto bg-sky-50 dark:bg-sky-950 rounded-full flex items-center justify-center mb-2">
               <TrendingUp className="w-5 h-5 text-sky-600" />
             </div>
             <p className="text-2xl font-bold">{workerProfile?.total_reviews || 0}</p>
@@ -329,6 +359,34 @@ export default function WorkerDashboard() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Service Areas Card */}
+      {serviceAreas.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.12 }}
+        >
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-semibold">Your Service Areas</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {serviceAreas.map(city => (
+                  <Badge key={city} variant="secondary" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                    {city}
+                  </Badge>
+                ))}
+              </div>
+              <Link href="/worker-profile/edit" className="text-xs text-emerald-600 font-medium mt-3 inline-block">
+                Edit service areas
+              </Link>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Refer & Earn Card */}
       {referralCode && (

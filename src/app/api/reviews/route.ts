@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPushToUser } from '@/lib/push/send'
+import { sendEmail } from '@/lib/email/send'
+import { reviewReceived } from '@/lib/email/templates'
 import { REVIEW_TRAITS, type ReviewTrait } from '@/lib/types/review'
 
 /**
@@ -250,6 +253,35 @@ export async function POST(request: NextRequest) {
       data: { review_id: review.id, booking_id },
       channel: 'in_app',
     })
+
+    // Push notification (fire-and-forget)
+    sendPushToUser(booking.worker_id, {
+      title: 'New Review',
+      body: `You received a ${rating}-star review.${traitText}`,
+      url: '/worker-reviews',
+    }).catch(() => {})
+
+    // Email notification (fire-and-forget)
+    const { data: workerProfile } = await supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', booking.worker_id)
+      .single()
+    const { data: reviewerProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single()
+
+    if (workerProfile?.email) {
+      const email = reviewReceived({
+        workerName: workerProfile.full_name || 'Worker',
+        clientName: reviewerProfile?.full_name || 'A client',
+        rating,
+        comment: comment || '',
+      })
+      sendEmail({ to: workerProfile.email, ...email }).catch(() => {})
+    }
 
     return NextResponse.json({ review }, { status: 201 })
   } catch (error) {

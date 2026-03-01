@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPushToUser } from '@/lib/push/send'
 
 /**
  * GET /api/referrals
@@ -113,6 +114,13 @@ export async function POST(request: NextRequest) {
       console.error('Referral insert error:', insertError)
       return NextResponse.json({ error: 'Failed to record referral' }, { status: 500 })
     }
+
+    // Push notify the referrer (fire-and-forget)
+    sendPushToUser(referrerProfile.user_id, {
+      title: 'Referral Signed Up!',
+      body: 'Someone you referred just joined DomestIQ.',
+      url: '/worker-referrals',
+    }).catch(() => {})
 
     return NextResponse.json({ referral }, { status: 201 })
   } catch (error) {

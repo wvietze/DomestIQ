@@ -16,7 +16,7 @@ const mockData: WorkerProfileViewData = {
     avatar_url: null,
     phone: '+27 82 123 4567',
     email: 'thandiwe@example.com',
-    bio: 'Experienced domestic worker and gardener with over 8 years in the industry. I take pride in leaving every home spotless and every garden flourishing. Known for my attention to detail and reliability. I treat every home like my own.',
+    bio: 'Experienced domestic worker and gardener based in Paarl, Western Cape. Over 8 years in the industry, working with families across the Winelands. I take pride in leaving every home spotless and every garden flourishing. Known for my attention to detail and reliability.',
     hourly_rate: 120,
     overall_rating: 4.7,
     total_reviews: 23,
@@ -24,9 +24,9 @@ const mockData: WorkerProfileViewData = {
     is_active: true,
     id_verified: true,
     criminal_check_clear: false,
-    location_lat: -26.1076,
-    location_lng: 28.0567,
-    service_radius_km: 15,
+    location_lat: -33.7306,
+    location_lng: 18.9609,
+    service_radius_km: 20,
     referral_code: 'THANDI2024',
     created_at: '2024-03-15T10:00:00Z',
   },
@@ -116,44 +116,44 @@ const mockData: WorkerProfileViewData = {
   references: [
     {
       id: 'ref1', worker_id: 'demo-wp-1', client_id: 'c1', booking_id: 'b1',
-      reference_text: 'Thandiwe has worked for our family for 3 years. She is dependable, honest, and takes great initiative. I would recommend her without hesitation to anyone looking for quality domestic help.',
+      reference_text: 'Thandiwe has worked for our family in Val de Vie for 3 years. She is dependable, honest, and takes great initiative. I would recommend her without hesitation to anyone looking for quality domestic help.',
       relationship: 'regular_client' as const, duration_months: 36, is_visible_on_profile: true,
       created_at: '2024-07-01', client_name: 'Sarah van der Merwe',
     },
     {
       id: 'ref2', worker_id: 'demo-wp-1', client_id: 'c5', booking_id: 'b5',
-      reference_text: 'Thandiwe maintained our garden beautifully for over a year. Always on time, always professional. Our garden has never looked better.',
+      reference_text: 'Thandiwe maintained our garden in Boschenmeer beautifully for over a year. Always on time, always professional. Our garden has never looked better.',
       relationship: 'employer' as const, duration_months: 14, is_visible_on_profile: true,
-      created_at: '2024-04-15', client_name: 'James Ndlovu',
+      created_at: '2024-04-15', client_name: 'Pieter du Toit',
     },
   ],
   estates: [
     {
-      id: 'e1', worker_id: 'demo-wp-1', estate_id: 'est1', registration_number: 'SW-4521',
-      registered_since: '2023-06-01', created_at: '2023-06-01',
-      estate: { id: 'est1', name: 'Sandton Views', suburb: 'Sandton', city: 'Johannesburg', province: 'Gauteng', location_lat: -26.1, location_lng: 28.05, security_company: null, requires_preregistration: true, is_verified: true, added_by: 'admin', created_at: '2023-01-01' },
+      id: 'e1', worker_id: 'demo-wp-1', estate_id: 'est1', registration_number: 'VDV-3892',
+      registered_since: '2023-03-01', created_at: '2023-03-01',
+      estate: { id: 'est1', name: 'Val de Vie Estate', suburb: 'Paarl', city: 'Paarl', province: 'Western Cape', location_lat: -33.7953, location_lng: 18.9631, security_company: null, requires_preregistration: true, is_verified: true, added_by: 'admin', created_at: '2023-01-01' },
     },
     {
-      id: 'e2', worker_id: 'demo-wp-1', estate_id: 'est2', registration_number: 'BC-1187',
+      id: 'e2', worker_id: 'demo-wp-1', estate_id: 'est2', registration_number: 'BS-2204',
       registered_since: '2024-01-15', created_at: '2024-01-15',
-      estate: { id: 'est2', name: 'Bryanston Country', suburb: 'Bryanston', city: 'Johannesburg', province: 'Gauteng', location_lat: -26.06, location_lng: 28.01, security_company: null, requires_preregistration: true, is_verified: true, added_by: 'admin', created_at: '2023-01-01' },
+      estate: { id: 'est2', name: 'Boschenmeer Estate', suburb: 'Paarl', city: 'Paarl', province: 'Western Cape', location_lat: -33.7484, location_lng: 18.9702, security_company: null, requires_preregistration: true, is_verified: true, added_by: 'admin', created_at: '2023-01-01' },
     },
   ],
   jobsCompleted: 47,
   cvData: {
     id: 'cv1', worker_id: 'demo-wp-1',
     work_history: [
-      { role: 'Domestic Worker', employer: 'Van der Merwe Family', start_date: '2021-03', end_date: null, description: 'Full house cleaning, laundry, ironing, and cooking for a family of 5.' },
-      { role: 'Gardener', employer: 'Ndlovu Residence', start_date: '2019-06', end_date: '2021-02', description: 'Garden maintenance, landscaping, and pool area upkeep.' },
-      { role: 'Domestic Worker', employer: 'Patel Household', start_date: '2016-01', end_date: '2019-05', description: 'General cleaning, childcare, and meal preparation.' },
+      { role: 'Domestic Worker', employer: 'Van der Merwe Family, Val de Vie', start_date: '2021-03', end_date: null, description: 'Full house cleaning, laundry, ironing, and cooking for a family of 5 in Val de Vie Estate.' },
+      { role: 'Gardener', employer: 'Du Toit Residence, Boschenmeer', start_date: '2019-06', end_date: '2021-02', description: 'Garden maintenance, landscaping, and pool area upkeep across the Winelands.' },
+      { role: 'Domestic Worker', employer: 'Patel Household, Paarl', start_date: '2016-01', end_date: '2019-05', description: 'General cleaning, childcare, and meal preparation.' },
     ],
     education: [
-      { qualification: 'Matric Certificate', institution: 'Jeppe High School for Girls', year: 2015 },
-      { qualification: 'First Aid Level 1', institution: 'St John Ambulance', year: 2020 },
+      { qualification: 'Matric Certificate', institution: 'Paarl Girls High School', year: 2015 },
+      { qualification: 'First Aid Level 1', institution: 'St John Ambulance, Paarl', year: 2020 },
     ],
     skills: ['Deep cleaning', 'Laundry & ironing', 'Cooking', 'Gardening', 'Childcare', 'Pet care'],
     languages: ['English', 'isiZulu', 'Sesotho'],
-    personal_statement: 'Dedicated and experienced domestic professional with a passion for creating clean, comfortable living spaces. I bring 8+ years of experience in household management, gardening, and childcare.',
+    personal_statement: 'Dedicated and experienced domestic professional based in Paarl, serving families across the Winelands. I bring 8+ years of experience in household management, gardening, and childcare. Registered at Val de Vie and Boschenmeer estates.',
     created_at: '2024-01-01', updated_at: '2024-06-01',
   },
 }
@@ -162,9 +162,9 @@ export default function DemoWorkerProfilePage() {
   const [viewMode, setViewMode] = useState<'simple' | 'professional'>('simple')
 
   return (
-    <div className="min-h-screen bg-gray-50/30">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
         <div className="max-w-2xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Link

@@ -21,6 +21,7 @@ interface WorkerCardProps {
     id_verified: boolean
     criminal_check_clear: boolean
     distance_km: number | null
+    location_name: string | null
     services: Array<{ id: string; name: string; icon: string }>
   }
   className?: string
@@ -40,7 +41,7 @@ export function WorkerCard({ worker, className }: WorkerCardProps) {
                 </AvatarFallback>
               </Avatar>
               {(worker.id_verified || worker.criminal_check_clear) && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-background">
                   <ShieldCheck className="w-3 h-3 text-white" />
                 </div>
               )}
@@ -74,10 +75,11 @@ export function WorkerCard({ worker, className }: WorkerCardProps) {
               </div>
 
               <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                {worker.distance_km !== null && (
+                {(worker.location_name || worker.distance_km !== null) && (
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-amber-500" />
-                    {worker.distance_km.toFixed(1)} km
+                    {worker.location_name && <span>{worker.location_name}</span>}
+                    {worker.distance_km !== null && <span>{worker.location_name ? `· ${worker.distance_km.toFixed(1)} km` : `${worker.distance_km.toFixed(1)} km`}</span>}
                   </span>
                 )}
                 {worker.id_verified && (

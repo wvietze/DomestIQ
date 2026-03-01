@@ -27,6 +27,7 @@ interface WorkerResult {
   id_verified: boolean
   criminal_check_clear: boolean
   distance_km: number | null
+  location_name: string | null
   services: Array<{ id: string; name: string; icon: string }>
 }
 
@@ -134,7 +135,7 @@ export default function SearchPage() {
         ) : filteredWorkers.length === 0 ? (
           <motion.div variants={fadeUp} transition={{ duration: 0.4 }}
             className="text-center py-16 space-y-3">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
               <SearchX className="w-8 h-8 text-muted-foreground" />
             </div>
             <p className="text-lg font-semibold">{t('search.no_results', 'No workers found')}</p>

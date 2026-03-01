@@ -14,8 +14,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import {
-  Search, CalendarDays, MessageSquare, Star,
-  Clock, ChevronRight, Bell,
+  Search, CalendarDays, MessageSquare, Star, Heart,
+  Clock, ChevronRight, Bell, Briefcase,
   CheckCircle2, XCircle, ArrowRight,
 } from 'lucide-react'
 import type { Notification } from '@/lib/types'
@@ -128,6 +128,8 @@ export default function ClientDashboard() {
   const [bookings, setBookings] = useState<DashboardBooking[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [favoritesCount, setFavoritesCount] = useState(0)
+  const [activeBookingsCount, setActiveBookingsCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -151,6 +153,21 @@ export default function ClientDashboard() {
           .neq('sender_id', user.id)
           .eq('is_read', false)
         setUnreadMessages(count || 0)
+
+        // Favorites count
+        const { count: favCount } = await supabase
+          .from('favorites')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        setFavoritesCount(favCount || 0)
+
+        // Active bookings count
+        const { count: activeCount } = await supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
+          .eq('client_id', user.id)
+          .in('status', ['pending', 'accepted', 'confirmed', 'in_progress'])
+        setActiveBookingsCount(activeCount || 0)
 
         const { data: notifData } = await supabase
           .from('notifications')
@@ -202,6 +219,37 @@ export default function ClientDashboard() {
 
       {/* Push Notification Prompt */}
       <motion.div variants={fadeUp}><PushPrompt /></motion.div>
+
+      {/* Stats Row */}
+      <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="grid grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="w-9 h-9 mx-auto bg-emerald-50 dark:bg-emerald-950 rounded-full flex items-center justify-center mb-1.5">
+              <Briefcase className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p className="text-xl font-bold">{activeBookingsCount}</p>
+            <p className="text-[11px] text-muted-foreground">Active</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="w-9 h-9 mx-auto bg-pink-50 dark:bg-pink-950 rounded-full flex items-center justify-center mb-1.5">
+              <Heart className="w-4 h-4 text-pink-500" />
+            </div>
+            <p className="text-xl font-bold">{favoritesCount}</p>
+            <p className="text-[11px] text-muted-foreground">Favorites</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="w-9 h-9 mx-auto bg-violet-50 dark:bg-violet-950 rounded-full flex items-center justify-center mb-1.5">
+              <MessageSquare className="w-4 h-4 text-violet-600" />
+            </div>
+            <p className="text-xl font-bold">{unreadMessages}</p>
+            <p className="text-[11px] text-muted-foreground">Unread</p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Next Booking Hero */}
       {nextBooking && (
