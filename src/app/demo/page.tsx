@@ -7,7 +7,7 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher'
 import {
   Briefcase, Home, Search, CalendarDays, MessageSquare,
   Star, User, Settings, Bell, Wallet, ShieldCheck,
-  UserCheck, LayoutDashboard, ArrowRight
+  UserCheck, LayoutDashboard, ArrowRight, Loader, Eye
 } from 'lucide-react'
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
@@ -42,6 +42,11 @@ const adminPages = [
   { href: '/admin/users', label: 'User Management', icon: UserCheck, color: 'blue' },
   { href: '/admin/verifications', label: 'Verifications', icon: ShieldCheck, color: 'emerald' },
   { href: '/admin/moderation', label: 'Moderation', icon: ShieldCheck, color: 'amber' },
+]
+
+const demoPages = [
+  { href: '/demo/worker-profile', label: 'Worker Profile Demo', icon: Eye, color: 'emerald' },
+  { href: '/demo/loading-animations', label: 'Loading Animations', icon: Loader, color: 'amber' },
 ]
 
 const otherPages = [
@@ -134,6 +139,12 @@ export default function DemoPage() {
         title="Admin Panel"
         description="Platform management and moderation tools"
         pages={adminPages}
+      />
+
+      <PageSection
+        title="Component Demos"
+        description="Interactive demos with mock data — no auth required"
+        pages={demoPages}
       />
 
       <PageSection
