@@ -15,13 +15,13 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="border-b border-gray-200 last:border-0"
+      className="border-b border-gray-100 last:border-0"
     >
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-5 text-left group"
       >
-        <span className="font-semibold text-[15px] pr-4 group-hover:text-emerald-700 transition-colors">{q}</span>
+        <span className="font-semibold text-[15px] text-gray-900 pr-4 group-hover:text-emerald-700 transition-colors">{q}</span>
         <ChevronDown className={cn(
           'w-5 h-5 text-muted-foreground shrink-0 transition-transform duration-300',
           open && 'rotate-180 text-emerald-600'
@@ -32,7 +32,7 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
         open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
       )}>
         <div className="overflow-hidden">
-          <p className="pb-5 text-muted-foreground leading-relaxed text-sm">{a}</p>
+          <p className="pb-5 text-gray-600 leading-relaxed text-sm">{a}</p>
         </div>
       </div>
     </motion.div>
@@ -56,7 +56,7 @@ export function FaqSection() {
   ], [t])
 
   return (
-    <section id="faq" className="py-24 md:py-32 bg-gradient-to-b from-white to-gray-50/80">
+    <section id="faq" className="py-24 md:py-32 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -67,13 +67,13 @@ export function FaqSection() {
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 border border-purple-200 mb-4">
             {t('landing.faq.badge', 'FAQ')}
           </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900">
             {t('landing.faq.heading_1', 'Got')}{' '}
             <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">{t('landing.faq.heading_2', 'questions?')}</span>
           </h2>
         </motion.div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-200 px-6">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg shadow-gray-100/50 divide-y divide-gray-100 px-6">
           {faqs.map((faq, i) => (
             <FaqItem key={i} q={faq.q} a={faq.a} index={i} />
           ))}

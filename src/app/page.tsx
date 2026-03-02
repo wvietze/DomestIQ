@@ -101,7 +101,7 @@ export default function LandingPage() {
 
       {/* ━━━ Navigation ━━━ */}
       <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 glass-strong">
+        className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-emerald-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="shrink-0"><Logo /></Link>
           <nav className="hidden md:flex items-center gap-8">
@@ -137,7 +137,7 @@ export default function LandingPage() {
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.08]">
+              className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-gray-900">
               {t('landing.hero.heading_1', 'A safer, smarter way for')}{' '}
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 bg-clip-text text-transparent">{t('landing.hero.heading_workers', 'workers')}</span>
