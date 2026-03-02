@@ -4,7 +4,6 @@ import { Analytics } from "@vercel/analytics/next";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 import { PopiConsentBanner } from "@/components/shared/popi-consent-banner";
 import { ServiceWorkerRegister } from "@/components/shared/sw-register";
-import { ThemeScript } from "@/components/ui/theme-toggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -81,10 +80,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <ThemeScript />
-      </head>
+    <html lang="en">
+      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
       >

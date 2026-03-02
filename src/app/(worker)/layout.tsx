@@ -6,7 +6,6 @@ import { NotificationBell } from '@/components/layout/notification-bell'
 import { OfflineIndicator } from '@/components/shared/offline-indicator'
 import { PushPrompt } from '@/components/shared/push-prompt'
 import { Logo } from '@/components/shared/logo'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useUser } from '@/lib/hooks/use-user'
 
 export default function WorkerLayout({
@@ -25,7 +24,6 @@ export default function WorkerLayout({
         <Logo size="sm" href="/worker-dashboard" className="min-w-0" />
         <div className="flex items-center gap-2 shrink-0">
           {user && <NotificationBell userId={user.id} notificationsHref="/worker-notifications" />}
-          <ThemeToggle />
           <LanguageSwitcher />
         </div>
       </div>
