@@ -59,14 +59,15 @@ function Section({ children, className = '', delay = 0 }: { children: React.Reac
   )
 }
 
-function HowItWorksStep({ children, step, onActivate }: { children: React.ReactNode; step: number; onActivate: (s: number) => void }) {
+function HowItWorksStep({ children, step, isFirst, isLast, onActivate }: { children: React.ReactNode; step: number; isFirst?: boolean; isLast?: boolean; onActivate: (s: number) => void }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { margin: '-40% 0px -40% 0px' })
+  const inView = useInView(ref, { margin: '-35% 0px -35% 0px' })
   useEffect(() => { if (inView) onActivate(step) }, [inView, step, onActivate])
   return (
     <motion.div ref={ref} initial={{ opacity: 0.3 }} animate={{ opacity: inView ? 1 : 0.3 }}
-      transition={{ duration: 0.5 }} className="py-4">
-      {children}
+      transition={{ duration: 0.5 }}
+      className={`flex items-center ${isFirst ? 'min-h-[40vh]' : isLast ? 'min-h-[50vh]' : 'min-h-[60vh]'}`}>
+      <div className="w-full">{children}</div>
     </motion.div>
   )
 }
@@ -459,7 +460,7 @@ export default function LandingPage() {
           <div className="hidden lg:grid grid-cols-2 gap-16">
             {/* Left: Sticky visual */}
             <div className="relative">
-              <div className="sticky top-32 flex items-center justify-center pb-8">
+              <div className="sticky top-[15vh] flex items-center justify-center">
                 <div className="relative w-[280px] h-[480px] rounded-[2.5rem] bg-gradient-to-br from-gray-900 to-gray-800 p-3 shadow-2xl shadow-black/20">
                   {/* Phone notch */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
@@ -540,17 +541,17 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right: Scrolling steps */}
-            <div className="space-y-24 pt-4 pb-8">
+            {/* Right: Scrolling steps — each step gets viewport height so only one is centered at a time */}
+            <div className="pt-[10vh] pb-[20vh]">
               {[
                 { step: 0, icon: Phone, iconBg: 'bg-emerald-100', iconText: 'text-emerald-600', numBg: 'bg-emerald-600', title: t('landing.how.ws1_title', 'Register with your phone'), desc: t('landing.how.ws1_desc', 'Tap icons to select your skills. No typing needed.'), sub: t('landing.how.cs1_desc', 'Filter by service, distance, rating, and availability.') },
                 { step: 1, icon: Search, iconBg: 'bg-teal-100', iconText: 'text-teal-600', numBg: 'bg-teal-600', title: t('landing.how.ws2_title', 'Get discovered'), desc: t('landing.how.ws2_desc', 'Households near you see your profile, rating, and availability.'), sub: t('landing.how.cs2_desc', 'Check ratings, reviews, and verification badges.') },
                 { step: 2, icon: MessageSquare, iconBg: 'bg-blue-100', iconText: 'text-blue-600', numBg: 'bg-blue-600', title: t('landing.how.ws3_title', 'Accept bookings'), desc: t('landing.how.ws3_desc', 'Choose the jobs you want. Set your own schedule and rates.'), sub: t('landing.how.cs3_desc', 'Send a message or request a booking. Arrange the details directly.') },
                 { step: 3, icon: Star, iconBg: 'bg-amber-100', iconText: 'text-amber-600', numBg: 'bg-amber-600', title: t('landing.how.ws4_title', 'Build your reputation'), desc: t('landing.how.ws4_desc', 'Every good job earns reviews that attract more work.'), sub: t('landing.how.cs4_desc', 'Your review helps the community and rewards good workers.') },
-              ].map((s) => {
+              ].map((s, i, arr) => {
                 const StepIcon = s.icon
                 return (
-                  <HowItWorksStep key={s.step} step={s.step} onActivate={setActiveStep}>
+                  <HowItWorksStep key={s.step} step={s.step} isFirst={i === 0} isLast={i === arr.length - 1} onActivate={setActiveStep}>
                     <div className={`w-12 h-12 rounded-2xl ${s.iconBg} flex items-center justify-center mb-4`}>
                       <StepIcon className={`w-6 h-6 ${s.iconText}`} />
                     </div>
