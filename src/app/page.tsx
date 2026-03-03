@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { motion, useInView, useScroll, useTransform } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import {
   Search, Shield, Star, MapPin, MessageSquare, Clock,
   ArrowRight, Phone, Globe, CheckCircle2,
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
+import { MagneticButton } from '@/components/landing/magnetic-button'
+import { TiltCard } from '@/components/landing/tilt-card'
 import { AnimatedCountersSection } from '@/components/landing/animated-counters-section'
 import { TrustBadgesSection } from '@/components/landing/trust-badges-section'
 import { CityCoverageSection } from '@/components/landing/city-coverage-section'
@@ -29,12 +31,41 @@ const scaleIn = { hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, sca
 const slideLeft = { hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0 } }
 const slideRight = { hidden: { opacity: 0, x: 40 }, visible: { opacity: 1, x: 0 } }
 
+/* ─── Hero Word Reveal Variants ─── */
+const heroWordContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } },
+}
+const heroWord = {
+  hidden: { opacity: 0, y: 20, filter: 'blur(6px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const } },
+}
+
+/* ─── How It Works Step Visuals ─── */
+const stepVisual = {
+  initial: { opacity: 0, scale: 0.9 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.9 },
+}
+
 function Section({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
   return (
     <motion.div ref={ref} initial="hidden" animate={inView ? 'visible' : 'hidden'} variants={fadeUp}
       transition={{ duration: 0.7, delay, ease: [0.25, 0.46, 0.45, 0.94] }} className={className}>
+      {children}
+    </motion.div>
+  )
+}
+
+function HowItWorksStep({ children, step, onActivate }: { children: React.ReactNode; step: number; onActivate: (s: number) => void }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { margin: '-40% 0px -40% 0px' })
+  if (inView) onActivate(step)
+  return (
+    <motion.div ref={ref} initial={{ opacity: 0.3 }} animate={{ opacity: inView ? 1 : 0.3 }}
+      transition={{ duration: 0.5 }} className="py-4">
       {children}
     </motion.div>
   )
@@ -52,6 +83,14 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+
+  // Horizontal scroll services
+  const servicesScrollRef = useRef(null)
+  const { scrollYProgress: servicesProgress } = useScroll({ target: servicesScrollRef, offset: ['start start', 'end end'] })
+  const servicesX = useTransform(servicesProgress, [0, 1], ['5%', '-60%'])
+
+  // How It Works active step
+  const [activeStep, setActiveStep] = useState(0)
 
   const workerBenefits = useMemo(() => [
     { icon: TrendingUp, title: t('landing.worker.b1_title', 'Consistent Work'), desc: t('landing.worker.b1_desc', 'No more weeks without income. Get bookings straight to your phone.') },
@@ -115,7 +154,9 @@ export default function LandingPage() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <LanguageSwitcher />
             <Link href="/login" className="hidden sm:inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">{t('landing.nav.login', 'Log In')}</Link>
-            <Link href="/register" className="inline-flex items-center justify-center text-sm font-semibold leading-none bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 h-9 sm:px-5 sm:h-10 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">{t('landing.nav.get_started', 'Get Started')}</Link>
+            <MagneticButton strength={0.2}>
+              <Link href="/register" className="inline-flex items-center justify-center text-sm font-semibold leading-none bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 h-9 sm:px-5 sm:h-10 rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5">{t('landing.nav.get_started', 'Get Started')}</Link>
+            </MagneticButton>
           </div>
         </div>
       </motion.header>
@@ -136,39 +177,49 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
+            <motion.h1 initial="hidden" animate="visible" variants={heroWordContainer}
               className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-gray-900">
-              {t('landing.hero.heading_1', 'A safer, smarter way for')}{' '}
-              <span className="relative inline-block">
+              {t('landing.hero.heading_1', 'A safer, smarter way for').split(' ').map((word, i) => (
+                <motion.span key={i} variants={heroWord} className="inline-block mr-[0.25em]">{word}</motion.span>
+              ))}{' '}
+              <motion.span variants={heroWord} className="relative inline-block mr-[0.25em]">
                 <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 bg-clip-text text-transparent">{t('landing.hero.heading_workers', 'workers')}</span>
-                <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 1 }}
+                <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 1.5 }}
                   className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-sky-500 rounded-full origin-left" />
-              </span>
-              {' '}{t('landing.hero.heading_and', 'and')}{' '}
-              <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent">{t('landing.hero.heading_households', 'households')}</span>
-              {' '}{t('landing.hero.heading_2', 'to connect')}
+              </motion.span>
+              <motion.span variants={heroWord} className="inline-block mr-[0.25em]">{t('landing.hero.heading_and', 'and')}</motion.span>{' '}
+              <motion.span variants={heroWord} className="inline-block mr-[0.25em]">
+                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent">{t('landing.hero.heading_households', 'households')}</span>
+              </motion.span>
+              {t('landing.hero.heading_2', 'to connect').split(' ').map((word, i) => (
+                <motion.span key={`end-${i}`} variants={heroWord} className="inline-block mr-[0.25em]">{word}</motion.span>
+              ))}
             </motion.h1>
 
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.2 }}
               className="mt-8 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {t('landing.hero.subtext', 'DomestIQ empowers domestic workers to find consistent, safe work — and helps households find help with confidence. Phone-first. All 11 SA languages. Always free for workers.')}
             </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.7 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.5 }}
               className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register/worker"
-                className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-1">
-                {t('landing.hero.cta_worker', "I'm a Worker")}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-foreground px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1">
-                {t('landing.hero.cta_client', 'I Need a Worker')}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              <MagneticButton>
+                <Link href="/register/worker"
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-1">
+                  {t('landing.hero.cta_worker', "I'm a Worker")}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </MagneticButton>
+              <MagneticButton>
+                <Link href="/register"
+                  className="group inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-foreground px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1">
+                  {t('landing.hero.cta_client', 'I Need a Worker')}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </MagneticButton>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1.1 }}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1.8 }}
               className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-emerald-500" />{t('landing.hero.trust_popia', 'POPI Act Compliant')}</span>
               <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-blue-500" />{t('landing.hero.trust_verified', 'ID Verified Workers')}</span>
@@ -230,13 +281,14 @@ export default function LandingPage() {
               {workerBenefits.map((b) => {
                 const Icon = b.icon
                 return (
-                  <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}
-                    className="group p-5 rounded-2xl bg-white/70 backdrop-blur-sm border border-emerald-100/80 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-5 h-5 text-emerald-700" />
-                    </div>
-                    <h3 className="font-bold text-sm mb-1">{b.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                  <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
+                    <TiltCard className="group p-5 rounded-2xl bg-white/70 backdrop-blur-sm border border-emerald-100/80 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                        <Icon className="w-5 h-5 text-emerald-700" />
+                      </div>
+                      <h3 className="font-bold text-sm mb-1">{b.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                    </TiltCard>
                   </motion.div>
                 )
               })}
@@ -342,13 +394,14 @@ export default function LandingPage() {
               {clientBenefits.map((b) => {
                 const Icon = b.icon
                 return (
-                  <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}
-                    className="group p-5 rounded-2xl bg-white border border-blue-100/80 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
-                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-5 h-5 text-blue-700" />
-                    </div>
-                    <h3 className="font-bold text-sm mb-1">{b.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                  <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
+                    <TiltCard className="group p-5 rounded-2xl bg-white border border-blue-100/80 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                        <Icon className="w-5 h-5 text-blue-700" />
+                      </div>
+                      <h3 className="font-bold text-sm mb-1">{b.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                    </TiltCard>
                   </motion.div>
                 )
               })}
@@ -379,7 +432,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ━━━ How It Works — Split View ━━━ */}
+      {/* ━━━ How It Works — Sticky Scroll Storytelling ━━━ */}
       <section className="relative py-24 md:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-dots opacity-30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
@@ -393,8 +446,122 @@ export default function LandingPage() {
             </h2>
           </Section>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Worker side */}
+          {/* Desktop: Sticky scroll storytelling */}
+          <div className="hidden lg:grid grid-cols-2 gap-16">
+            {/* Left: Sticky visual */}
+            <div className="relative">
+              <div className="sticky top-24 flex items-center justify-center h-[60vh]">
+                <div className="relative w-[280px] h-[480px] rounded-[2.5rem] bg-gradient-to-br from-gray-900 to-gray-800 p-3 shadow-2xl shadow-black/20">
+                  {/* Phone notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
+                  {/* Phone screen */}
+                  <div className="w-full h-full rounded-[2rem] bg-white overflow-hidden relative">
+                    <AnimatePresence mode="wait">
+                      {activeStep === 0 && (
+                        <motion.div key="step0" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-5 flex flex-col">
+                          <div className="text-center mt-8 mb-6">
+                            <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-3"><Phone className="w-7 h-7 text-emerald-600" /></div>
+                            <p className="font-bold text-sm text-gray-900">{t('landing.how.ws1_title', 'Register with your phone')}</p>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2.5 px-2">
+                            {['🏠', '🌿', '🎨', '🔧', '⚡', '🪚', '👶', '🏊', '🛠️'].map((e, i) => (
+                              <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 + i * 0.06, type: 'spring', stiffness: 400 }}
+                                className="aspect-square rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-xl cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-colors">
+                                {e}
+                              </motion.div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                      {activeStep === 1 && (
+                        <motion.div key="step1" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-4 flex flex-col">
+                          <div className="flex items-center gap-2 mb-4 mt-6">
+                            <div className="flex-1 h-9 rounded-full bg-gray-100 flex items-center px-3"><Search className="w-4 h-4 text-gray-400" /><span className="text-xs text-gray-400 ml-2">Search workers...</span></div>
+                          </div>
+                          {[
+                            { name: 'Thandi M.', role: 'Domestic Worker', rating: '4.9', color: 'emerald' },
+                            { name: 'Sipho K.', role: 'Gardener', rating: '4.8', color: 'teal' },
+                            { name: 'Nomsa D.', role: 'Domestic Worker', rating: '5.0', color: 'emerald' },
+                          ].map((w, i) => (
+                            <motion.div key={i} initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 + i * 0.15 }}
+                              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 mb-2">
+                              <div className={`w-10 h-10 rounded-full bg-${w.color}-100 flex items-center justify-center text-xs font-bold text-${w.color}-700`}>{w.name.split(' ').map(n => n[0]).join('')}</div>
+                              <div className="flex-1 min-w-0"><p className="font-semibold text-xs truncate">{w.name}</p><p className="text-[10px] text-gray-500">{w.role}</p></div>
+                              <div className="flex items-center gap-0.5"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /><span className="text-[10px] font-medium">{w.rating}</span></div>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                      {activeStep === 2 && (
+                        <motion.div key="step2" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-5 flex flex-col items-center justify-center">
+                          <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ delay: 0.3, type: 'spring' }}
+                            className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+                            <CheckCircle2 className="w-9 h-9 text-emerald-600" />
+                          </motion.div>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="font-bold text-base text-gray-900 mb-1">Booking Sent!</motion.p>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-xs text-gray-500 text-center mb-6">Thandi will confirm shortly</motion.p>
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+                            className="w-full rounded-xl bg-gray-50 border border-gray-100 p-3 space-y-2">
+                            <div className="flex justify-between text-xs"><span className="text-gray-500">Service</span><span className="font-medium">Deep Clean</span></div>
+                            <div className="flex justify-between text-xs"><span className="text-gray-500">Date</span><span className="font-medium">Mon, 10 Mar</span></div>
+                            <div className="flex justify-between text-xs"><span className="text-gray-500">Time</span><span className="font-medium">08:00 – 14:00</span></div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                      {activeStep === 3 && (
+                        <motion.div key="step3" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-5 flex flex-col items-center justify-center">
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="font-bold text-sm text-gray-900 mb-3">How was Thandi?</motion.p>
+                          <div className="flex gap-1.5 mb-4">
+                            {[...Array(5)].map((_, i) => (
+                              <motion.div key={i} initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ delay: 0.4 + i * 0.1, type: 'spring', stiffness: 400 }}>
+                                <Star className="w-8 h-8 fill-amber-400 text-amber-400" />
+                              </motion.div>
+                            ))}
+                          </div>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="text-xs text-gray-500 text-center mb-5">Your review helps Thandi find more work</motion.p>
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
+                            className="w-full h-20 rounded-xl bg-gray-50 border border-gray-100 p-3">
+                            <span className="text-xs text-gray-400">Write a review...</span>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Scrolling steps */}
+            <div className="space-y-[40vh] py-[10vh]">
+              {[
+                { step: 0, icon: Phone, color: 'emerald', title: t('landing.how.ws1_title', 'Register with your phone'), desc: t('landing.how.ws1_desc', 'Tap icons to select your skills. No typing needed.'), sub: t('landing.how.cs1_desc', 'Filter by service, distance, rating, and availability.') },
+                { step: 1, icon: Search, color: 'teal', title: t('landing.how.ws2_title', 'Get discovered'), desc: t('landing.how.ws2_desc', 'Households near you see your profile, rating, and availability.'), sub: t('landing.how.cs2_desc', 'Check ratings, reviews, and verification badges.') },
+                { step: 2, icon: MessageSquare, color: 'blue', title: t('landing.how.ws3_title', 'Accept bookings'), desc: t('landing.how.ws3_desc', 'Choose the jobs you want. Set your own schedule and rates.'), sub: t('landing.how.cs3_desc', 'Send a message or request a booking. Arrange the details directly.') },
+                { step: 3, icon: Star, color: 'amber', title: t('landing.how.ws4_title', 'Build your reputation'), desc: t('landing.how.ws4_desc', 'Every good job earns reviews that attract more work.'), sub: t('landing.how.cs4_desc', 'Your review helps the community and rewards good workers.') },
+              ].map((s) => {
+                const StepIcon = s.icon
+                return (
+                  <HowItWorksStep key={s.step} step={s.step} onActivate={setActiveStep}>
+                    <div className={`w-12 h-12 rounded-2xl bg-${s.color}-100 flex items-center justify-center mb-4`}>
+                      <StepIcon className={`w-6 h-6 text-${s.color}-600`} />
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`w-8 h-8 rounded-full bg-${s.color}-600 text-white flex items-center justify-center text-sm font-bold`}>{s.step + 1}</span>
+                      <h4 className="text-xl font-bold">{s.title}</h4>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed mb-3">{s.desc}</p>
+                    <div className="flex items-start gap-2 text-sm text-muted-foreground bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <Users className="w-4 h-4 shrink-0 mt-0.5 text-blue-500" />
+                      <span><span className="font-medium text-foreground">Households:</span> {s.sub}</span>
+                    </div>
+                  </HowItWorksStep>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Mobile: Simple vertical cards */}
+          <div className="lg:hidden grid md:grid-cols-2 gap-8">
             <Section>
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 border border-emerald-100">
                 <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
@@ -416,7 +583,6 @@ export default function LandingPage() {
               </div>
             </Section>
 
-            {/* Client side */}
             <Section delay={0.15}>
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-100">
                 <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
@@ -441,31 +607,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ━━━ Services ━━━ */}
-      <section id="services" className="py-24 md:py-32 bg-gradient-to-b from-gray-50/80 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Section className="text-center mb-16">
+      {/* ━━━ Services — Horizontal Scroll (desktop) / Grid (mobile) ━━━ */}
+      <section id="services" className="bg-gradient-to-b from-gray-50/80 to-white">
+        {/* Mobile: vertical grid */}
+        <div className="md:hidden py-24 px-4 sm:px-6">
+          <Section className="text-center mb-10">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 border border-amber-200 mb-4">
               {t('landing.services.badge', 'Service Categories')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+            <h2 className="text-3xl font-extrabold tracking-tight">
               {t('landing.services.heading_1', 'Every skill,')}{' '}
               <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">{t('landing.services.heading_2', 'one platform')}</span>
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('landing.services.subtext', 'From household help to skilled trades. Workers register their skills. Households find exactly what they need.')}
-            </p>
           </Section>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            className="grid grid-cols-2 gap-3 max-w-lg mx-auto">
             {services.map((s) => (
               <motion.div key={s.name} variants={scaleIn} transition={{ duration: 0.4 }}
-                className="group flex items-center gap-3 p-5 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 cursor-default">
-                <span className="text-2xl group-hover:scale-110 transition-transform duration-300">{s.emoji}</span>
-                <span className="font-medium text-[15px]">{s.name}</span>
+                className="group flex items-center gap-3 p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300">
+                <span className="text-2xl">{s.emoji}</span>
+                <span className="font-medium text-sm">{s.name}</span>
               </motion.div>
             ))}
           </motion.div>
+        </div>
+
+        {/* Desktop: horizontal scroll driven by vertical scroll */}
+        <div ref={servicesScrollRef} className="hidden md:block relative h-[250vh]">
+          <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
+            <div className="text-center mb-10 px-6">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 border border-amber-200 mb-4">
+                {t('landing.services.badge', 'Service Categories')}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+                {t('landing.services.heading_1', 'Every skill,')}{' '}
+                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">{t('landing.services.heading_2', 'one platform')}</span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t('landing.services.subtext', 'From household help to skilled trades. Workers register their skills. Households find exactly what they need.')}
+              </p>
+            </div>
+            <div className="overflow-hidden">
+              <motion.div style={{ x: servicesX }} className="flex gap-6 pl-[10%]">
+                {services.map((s) => (
+                  <TiltCard key={s.name} maxTilt={6} className="shrink-0 w-56 p-6 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 cursor-default">
+                    <span className="text-4xl block mb-3">{s.emoji}</span>
+                    <span className="font-semibold text-base">{s.name}</span>
+                  </TiltCard>
+                ))}
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -484,17 +676,18 @@ export default function LandingPage() {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {stories.map((story) => (
-              <motion.div key={story.name} variants={fadeUp} transition={{ duration: 0.5 }}
-                className="relative bg-white rounded-2xl p-7 border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300">
-                <div className="text-5xl font-serif text-gray-100 leading-none mb-1">&ldquo;</div>
-                <p className="text-foreground leading-relaxed mb-6 text-[15px]">{story.quote}</p>
-                <div className="flex items-center gap-3">
-                  <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${story.gradient} flex items-center justify-center text-white font-bold text-xs`}>{story.initials}</div>
-                  <div>
-                    <p className="font-semibold text-sm">{story.name}</p>
-                    <p className="text-xs text-muted-foreground">{story.role}</p>
+              <motion.div key={story.name} variants={fadeUp} transition={{ duration: 0.5 }}>
+                <TiltCard className="relative bg-white rounded-2xl p-7 border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300 h-full">
+                  <div className="text-5xl font-serif text-gray-100 leading-none mb-1">&ldquo;</div>
+                  <p className="text-foreground leading-relaxed mb-6 text-[15px]">{story.quote}</p>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${story.gradient} flex items-center justify-center text-white font-bold text-xs`}>{story.initials}</div>
+                    <div>
+                      <p className="font-semibold text-sm">{story.name}</p>
+                      <p className="text-xs text-muted-foreground">{story.role}</p>
+                    </div>
                   </div>
-                </div>
+                </TiltCard>
               </motion.div>
             ))}
           </motion.div>
@@ -553,16 +746,20 @@ export default function LandingPage() {
 
             <Section delay={0.3}>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/register/worker"
-                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-1">
-                  {t('landing.cta.register_worker', 'Register as a Worker')}
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link href="/register"
-                  className="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 hover:-translate-y-1">
-                  {t('landing.cta.find_worker', 'Find a Worker')}
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                <MagneticButton>
+                  <Link href="/register/worker"
+                    className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-1">
+                    {t('landing.cta.register_worker', 'Register as a Worker')}
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </MagneticButton>
+                <MagneticButton>
+                  <Link href="/register"
+                    className="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 hover:-translate-y-1">
+                    {t('landing.cta.find_worker', 'Find a Worker')}
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </MagneticButton>
               </div>
             </Section>
           </div>
