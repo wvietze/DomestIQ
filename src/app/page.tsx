@@ -443,8 +443,9 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ How It Works — Sticky Scroll Storytelling ━━━ */}
-      <section className="relative py-16 md:py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-dots opacity-30" />
+      <section className="relative py-16 md:py-20">
+        {/* bg-dots clipped to section without overflow-hidden on parent (sticky needs visible overflow) */}
+        <div className="absolute inset-0 bg-dots opacity-30 overflow-hidden" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
           <Section className="text-center mb-10">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-100 text-violet-800 border border-violet-200 mb-4">
