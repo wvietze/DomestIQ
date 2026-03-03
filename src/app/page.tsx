@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo, useState } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
@@ -62,7 +62,7 @@ function Section({ children, className = '', delay = 0 }: { children: React.Reac
 function HowItWorksStep({ children, step, onActivate }: { children: React.ReactNode; step: number; onActivate: (s: number) => void }) {
   const ref = useRef(null)
   const inView = useInView(ref, { margin: '-40% 0px -40% 0px' })
-  if (inView) onActivate(step)
+  useEffect(() => { if (inView) onActivate(step) }, [inView, step, onActivate])
   return (
     <motion.div ref={ref} initial={{ opacity: 0.3 }} animate={{ opacity: inView ? 1 : 0.3 }}
       transition={{ duration: 0.5 }} className="py-4">
@@ -479,13 +479,13 @@ export default function LandingPage() {
                             <div className="flex-1 h-9 rounded-full bg-gray-100 flex items-center px-3"><Search className="w-4 h-4 text-gray-400" /><span className="text-xs text-gray-400 ml-2">Search workers...</span></div>
                           </div>
                           {[
-                            { name: 'Thandi M.', role: 'Domestic Worker', rating: '4.9', color: 'emerald' },
-                            { name: 'Sipho K.', role: 'Gardener', rating: '4.8', color: 'teal' },
-                            { name: 'Nomsa D.', role: 'Domestic Worker', rating: '5.0', color: 'emerald' },
+                            { name: 'Thandi M.', role: 'Domestic Worker', rating: '4.9', avatarBg: 'bg-emerald-100', avatarText: 'text-emerald-700' },
+                            { name: 'Sipho K.', role: 'Gardener', rating: '4.8', avatarBg: 'bg-teal-100', avatarText: 'text-teal-700' },
+                            { name: 'Nomsa D.', role: 'Domestic Worker', rating: '5.0', avatarBg: 'bg-emerald-100', avatarText: 'text-emerald-700' },
                           ].map((w, i) => (
                             <motion.div key={i} initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 + i * 0.15 }}
                               className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 mb-2">
-                              <div className={`w-10 h-10 rounded-full bg-${w.color}-100 flex items-center justify-center text-xs font-bold text-${w.color}-700`}>{w.name.split(' ').map(n => n[0]).join('')}</div>
+                              <div className={`w-10 h-10 rounded-full ${w.avatarBg} flex items-center justify-center text-xs font-bold ${w.avatarText}`}>{w.name.split(' ').map(n => n[0]).join('')}</div>
                               <div className="flex-1 min-w-0"><p className="font-semibold text-xs truncate">{w.name}</p><p className="text-[10px] text-gray-500">{w.role}</p></div>
                               <div className="flex items-center gap-0.5"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /><span className="text-[10px] font-medium">{w.rating}</span></div>
                             </motion.div>
@@ -532,21 +532,21 @@ export default function LandingPage() {
             </div>
 
             {/* Right: Scrolling steps */}
-            <div className="space-y-[40vh] py-[10vh]">
+            <div className="space-y-[20vh] py-[5vh]">
               {[
-                { step: 0, icon: Phone, color: 'emerald', title: t('landing.how.ws1_title', 'Register with your phone'), desc: t('landing.how.ws1_desc', 'Tap icons to select your skills. No typing needed.'), sub: t('landing.how.cs1_desc', 'Filter by service, distance, rating, and availability.') },
-                { step: 1, icon: Search, color: 'teal', title: t('landing.how.ws2_title', 'Get discovered'), desc: t('landing.how.ws2_desc', 'Households near you see your profile, rating, and availability.'), sub: t('landing.how.cs2_desc', 'Check ratings, reviews, and verification badges.') },
-                { step: 2, icon: MessageSquare, color: 'blue', title: t('landing.how.ws3_title', 'Accept bookings'), desc: t('landing.how.ws3_desc', 'Choose the jobs you want. Set your own schedule and rates.'), sub: t('landing.how.cs3_desc', 'Send a message or request a booking. Arrange the details directly.') },
-                { step: 3, icon: Star, color: 'amber', title: t('landing.how.ws4_title', 'Build your reputation'), desc: t('landing.how.ws4_desc', 'Every good job earns reviews that attract more work.'), sub: t('landing.how.cs4_desc', 'Your review helps the community and rewards good workers.') },
+                { step: 0, icon: Phone, iconBg: 'bg-emerald-100', iconText: 'text-emerald-600', numBg: 'bg-emerald-600', title: t('landing.how.ws1_title', 'Register with your phone'), desc: t('landing.how.ws1_desc', 'Tap icons to select your skills. No typing needed.'), sub: t('landing.how.cs1_desc', 'Filter by service, distance, rating, and availability.') },
+                { step: 1, icon: Search, iconBg: 'bg-teal-100', iconText: 'text-teal-600', numBg: 'bg-teal-600', title: t('landing.how.ws2_title', 'Get discovered'), desc: t('landing.how.ws2_desc', 'Households near you see your profile, rating, and availability.'), sub: t('landing.how.cs2_desc', 'Check ratings, reviews, and verification badges.') },
+                { step: 2, icon: MessageSquare, iconBg: 'bg-blue-100', iconText: 'text-blue-600', numBg: 'bg-blue-600', title: t('landing.how.ws3_title', 'Accept bookings'), desc: t('landing.how.ws3_desc', 'Choose the jobs you want. Set your own schedule and rates.'), sub: t('landing.how.cs3_desc', 'Send a message or request a booking. Arrange the details directly.') },
+                { step: 3, icon: Star, iconBg: 'bg-amber-100', iconText: 'text-amber-600', numBg: 'bg-amber-600', title: t('landing.how.ws4_title', 'Build your reputation'), desc: t('landing.how.ws4_desc', 'Every good job earns reviews that attract more work.'), sub: t('landing.how.cs4_desc', 'Your review helps the community and rewards good workers.') },
               ].map((s) => {
                 const StepIcon = s.icon
                 return (
                   <HowItWorksStep key={s.step} step={s.step} onActivate={setActiveStep}>
-                    <div className={`w-12 h-12 rounded-2xl bg-${s.color}-100 flex items-center justify-center mb-4`}>
-                      <StepIcon className={`w-6 h-6 text-${s.color}-600`} />
+                    <div className={`w-12 h-12 rounded-2xl ${s.iconBg} flex items-center justify-center mb-4`}>
+                      <StepIcon className={`w-6 h-6 ${s.iconText}`} />
                     </div>
                     <div className="flex items-center gap-3 mb-2">
-                      <span className={`w-8 h-8 rounded-full bg-${s.color}-600 text-white flex items-center justify-center text-sm font-bold`}>{s.step + 1}</span>
+                      <span className={`w-8 h-8 rounded-full ${s.numBg} text-white flex items-center justify-center text-sm font-bold`}>{s.step + 1}</span>
                       <h4 className="text-xl font-bold">{s.title}</h4>
                     </div>
                     <p className="text-muted-foreground leading-relaxed mb-3">{s.desc}</p>
@@ -633,7 +633,7 @@ export default function LandingPage() {
         </div>
 
         {/* Desktop: horizontal scroll driven by vertical scroll */}
-        <div ref={servicesScrollRef} className="hidden md:block relative h-[250vh]">
+        <div ref={servicesScrollRef} className="hidden md:block relative h-[180vh]">
           <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
             <div className="text-center mb-10 px-6">
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 border border-amber-200 mb-4">
