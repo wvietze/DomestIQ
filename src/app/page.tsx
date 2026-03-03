@@ -138,7 +138,7 @@ export default function LandingPage() {
   ], [t])
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
 
       {/* ━━━ Navigation ━━━ */}
       <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}
