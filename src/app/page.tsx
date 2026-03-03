@@ -84,10 +84,11 @@ export default function LandingPage() {
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
-  // Horizontal scroll services
+  // Horizontal scroll services — two rows moving opposite directions
   const servicesScrollRef = useRef(null)
-  const { scrollYProgress: servicesProgress } = useScroll({ target: servicesScrollRef, offset: ['start start', 'end end'] })
-  const servicesX = useTransform(servicesProgress, [0, 1], ['5%', '-60%'])
+  const { scrollYProgress: servicesProgress } = useScroll({ target: servicesScrollRef, offset: ['start end', 'end start'] })
+  const servicesRow1X = useTransform(servicesProgress, [0, 1], ['10%', '-30%'])
+  const servicesRow2X = useTransform(servicesProgress, [0, 1], ['-20%', '10%'])
 
   // How It Works active step
   const [activeStep, setActiveStep] = useState(0)
@@ -433,10 +434,10 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ How It Works — Sticky Scroll Storytelling ━━━ */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
+      <section className="relative py-20 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-dots opacity-30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-          <Section className="text-center mb-16">
+          <Section className="text-center mb-12">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-100 text-violet-800 border border-violet-200 mb-4">
               {t('landing.how.badge', 'How It Works')}
             </span>
@@ -450,7 +451,7 @@ export default function LandingPage() {
           <div className="hidden lg:grid grid-cols-2 gap-16">
             {/* Left: Sticky visual */}
             <div className="relative">
-              <div className="sticky top-24 flex items-center justify-center h-[60vh]">
+              <div className="sticky top-28 flex items-center justify-center">
                 <div className="relative w-[280px] h-[480px] rounded-[2.5rem] bg-gradient-to-br from-gray-900 to-gray-800 p-3 shadow-2xl shadow-black/20">
                   {/* Phone notch */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
@@ -532,7 +533,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right: Scrolling steps */}
-            <div className="space-y-[20vh] py-[5vh]">
+            <div className="space-y-[12vh] py-[2vh]">
               {[
                 { step: 0, icon: Phone, iconBg: 'bg-emerald-100', iconText: 'text-emerald-600', numBg: 'bg-emerald-600', title: t('landing.how.ws1_title', 'Register with your phone'), desc: t('landing.how.ws1_desc', 'Tap icons to select your skills. No typing needed.'), sub: t('landing.how.cs1_desc', 'Filter by service, distance, rating, and availability.') },
                 { step: 1, icon: Search, iconBg: 'bg-teal-100', iconText: 'text-teal-600', numBg: 'bg-teal-600', title: t('landing.how.ws2_title', 'Get discovered'), desc: t('landing.how.ws2_desc', 'Households near you see your profile, rating, and availability.'), sub: t('landing.how.cs2_desc', 'Check ratings, reviews, and verification badges.') },
@@ -632,31 +633,39 @@ export default function LandingPage() {
           </motion.div>
         </div>
 
-        {/* Desktop: horizontal scroll driven by vertical scroll */}
-        <div ref={servicesScrollRef} className="hidden md:block relative h-[180vh]">
-          <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
-            <div className="text-center mb-10 px-6">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 border border-amber-200 mb-4">
-                {t('landing.services.badge', 'Service Categories')}
-              </span>
-              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-                {t('landing.services.heading_1', 'Every skill,')}{' '}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">{t('landing.services.heading_2', 'one platform')}</span>
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-                {t('landing.services.subtext', 'From household help to skilled trades. Workers register their skills. Households find exactly what they need.')}
-              </p>
-            </div>
-            <div className="overflow-hidden">
-              <motion.div style={{ x: servicesX }} className="flex gap-6 pl-[10%]">
-                {services.map((s) => (
-                  <TiltCard key={s.name} maxTilt={6} className="shrink-0 w-56 p-6 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 cursor-default">
-                    <span className="text-4xl block mb-3">{s.emoji}</span>
-                    <span className="font-semibold text-base">{s.name}</span>
-                  </TiltCard>
-                ))}
-              </motion.div>
-            </div>
+        {/* Desktop: two-row horizontal drift on scroll */}
+        <div ref={servicesScrollRef} className="hidden md:block py-24 md:py-32 overflow-hidden">
+          <div className="text-center mb-12 px-6">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 border border-amber-200 mb-4">
+              {t('landing.services.badge', 'Service Categories')}
+            </span>
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+              {t('landing.services.heading_1', 'Every skill,')}{' '}
+              <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">{t('landing.services.heading_2', 'one platform')}</span>
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t('landing.services.subtext', 'From household help to skilled trades. Workers register their skills. Households find exactly what they need.')}
+            </p>
+          </div>
+          <div className="space-y-4">
+            {/* Row 1: slides left */}
+            <motion.div style={{ x: servicesRow1X }} className="flex gap-4">
+              {[...services.slice(0, 6), ...services.slice(0, 6)].map((s, i) => (
+                <TiltCard key={`r1-${i}`} maxTilt={6} className="shrink-0 w-52 p-5 rounded-2xl bg-white border border-gray-100 hover:border-amber-200 hover:shadow-lg transition-all duration-300 cursor-default flex items-center gap-4">
+                  <span className="text-4xl">{s.emoji}</span>
+                  <span className="font-semibold text-[15px]">{s.name}</span>
+                </TiltCard>
+              ))}
+            </motion.div>
+            {/* Row 2: slides right */}
+            <motion.div style={{ x: servicesRow2X }} className="flex gap-4">
+              {[...services.slice(6), ...services.slice(6)].map((s, i) => (
+                <TiltCard key={`r2-${i}`} maxTilt={6} className="shrink-0 w-52 p-5 rounded-2xl bg-white border border-gray-100 hover:border-amber-200 hover:shadow-lg transition-all duration-300 cursor-default flex items-center gap-4">
+                  <span className="text-4xl">{s.emoji}</span>
+                  <span className="font-semibold text-[15px]">{s.name}</span>
+                </TiltCard>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
