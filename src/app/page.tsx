@@ -221,11 +221,17 @@ export default function LandingPage() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1.8 }}
-              className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-emerald-500" />{t('landing.hero.trust_popia', 'POPI Act Compliant')}</span>
-              <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-blue-500" />{t('landing.hero.trust_verified', 'ID Verified Workers')}</span>
-              <span className="flex items-center gap-1.5"><Eye className="w-4 h-4 text-amber-500" />{t('landing.hero.trust_criminal', 'Criminal Record Checks')}</span>
-              <span className="flex items-center gap-1.5"><Heart className="w-4 h-4 text-rose-500" />{t('landing.hero.trust_commission', 'Zero Commission on Workers')}</span>
+              className="mt-14 flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+              {[
+                { icon: Lock, color: 'text-emerald-500', text: t('landing.hero.trust_popia', 'POPI Act Compliant') },
+                { icon: Shield, color: 'text-blue-500', text: t('landing.hero.trust_verified', 'ID Verified Workers') },
+                { icon: Eye, color: 'text-amber-500', text: t('landing.hero.trust_criminal', 'Criminal Record Checks') },
+                { icon: Heart, color: 'text-rose-500', text: t('landing.hero.trust_commission', 'Zero Commission on Workers') },
+              ].map((item) => (
+                <TiltCard key={item.text} maxTilt={5} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm border border-gray-100">
+                  <item.icon className={`w-4 h-4 ${item.color}`} /><span>{item.text}</span>
+                </TiltCard>
+              ))}
             </motion.div>
           </div>
         </motion.div>
@@ -238,10 +244,12 @@ export default function LandingPage() {
             {stats.map((s) => {
               const Icon = s.icon
               return (
-                <motion.div key={s.label} variants={scaleIn} transition={{ duration: 0.5 }} className="text-center">
-                  <Icon className="w-5 h-5 text-emerald-400 mx-auto mb-2" />
-                  <p className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">{s.value}</p>
-                  <p className="text-sm text-gray-400 mt-1">{s.label}</p>
+                <motion.div key={s.label} variants={scaleIn} transition={{ duration: 0.5 }}>
+                  <TiltCard maxTilt={6} className="text-center p-4 rounded-2xl hover:bg-white/5 transition-colors">
+                    <Icon className="w-5 h-5 text-emerald-400 mx-auto mb-2" />
+                    <p className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">{s.value}</p>
+                    <p className="text-sm text-gray-400 mt-1">{s.label}</p>
+                  </TiltCard>
                 </motion.div>
               )
             })}
@@ -250,7 +258,7 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ For Workers (FIRST - this is the priority) ━━━ */}
-      <section id="for-workers" className="relative py-24 md:py-32 overflow-hidden">
+      <section id="for-workers" className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-amber-50/30" />
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
@@ -387,7 +395,7 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ For Households ━━━ */}
-      <section id="for-households" className="relative py-24 md:py-32 bg-gradient-to-b from-white to-gray-50/80">
+      <section id="for-households" className="relative py-16 md:py-24 bg-gradient-to-b from-white to-gray-50/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-40px' }} variants={stagger}
@@ -434,10 +442,10 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ How It Works — Sticky Scroll Storytelling ━━━ */}
-      <section className="relative py-20 md:py-24 overflow-hidden">
+      <section className="relative py-16 md:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-dots opacity-30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-          <Section className="text-center mb-12">
+          <Section className="text-center mb-10">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-100 text-violet-800 border border-violet-200 mb-4">
               {t('landing.how.badge', 'How It Works')}
             </span>
@@ -451,7 +459,7 @@ export default function LandingPage() {
           <div className="hidden lg:grid grid-cols-2 gap-16">
             {/* Left: Sticky visual */}
             <div className="relative">
-              <div className="sticky top-28 flex items-center justify-center">
+              <div className="sticky top-32 flex items-center justify-center pb-8">
                 <div className="relative w-[280px] h-[480px] rounded-[2.5rem] bg-gradient-to-br from-gray-900 to-gray-800 p-3 shadow-2xl shadow-black/20">
                   {/* Phone notch */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
@@ -533,7 +541,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right: Scrolling steps */}
-            <div className="space-y-[12vh] py-[2vh]">
+            <div className="space-y-24 pt-4 pb-8">
               {[
                 { step: 0, icon: Phone, iconBg: 'bg-emerald-100', iconText: 'text-emerald-600', numBg: 'bg-emerald-600', title: t('landing.how.ws1_title', 'Register with your phone'), desc: t('landing.how.ws1_desc', 'Tap icons to select your skills. No typing needed.'), sub: t('landing.how.cs1_desc', 'Filter by service, distance, rating, and availability.') },
                 { step: 1, icon: Search, iconBg: 'bg-teal-100', iconText: 'text-teal-600', numBg: 'bg-teal-600', title: t('landing.how.ws2_title', 'Get discovered'), desc: t('landing.how.ws2_desc', 'Households near you see your profile, rating, and availability.'), sub: t('landing.how.cs2_desc', 'Check ratings, reviews, and verification badges.') },
@@ -671,7 +679,7 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ Stories ━━━ */}
-      <section id="stories" className="py-24 md:py-32">
+      <section id="stories" className="py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <Section className="text-center mb-16">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-rose-100 text-rose-800 border border-rose-200 mb-4">
@@ -718,7 +726,7 @@ export default function LandingPage() {
       <FaqSection />
 
       {/* ━━━ Movement CTA ━━━ */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
+      <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-950" />
         <div className="absolute inset-0 bg-dots opacity-10" />
         <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[120px]" />
@@ -745,10 +753,10 @@ export default function LandingPage() {
                   { icon: Shield, text: t('landing.cta.pill2', 'Progressive trust verification') },
                   { icon: Globe, text: t('landing.cta.pill3', 'All 11 official SA languages') },
                 ].map((item) => (
-                  <div key={item.text} className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <TiltCard key={item.text} maxTilt={8} className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
                     <item.icon className="w-5 h-5 text-emerald-400 shrink-0" />
                     <span className="text-sm font-medium text-white">{item.text}</span>
-                  </div>
+                  </TiltCard>
                 ))}
               </div>
             </Section>
