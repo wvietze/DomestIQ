@@ -1,11 +1,26 @@
+import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { helpdeskRegisterSchema, parseBody } from '@/lib/validations/api'
 
 export async function POST(request: NextRequest) {
-  // Verify helpdesk secret — only authorized helpdesk terminals can register workers
+  // Verify helpdesk secret using timing-safe comparison to prevent timing attacks
   const helpdeskSecret = request.headers.get('x-helpdesk-secret')
-  if (!helpdeskSecret || helpdeskSecret !== process.env.HELPDESK_SECRET) {
+  const expectedSecret = process.env.HELPDESK_SECRET
+
+  if (!helpdeskSecret || !expectedSecret) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const isValid = crypto.timingSafeEqual(
+      Buffer.from(helpdeskSecret, 'utf8'),
+      Buffer.from(expectedSecret, 'utf8')
+    )
+    if (!isValid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

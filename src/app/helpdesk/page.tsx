@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { registerWorkerAction } from './actions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -127,13 +128,7 @@ export default function HelpdeskRegistrationPage() {
  setError('')
  setIsLoading(true)
  try {
- const res = await fetch('/api/helpdesk/register', {
- method: 'POST',
- headers: {
-  'Content-Type': 'application/json',
-  'x-helpdesk-secret': process.env.NEXT_PUBLIC_HELPDESK_SECRET || '',
- },
- body: JSON.stringify({
+ const data = await registerWorkerAction({
  fullName,
  phone: phone || null,
  city,
@@ -143,13 +138,10 @@ export default function HelpdeskRegistrationPage() {
  avatarBase64: avatarBase64 || undefined,
  idDocBase64: idDocBase64 || undefined,
  password: customPassword || undefined,
- }),
  })
 
- const data = await res.json()
-
- if (!res.ok) {
- throw new Error(data.error || 'Registration failed')
+ if (data.error) {
+ throw new Error(data.error)
  }
 
  setCredentials({
