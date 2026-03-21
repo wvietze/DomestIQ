@@ -20,6 +20,14 @@ export async function POST(request: NextRequest) {
 
     const { userId, title, body, url, tag } = await request.json()
 
+    // Only allow sending notifications to yourself (system notifications use internal calls)
+    if (userId !== user.id) {
+      return NextResponse.json(
+        { error: 'Can only send notifications to yourself' },
+        { status: 403 }
+      )
+    }
+
     if (!userId || !title || !body) {
       return NextResponse.json(
         { error: 'Missing required fields: userId, title, body' },
