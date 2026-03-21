@@ -40,33 +40,40 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // For each conversation, get unread message count
-    const conversationsWithUnread = await Promise.all(
-      (conversations || []).map(async (conv) => {
-        const { count } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', user.id)
-          .eq('is_read', false)
+    // Get unread counts for all conversations in one query
+    const conversationIds = (conversations || []).map(c => c.id)
+    const unreadCounts: Record<string, number> = {}
 
-        // Determine the other participant's profile
-        const otherParticipant =
-          conv.participant_one === user.id
-            ? conv.participant_two_profile
-            : conv.participant_one_profile
+    if (conversationIds.length > 0) {
+      const { data: unreadData } = await supabase
+        .from('messages')
+        .select('conversation_id')
+        .in('conversation_id', conversationIds)
+        .neq('sender_id', user.id)
+        .eq('is_read', false)
 
-        return {
-          id: conv.id,
-          bookingId: conv.booking_id,
-          otherParticipant,
-          lastMessageAt: conv.last_message_at,
-          lastMessagePreview: conv.last_message_preview,
-          unreadCount: count || 0,
-          createdAt: conv.created_at,
-        }
-      })
-    )
+      for (const msg of unreadData || []) {
+        unreadCounts[msg.conversation_id] = (unreadCounts[msg.conversation_id] || 0) + 1
+      }
+    }
+
+    // Map conversations synchronously (no more async needed)
+    const conversationsWithUnread = (conversations || []).map((conv) => {
+      const otherParticipant =
+        conv.participant_one === user.id
+          ? conv.participant_two_profile
+          : conv.participant_one_profile
+
+      return {
+        id: conv.id,
+        bookingId: conv.booking_id,
+        otherParticipant,
+        lastMessageAt: conv.last_message_at,
+        lastMessagePreview: conv.last_message_preview,
+        unreadCount: unreadCounts[conv.id] || 0,
+        createdAt: conv.created_at,
+      }
+    })
 
     return NextResponse.json({ conversations: conversationsWithUnread })
   } catch (error) {
