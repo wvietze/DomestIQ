@@ -7,7 +7,7 @@ import { useAuthStore } from '@/lib/stores/auth-store'
 import type { Profile } from '@/lib/types'
 
 // DEV MODE: When true, provides a mock user so pages render without auth
-const DEV_MODE = true
+const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
 
 const MOCK_WORKER_USER = {
   id: 'demo-worker-001',
