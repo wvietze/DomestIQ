@@ -3,30 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { translateText } from '@/lib/ai/translate'
 
 /**
- * Simple in-memory rate limiter.
- * Tracks requests per user per minute. Resets every 60 seconds.
- */
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const MAX_REQUESTS_PER_MINUTE = 20
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(userId)
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + 60_000 })
-    return true
-  }
-
-  if (entry.count >= MAX_REQUESTS_PER_MINUTE) {
-    return false
-  }
-
-  entry.count++
-  return true
-}
-
-/**
  * POST /api/ai/translate
  * Translate text.
  * Body: { text: string, targetLanguage: string, sourceLanguage?: string }
@@ -47,13 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Rate limit check
-    if (!checkRateLimit(user.id)) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Max 20 requests per minute.' },
-        { status: 429 }
-      )
-    }
+    // TODO: Add Redis-based rate limiting (Upstash) — in-memory Map doesn't work on serverless
 
     const body = await request.json()
     const { text, targetLanguage, sourceLanguage } = body
