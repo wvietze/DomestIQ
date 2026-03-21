@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,12 +11,19 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Verify API key
-    const { data: partner } = await supabase
+    // Verify API key against bcrypt hash
+    const { data: partners } = await supabase
       .from('partner_api_keys')
       .select('*')
       .eq('is_active', true)
-      .single()
+
+    let partner = null
+    for (const p of partners || []) {
+      if (await bcrypt.compare(apiKey, p.api_key_hash)) {
+        partner = p
+        break
+      }
+    }
 
     if (!partner) {
       return NextResponse.json({ error: 'Invalid API key' }, { status: 401 })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import bcrypt from 'bcryptjs'
 
 // Partner API: Verify worker income (consent-gated)
 // Partners must authenticate with API key and provide consent reference
@@ -16,15 +17,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Verify API key (hash comparison)
-    // In production, use bcrypt. For now, we'll use a simple lookup
-    const { data: partner } = await supabase
+    // Verify API key against bcrypt hash
+    const { data: partners } = await supabase
       .from('partner_api_keys')
       .select('*')
       .eq('is_active', true)
-      .single()
 
-    // Note: In production, hash the API key and compare with stored hash
+    let partner = null
+    for (const p of partners || []) {
+      if (await bcrypt.compare(apiKey, p.api_key_hash)) {
+        partner = p
+        break
+      }
+    }
+
     if (!partner) {
       return NextResponse.json(
         { error: 'Invalid API key' },
