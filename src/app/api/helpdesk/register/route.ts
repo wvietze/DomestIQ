@@ -1,7 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Verify helpdesk secret — only authorized helpdesk terminals can register workers
+  const helpdeskSecret = request.headers.get('x-helpdesk-secret')
+  if (!helpdeskSecret || helpdeskSecret !== process.env.HELPDESK_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const {
@@ -34,12 +40,6 @@ export async function POST(request: Request) {
       const num = Math.floor(10000 + Math.random() * 90000) // 10000-99999
       workerCode = `DQ${num}`
       internalEmail = `dq${num}@domestiq.app`
-
-      // Check if this email already exists
-      const { data: existing } = await admin.auth.admin.listUsers({
-        page: 1,
-        perPage: 1,
-      })
 
       // Try to create the user — if email collision, retry
       const pwd = customPassword || generatePassword()
@@ -192,6 +192,7 @@ export async function POST(request: Request) {
         })
       }
 
+      // Password returned intentionally — displayed once to helpdesk operator, never stored in logs
       return NextResponse.json({
         success: true,
         workerCode,

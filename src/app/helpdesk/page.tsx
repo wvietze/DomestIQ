@@ -129,7 +129,10 @@ export default function HelpdeskRegistrationPage() {
  try {
  const res = await fetch('/api/helpdesk/register', {
  method: 'POST',
- headers: { 'Content-Type': 'application/json' },
+ headers: {
+  'Content-Type': 'application/json',
+  'x-helpdesk-secret': process.env.NEXT_PUBLIC_HELPDESK_SECRET || '',
+ },
  body: JSON.stringify({
  fullName,
  phone: phone || null,
