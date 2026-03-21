@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendPushToUser } from '@/lib/push/send'
+import { sendMessageSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/messages
@@ -98,19 +99,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const {
-      conversationId,
-      content,
-      messageType = 'text',
-      imageUrl,
-    } = body
-
-    if (!conversationId || !content) {
-      return NextResponse.json(
-        { error: 'Missing required fields: conversationId, content' },
-        { status: 400 }
-      )
+    const parsed = parseBody(sendMessageSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { conversationId, content, messageType, imageUrl } = parsed.data
 
     // Verify the conversation exists and user is a participant
     const { data: conversation, error: convError } = await supabase

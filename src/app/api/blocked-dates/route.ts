@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { blockedDateSchema, deleteBlockedDateSchema, parseBody } from '@/lib/validations/api'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -55,11 +56,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { blocked_date, reason } = await request.json()
-
-  if (!blocked_date) {
-    return NextResponse.json({ error: 'blocked_date is required' }, { status: 400 })
+  const rawBody = await request.json()
+  const parsed = parseBody(blockedDateSchema, rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
   }
+  const { blocked_date, reason } = parsed.data
 
   // Get worker profile id
   const { data: wp } = await supabase
@@ -96,11 +98,12 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { blocked_date } = await request.json()
-
-  if (!blocked_date) {
-    return NextResponse.json({ error: 'blocked_date is required' }, { status: 400 })
+  const rawBody = await request.json()
+  const parsed = parseBody(deleteBlockedDateSchema, rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
   }
+  const { blocked_date } = parsed.data
 
   // Get worker profile id
   const { data: wp } = await supabase

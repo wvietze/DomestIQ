@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { favoriteSchema, parseBody } from '@/lib/validations/api'
 
 export async function GET() {
   const supabase = await createClient()
@@ -34,11 +35,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { worker_id } = await request.json()
-
-  if (!worker_id) {
-    return NextResponse.json({ error: 'worker_id is required' }, { status: 400 })
+  const rawBody = await request.json()
+  const parsed = parseBody(favoriteSchema, rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
   }
+  const { worker_id } = parsed.data
 
   const { data, error } = await supabase
     .from('favorite_workers')
@@ -61,11 +63,12 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { worker_id } = await request.json()
-
-  if (!worker_id) {
-    return NextResponse.json({ error: 'worker_id is required' }, { status: 400 })
+  const rawBody = await request.json()
+  const parsed = parseBody(favoriteSchema, rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
   }
+  const { worker_id } = parsed.data
 
   const { error } = await supabase
     .from('favorite_workers')

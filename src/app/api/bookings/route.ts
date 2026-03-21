@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { sendPushToUser } from '@/lib/push/send'
 import { sendEmail } from '@/lib/email/send'
 import { newBookingWorker } from '@/lib/email/templates'
+import { createBookingSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/bookings
@@ -121,6 +122,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    const parsed = parseBody(createBookingSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
     const {
       worker_id,
       service_id,
@@ -132,24 +137,7 @@ export async function POST(request: NextRequest) {
       location_lng,
       estimated_cost,
       client_notes,
-    } = body
-
-    // Validate required fields
-    if (
-      !worker_id ||
-      !service_id ||
-      !scheduled_date ||
-      !scheduled_start_time ||
-      !scheduled_end_time
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            'Missing required fields: worker_id, service_id, scheduled_date, scheduled_start_time, scheduled_end_time',
-        },
-        { status: 400 }
-      )
-    }
+    } = parsed.data
 
     // Verify worker exists
     const { data: workerProfile } = await supabase

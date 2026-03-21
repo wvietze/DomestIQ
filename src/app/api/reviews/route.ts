@@ -4,6 +4,7 @@ import { sendPushToUser } from '@/lib/push/send'
 import { sendEmail } from '@/lib/email/send'
 import { reviewReceived } from '@/lib/email/templates'
 import { REVIEW_TRAITS, type ReviewTrait } from '@/lib/types/review'
+import { createReviewSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/reviews
@@ -65,13 +66,6 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Validate that a rating value is between 1 and 5.
- */
-function isValidRating(value: unknown): value is number {
-  return typeof value === 'number' && value >= 1 && value <= 5
-}
-
-/**
  * POST /api/reviews
  * Create a review. Client only, must have a completed booking with the worker.
  */
@@ -102,6 +96,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    const parsed = parseBody(createReviewSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
     const {
       booking_id,
       rating,
@@ -110,9 +108,9 @@ export async function POST(request: NextRequest) {
       professionalism_rating,
       punctuality_rating,
       quality_rating,
-    } = body
+    } = parsed.data
 
-    // Validate traits if provided
+    // Filter traits to only valid review traits
     const validTraits: ReviewTrait[] = []
     if (traits && Array.isArray(traits)) {
       for (const t of traits) {
@@ -120,49 +118,6 @@ export async function POST(request: NextRequest) {
           validTraits.push(t as ReviewTrait)
         }
       }
-    }
-
-    // Validate required fields
-    if (!booking_id || !rating) {
-      return NextResponse.json(
-        { error: 'Missing required fields: booking_id, rating' },
-        { status: 400 }
-      )
-    }
-
-    // Validate rating values
-    if (!isValidRating(rating)) {
-      return NextResponse.json(
-        { error: 'Rating must be between 1 and 5' },
-        { status: 400 }
-      )
-    }
-
-    if (
-      professionalism_rating !== undefined &&
-      !isValidRating(professionalism_rating)
-    ) {
-      return NextResponse.json(
-        { error: 'professionalism_rating must be between 1 and 5' },
-        { status: 400 }
-      )
-    }
-
-    if (
-      punctuality_rating !== undefined &&
-      !isValidRating(punctuality_rating)
-    ) {
-      return NextResponse.json(
-        { error: 'punctuality_rating must be between 1 and 5' },
-        { status: 400 }
-      )
-    }
-
-    if (quality_rating !== undefined && !isValidRating(quality_rating)) {
-      return NextResponse.json(
-        { error: 'quality_rating must be between 1 and 5' },
-        { status: 400 }
-      )
     }
 
     // Verify booking exists, is completed, and user is the client

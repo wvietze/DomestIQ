@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { cvDataSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/cv-data
@@ -51,24 +52,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { work_history, education, skills, languages, personal_statement } = body
-
-    // Validate work_history entries
-    if (work_history && !Array.isArray(work_history)) {
-      return NextResponse.json({ error: 'work_history must be an array' }, { status: 400 })
+    const parsed = parseBody(cvDataSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
-
-    if (education && !Array.isArray(education)) {
-      return NextResponse.json({ error: 'education must be an array' }, { status: 400 })
-    }
-
-    if (skills && !Array.isArray(skills)) {
-      return NextResponse.json({ error: 'skills must be an array' }, { status: 400 })
-    }
-
-    if (languages && !Array.isArray(languages)) {
-      return NextResponse.json({ error: 'languages must be an array' }, { status: 400 })
-    }
+    const { work_history, education, skills, languages, personal_statement } = parsed.data
 
     // Upsert CV data
     const { data: cvData, error } = await supabase

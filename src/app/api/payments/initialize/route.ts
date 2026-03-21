@@ -5,6 +5,7 @@ import {
   generateReference,
 } from '@/lib/payments/paystack'
 import { calculatePlatformFee } from '@/lib/types/payment'
+import { paymentInitializeSchema, parseBody } from '@/lib/validations/api'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,14 +17,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { booking_id } = body
-
-    if (!booking_id) {
-      return NextResponse.json(
-        { error: 'booking_id is required' },
-        { status: 400 }
-      )
+    const parsed = parseBody(paymentInitializeSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { booking_id } = parsed.data
 
     // Fetch booking with worker info
     const { data: booking, error: bookingError } = await supabase

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { sendPushToUser } from '@/lib/push/send'
 import { sendEmail } from '@/lib/email/send'
 import { bookingConfirmation } from '@/lib/email/templates'
+import { updateBookingSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/bookings/[id]
@@ -120,14 +121,11 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { status: newStatus, cancellation_reason, worker_notes } = body
-
-    if (!newStatus) {
-      return NextResponse.json(
-        { error: 'Missing required field: status' },
-        { status: 400 }
-      )
+    const parsed = parseBody(updateBookingSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { status: newStatus, cancellation_reason, worker_notes } = parsed.data
 
     // Fetch the current booking
     const { data: booking, error: bookingError } = await supabase

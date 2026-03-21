@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { workerEstateSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/worker-estates?workerId=xxx
@@ -53,11 +54,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { estate_id, registration_number, registered_since } = body
-
-    if (!estate_id) {
-      return NextResponse.json({ error: 'estate_id is required' }, { status: 400 })
+    const parsed = parseBody(workerEstateSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { estate_id, registration_number, registered_since } = parsed.data
 
     const { data: registration, error } = await supabase
       .from('worker_estate_registrations')

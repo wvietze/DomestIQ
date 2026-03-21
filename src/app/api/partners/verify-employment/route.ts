@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import bcrypt from 'bcryptjs'
+import { partnerVerifySchema, parseBody } from '@/lib/validations/api'
 
 /**
  * POST /api/partners/verify-employment
@@ -40,11 +41,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { worker_id, consent_reference } = body
-
-    if (!worker_id || !consent_reference) {
-      return NextResponse.json({ error: 'worker_id and consent_reference required' }, { status: 400 })
+    const parsed = parseBody(partnerVerifySchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { worker_id, consent_reference } = parsed.data
 
     // Verify consent exists and is active
     const { data: consent } = await supabase

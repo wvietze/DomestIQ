@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { helpdeskRegisterSchema, parseBody } from '@/lib/validations/api'
 
 export async function POST(request: NextRequest) {
   // Verify helpdesk secret — only authorized helpdesk terminals can register workers
@@ -10,6 +11,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
+    const parsed = parseBody(helpdeskRegisterSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
     const {
       fullName,
       phone,
@@ -20,14 +25,7 @@ export async function POST(request: NextRequest) {
       avatarBase64,
       idDocBase64,
       password: customPassword,
-    } = body
-
-    if (!fullName || !city || !selectedServices?.length || !popiConsent) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+    } = parsed.data
 
     const admin = createAdminClient()
 

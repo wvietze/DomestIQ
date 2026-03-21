@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendNotificationSchema, parseBody } from '@/lib/validations/api'
 
 // Force Node.js runtime (web-push needs crypto/http)
 export const runtime = 'nodejs'
@@ -18,20 +19,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { userId, title, body, url, tag } = await request.json()
+    const rawBody = await request.json()
+    const parsed = parseBody(sendNotificationSchema, rawBody)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
+    const { userId, title, body, url, tag } = parsed.data
 
     // Only allow sending notifications to yourself (system notifications use internal calls)
     if (userId !== user.id) {
       return NextResponse.json(
         { error: 'Can only send notifications to yourself' },
         { status: 403 }
-      )
-    }
-
-    if (!userId || !title || !body) {
-      return NextResponse.json(
-        { error: 'Missing required fields: userId, title, body' },
-        { status: 400 }
       )
     }
 

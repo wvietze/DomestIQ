@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { referenceRequestSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/reference-requests
@@ -74,11 +75,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { client_id, message } = body
-
-    if (!client_id) {
-      return NextResponse.json({ error: 'client_id is required' }, { status: 400 })
+    const parsed = parseBody(referenceRequestSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { client_id, message } = parsed.data
 
     const { data: refRequest, error } = await supabase
       .from('reference_requests')

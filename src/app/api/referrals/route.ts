@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendPushToUser } from '@/lib/push/send'
+import { createReferralSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/referrals
@@ -67,19 +68,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { referral_code, referred_user_id } = body
+    const parsed = parseBody(createReferralSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
+    const { referral_code, referred_user_id } = parsed.data
 
     if (referred_user_id !== user.id) {
       return NextResponse.json(
         { error: 'Can only record referrals for yourself' },
         { status: 403 }
-      )
-    }
-
-    if (!referral_code || !referred_user_id) {
-      return NextResponse.json(
-        { error: 'Missing required fields: referral_code, referred_user_id' },
-        { status: 400 }
       )
     }
 

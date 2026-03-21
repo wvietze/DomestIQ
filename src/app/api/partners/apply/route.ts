@@ -1,36 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { partnerApplySchema, parseBody } from '@/lib/validations/api'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { company_name, contact_name, contact_email, contact_phone, company_type, interest, message, website } = body
-
-    // Validate required fields
-    if (!company_name || !contact_name || !contact_email || !company_type || !interest) {
-      return NextResponse.json(
-        { error: 'company_name, contact_name, contact_email, company_type, and interest are required' },
-        { status: 400 }
-      )
+    const parsed = parseBody(partnerApplySchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
-
-    // Validate company_type
-    const validTypes = ['bank', 'insurer', 'micro_lender', 'sponsor', 'advertiser', 'government', 'other']
-    if (!validTypes.includes(company_type)) {
-      return NextResponse.json(
-        { error: `company_type must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
-      )
-    }
-
-    // Validate interest
-    const validInterests = ['data_api', 'sponsorship', 'advertising', 'multiple']
-    if (!validInterests.includes(interest)) {
-      return NextResponse.json(
-        { error: `interest must be one of: ${validInterests.join(', ')}` },
-        { status: 400 }
-      )
-    }
+    const { company_name, contact_name, contact_email, contact_phone, company_type, interest, message, website } = parsed.data
 
     const supabase = createAdminClient()
 

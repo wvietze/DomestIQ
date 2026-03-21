@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { translateText } from '@/lib/ai/translate'
+import { translateSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * POST /api/ai/translate
@@ -26,28 +27,11 @@ export async function POST(request: NextRequest) {
     // TODO: Add Redis-based rate limiting (Upstash) — in-memory Map doesn't work on serverless
 
     const body = await request.json()
-    const { text, targetLanguage, sourceLanguage } = body
-
-    if (!text || !targetLanguage) {
-      return NextResponse.json(
-        { error: 'Missing required fields: text, targetLanguage' },
-        { status: 400 }
-      )
+    const parsed = parseBody(translateSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
-
-    if (typeof text !== 'string' || text.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Text must be a non-empty string' },
-        { status: 400 }
-      )
-    }
-
-    if (text.length > 5000) {
-      return NextResponse.json(
-        { error: 'Text must be 5000 characters or fewer' },
-        { status: 400 }
-      )
-    }
+    const { text, targetLanguage, sourceLanguage } = parsed.data
 
     const result = await translateText(text, targetLanguage, sourceLanguage)
 

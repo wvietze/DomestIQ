@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { reviewRequestSchema, parseBody } from '@/lib/validations/api'
 
 /**
  * GET /api/review-requests
@@ -77,11 +78,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { booking_id } = body
-
-    if (!booking_id) {
-      return NextResponse.json({ error: 'booking_id is required' }, { status: 400 })
+    const parsed = parseBody(reviewRequestSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { booking_id } = parsed.data
 
     // Verify booking exists, is completed, and user is the worker
     const { data: booking } = await supabase

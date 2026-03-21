@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { consentSchema, parseBody } from '@/lib/validations/api'
 
 // GET: List user's active consents
 export async function GET() {
@@ -39,25 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { consent_type, consent_category, consent_text } = body
-
-    const validTypes = [
-      'platform_terms',
-      'privacy_policy',
-      'popi_consent',
-      'income_data_sharing',
-      'identity_sharing',
-      'cv_data_sharing',
-      'marketing',
-      'location_tracking',
-    ]
-
-    if (!consent_type || !validTypes.includes(consent_type)) {
-      return NextResponse.json(
-        { error: `Invalid consent_type. Must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
-      )
+    const parsed = parseBody(consentSchema, body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
+    const { consent_type, consent_category, consent_text } = parsed.data
 
     // Check if active consent of this type already exists
     const { data: existing } = await supabase
