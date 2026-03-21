@@ -34,7 +34,7 @@ const adminNavItems: AdminNavItem[] = [
   { label: 'Ads', href: '/admin/ads', icon: Megaphone },
 ]
 
-export default function AdminLayout({
+export default function AdminShell({
   children,
 }: {
   children: React.ReactNode
