@@ -3,6 +3,8 @@
 // Server-side only — uses PAYSTACK_SECRET_KEY
 // -----------------------------------------------------------------------------
 
+import crypto from 'crypto'
+
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 
 function getHeaders(): HeadersInit {
@@ -205,18 +207,24 @@ export function verifyWebhookSignature(
   body: string,
   signature: string
 ): boolean {
-  // Use Node.js crypto (available in Next.js API routes)
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const crypto = require('crypto');
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!secretKey) return false;
+  const secretKey = process.env.PAYSTACK_SECRET_KEY
+  if (!secretKey) return false
 
   const hash = crypto
     .createHmac('sha512', secretKey)
     .update(body)
-    .digest('hex');
+    .digest('hex')
 
-  return hash === signature;
+  // Timing-safe comparison to prevent timing attacks
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(hash, 'utf8'),
+      Buffer.from(signature, 'utf8')
+    )
+  } catch {
+    // Lengths differ — not equal
+    return false
+  }
 }
 
 // ─── Generate Reference ───
