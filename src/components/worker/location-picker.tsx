@@ -39,8 +39,7 @@ export function LocationPicker({
  const [detectError, setDetectError] = useState('')
  const [addressResult, setAddressResult] = useState<{ name: string; lat: number; lng: number } | null>(null)
  const autocompleteRef = useRef<HTMLInputElement>(null)
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const autocompleteInstance = useRef<any>(null)
+ const autocompleteInstance = useRef<google.maps.places.Autocomplete | null>(null)
 
  // Selected city names from service areas
  const selectedCityNames = serviceAreas.map(a => a.area_name)
@@ -52,22 +51,21 @@ export function LocationPicker({
  try {
  await loadGoogleMaps()
  if (!mounted || !autocompleteRef.current || !isGoogleMapsLoaded()) return
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const google = (window as any).google
+ const google = window.google
  autocompleteInstance.current = new google.maps.places.Autocomplete(
  autocompleteRef.current,
  { componentRestrictions: { country: 'za' }, types: ['geocode'] }
  )
  autocompleteInstance.current.addListener('place_changed', () => {
- const place = autocompleteInstance.current.getPlace()
+ const place = autocompleteInstance.current?.getPlace()
  if (place?.geometry?.location) {
  const lat = place.geometry.location.lat()
  const lng = place.geometry.location.lng()
  const name = place.formatted_address || place.name || ''
  // Extract suburb + city for friendly display
  const components = place.address_components || []
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const getComp = (type: string) => components.find((c: any) => c.types.includes(type))?.long_name
+ interface AddressComponent { types: string[]; long_name: string; short_name: string }
+ const getComp = (type: string) => components.find((c: AddressComponent) => c.types.includes(type))?.long_name
  const suburb = getComp('sublocality') || getComp('neighborhood')
  const city = getComp('locality')
  const friendlyName = [suburb, city].filter(Boolean).join(', ') || name

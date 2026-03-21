@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { ExternalLink } from 'lucide-react'
 
 interface SponsorData {
@@ -54,7 +55,7 @@ export function SponsorBadge({ placement }: { placement: string }) {
       style={{ backgroundColor: sponsor.bg_color, color: sponsor.text_color }}
     >
       {sponsor.partner_logo_url ? (
-        <img src={sponsor.partner_logo_url} alt={sponsor.partner_name} className="w-6 h-6 rounded object-contain" />
+        <Image src={sponsor.partner_logo_url} alt={sponsor.partner_name} width={24} height={24} className="rounded object-contain" />
       ) : (
         <span className="w-6 h-6 rounded bg-white/20 flex items-center justify-center text-xs font-bold">
           {sponsor.partner_name.slice(0, 1)}

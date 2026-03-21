@@ -15,6 +15,7 @@ import {
  MessageSquare, Clock, ArrowLeft, MapPin,
  Briefcase, Award, ChevronLeft, ChevronRight, X
 } from 'lucide-react'
+import Image from 'next/image'
 import { FavoriteButton } from '@/components/shared/favorite-button'
 import { TraitSummary } from '@/components/review/trait-summary'
 import { ReferenceCard } from '@/components/reference/reference-card'
@@ -251,9 +252,9 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
  <button
  key={img.id}
  onClick={() => setLightboxIdx(idx)}
- className="aspect-square rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
+ className="relative aspect-square rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
  >
- <img src={img.image_url} alt={img.caption || 'Work photo'} className="w-full h-full object-cover"/>
+ <Image src={img.image_url} alt={img.caption || 'Work photo'} fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
  </button>
  ))}
  </div>
@@ -388,12 +389,15 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
  <ChevronRight className="w-10 h-10"/>
  </button>
  )}
- <img
- src={portfolio[lightboxIdx].image_url}
- alt={portfolio[lightboxIdx].caption || 'Portfolio'}
- className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
- onClick={e => e.stopPropagation()}
- />
+ <div className="relative max-w-[90vw] max-h-[85vh] w-[90vw] h-[85vh]" onClick={e => e.stopPropagation()}>
+   <Image
+     src={portfolio[lightboxIdx].image_url}
+     alt={portfolio[lightboxIdx].caption || 'Portfolio'}
+     fill
+     className="object-contain rounded-lg"
+     sizes="90vw"
+   />
+ </div>
  {portfolio[lightboxIdx].caption && (
  <p className="absolute bottom-8 text-white text-center text-sm max-w-md">{portfolio[lightboxIdx].caption}</p>
  )}

@@ -1,6 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { askClaude } from './claude'
 
+interface SearchWorkerRow {
+  worker_id: string
+  full_name: string
+  bio: string | null
+  hourly_rate: number | null
+  overall_rating: number
+  total_reviews: number
+  distance_km: number
+  services: string[]
+  is_verified: boolean
+}
+
 interface WorkerRecommendation {
   workerId: string
   score: number
@@ -65,8 +77,7 @@ export async function getSmartRecommendations(
   }
 
   // Limit to top 10 workers
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const topWorkers = (workers as any[]).slice(0, 10)
+  const topWorkers = (workers as SearchWorkerRow[]).slice(0, 10)
 
   // Build context for Claude
   const workerProfiles = topWorkers.map((w, index) => ({

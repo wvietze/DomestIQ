@@ -25,6 +25,7 @@ import {
   ImagePlus, X, Building2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 const SERVICE_OPTIONS = [
@@ -690,7 +691,7 @@ export default function WorkerProfileEditPage() {
               <div className="grid grid-cols-3 gap-2">
                 {portfolioImages.map(img => (
                   <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden group">
-                    <img src={img.image_url} alt={img.caption || 'Portfolio'} className="w-full h-full object-cover" />
+                    <Image src={img.image_url} alt={img.caption || 'Portfolio'} fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
                     <button
                       onClick={() => handlePortfolioDelete(img.id, img.image_url)}
                       className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

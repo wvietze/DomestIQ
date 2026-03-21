@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Languages, Check, CheckCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -49,7 +50,11 @@ export function MessageBubble({ message, currentUserId, currentLanguage = 'en', 
     <div className={cn('flex mb-2', isMine ? 'justify-end' : 'justify-start')}>
       <div className="max-w-[80%] space-y-1">
         <div className={cn('px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed', isMine ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md')}>
-          {message.image_url && <img src={message.image_url} alt="Attachment" className="rounded-lg max-w-full mb-2" loading="lazy" />}
+          {message.image_url && (
+            <div className="relative w-full mb-2" style={{ minHeight: 120 }}>
+              <Image src={message.image_url} alt="Attachment" fill className="rounded-lg object-contain" sizes="(max-width: 768px) 80vw, 400px" />
+            </div>
+          )}
           <p>{message.content}</p>
           {showTranslation && translatedText && (
             <p className={cn('mt-2 pt-2 text-sm italic border-t', isMine ? 'border-primary-foreground/20' : 'border-foreground/10')}>{translatedText}</p>

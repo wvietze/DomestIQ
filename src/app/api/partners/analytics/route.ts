@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
       ip_address: request.headers.get('x-forwarded-for') || 'unknown',
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       total_workers: totalWorkers,
       total_clients: totalClients,
       total_bookings: totalBookings,
@@ -175,6 +175,8 @@ export async function GET(request: NextRequest) {
       },
       monthly_booking_trend: [],
     })
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600')
+    return response
   } catch (error) {
     console.error('Partner analytics error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

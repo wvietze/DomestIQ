@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { X, ExternalLink } from 'lucide-react'
@@ -61,9 +62,9 @@ export function DashboardAd({ placement, role, service }: DashboardAdProps) {
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {ad.image_url ? (
-            <img src={ad.image_url} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
+            <Image src={ad.image_url} alt="" width={56} height={56} className="rounded-lg object-cover shrink-0" />
           ) : ad.advertiser_logo_url ? (
-            <img src={ad.advertiser_logo_url} alt={ad.advertiser_name} className="w-10 h-10 rounded-lg object-contain shrink-0" />
+            <Image src={ad.advertiser_logo_url} alt={ad.advertiser_name} width={40} height={40} className="rounded-lg object-contain shrink-0" />
           ) : null}
 
           <div className="flex-1 min-w-0">

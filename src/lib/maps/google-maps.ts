@@ -1,4 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// Extend the Window interface to avoid `any` casts for Google Maps
+declare global {
+  interface Window {
+    google: typeof google
+  }
+}
 
 let mapsLoaded = false
 let loadPromise: Promise<void> | null = null
@@ -22,14 +27,14 @@ export function loadGoogleMaps(): Promise<void> {
 }
 
 export function isGoogleMapsLoaded(): boolean {
-  return mapsLoaded && typeof (window as any).google !== 'undefined'
+  return mapsLoaded && typeof window.google !== 'undefined'
 }
 
-function getGoogle(): any {
-  return (window as any).google
+function getGoogle(): typeof google {
+  return window.google
 }
 
-export function createMap(element: HTMLElement, options: { center: { lat: number; lng: number }; zoom?: number }): any {
+export function createMap(element: HTMLElement, options: { center: { lat: number; lng: number }; zoom?: number }): google.maps.Map | null {
   if (!isGoogleMapsLoaded()) return null
   const g = getGoogle()
   return new g.maps.Map(element, {
@@ -39,12 +44,12 @@ export function createMap(element: HTMLElement, options: { center: { lat: number
   })
 }
 
-export function addMarker(map: any, position: { lat: number; lng: number }, options?: { title?: string; draggable?: boolean }): any {
+export function addMarker(map: google.maps.Map, position: { lat: number; lng: number }, options?: { title?: string; draggable?: boolean }): google.maps.Marker {
   const g = getGoogle()
   return new g.maps.Marker({ map, position, title: options?.title, draggable: options?.draggable ?? false })
 }
 
-export function addCircleOverlay(map: any, center: { lat: number; lng: number }, radiusKm: number): any {
+export function addCircleOverlay(map: google.maps.Map, center: { lat: number; lng: number }, radiusKm: number): google.maps.Circle {
   const g = getGoogle()
   return new g.maps.Circle({ map, center, radius: radiusKm * 1000, fillColor: '#2563EB', fillOpacity: 0.1, strokeColor: '#2563EB', strokeOpacity: 0.3, strokeWeight: 2, editable: true, draggable: true })
 }
