@@ -10,6 +10,25 @@ export async function middleware(request: NextRequest) {
   const { supabase, user, supabaseResponse } = await updateSession(request)
   const path = request.nextUrl.pathname
 
+  // Signed-in users should skip the landing page and land in their app shell.
+  // Unknown roles (no profile yet) still see the landing so they can register.
+  if (path === '/' && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (profile?.role === 'worker') {
+      return NextResponse.redirect(new URL('/worker-dashboard', request.url))
+    }
+    if (profile?.role === 'client') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+    if (profile?.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin', request.url))
+    }
+  }
+
   // Allow public routes
   if (
     publicRoutes.some((route) => path === route || (route !== '/' && path.startsWith(`${route}/`))) ||

@@ -143,13 +143,27 @@
   }
 }
 
-/* ─── Material Symbols (Stitch icon system) ─── */
+/* ─── Material Symbols (Stitch icon system) ───
+   font-family must be declared here (not only by the Google Fonts stylesheet)
+   so that a ligature like 'favorite' never renders as literal text during the
+   font-load fallback window. */
 
 .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   font-size: 24px;
   line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
   vertical-align: middle;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── Premium Utility Classes ─── */
