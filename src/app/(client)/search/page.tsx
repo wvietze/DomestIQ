@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useSearchStore, type SortOption } from '@/lib/stores/search-store'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { useFavoritesStore } from '@/lib/stores/favorites-store'
-import { SERVICE_TYPES } from '@/lib/utils/constants'
 import { cn } from '@/lib/utils'
 import { StarRating } from '@/components/ui/star-rating'
 import { EstateSearchInput } from '@/components/estate/estate-search-input'
@@ -65,6 +64,7 @@ export default function SearchPage() {
   const [selectedEstate, setSelectedEstate] = useState<Estate | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [homeLocation, setHomeLocation] = useState<{ lat: number; lng: number; label: string } | null>(null)
+  const [serviceOptions, setServiceOptions] = useState<Array<{ id: string; name: string }>>([])
 
   /* Active filter count for badge */
   const activeFilterCount = [
@@ -92,6 +92,25 @@ export default function SearchPage() {
     }
     loadFavs()
   }, [favoritesLoaded, setFavorites])
+
+  /* ---- Load services once ---------------------------------------- */
+  useEffect(() => {
+    let cancelled = false
+    async function loadServices() {
+      const { data } = await supabase
+        .from('services')
+        .select('id, name, sort_order')
+        .eq('is_active', true)
+        .order('sort_order')
+      if (!cancelled && data) {
+        setServiceOptions(
+          (data as Array<{ id: string; name: string }>).map((s) => ({ id: s.id, name: s.name }))
+        )
+      }
+    }
+    loadServices()
+    return () => { cancelled = true }
+  }, [supabase])
 
   /* ---- Load client's saved home address on mount --------------- */
   useEffect(() => {
@@ -262,7 +281,7 @@ export default function SearchPage() {
           >
             All Services
           </button>
-          {SERVICE_TYPES.map(svc => (
+          {serviceOptions.map(svc => (
             <button
               key={svc.id}
               onClick={() => setFilter('serviceId', filters.serviceId === svc.id ? null : svc.id)}

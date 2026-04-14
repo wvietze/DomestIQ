@@ -14,6 +14,9 @@ export interface AddressResult {
 
 interface AddressAutocompleteProps {
   id?: string
+  // Optional initial / externally-driven value. Synced into the DOM input
+  // imperatively so the input stays uncontrolled — Google Places mutates the
+  // input element directly, which fights a React-controlled value.
   value?: string
   placeholder?: string
   required?: boolean
@@ -29,8 +32,6 @@ interface AddressComponent {
   short_name: string
 }
 
-// Reusable Google Places Autocomplete input restricted to South Africa.
-// Returns a structured AddressResult with lat/lng and parsed suburb/city/province.
 export function AddressAutocomplete({
   id,
   value,
@@ -45,11 +46,13 @@ export function AddressAutocomplete({
   const instanceRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [ready, setReady] = useState(false)
   const [loadError, setLoadError] = useState(false)
-  const [internalValue, setInternalValue] = useState(value ?? '')
 
-  // Keep input in sync if parent updates value externally
+  // Imperatively sync an externally-provided value into the DOM input without
+  // making the input React-controlled.
   useEffect(() => {
-    if (value !== undefined) setInternalValue(value)
+    if (inputRef.current && value !== undefined && inputRef.current.value !== value) {
+      inputRef.current.value = value
+    }
   }, [value])
 
   useEffect(() => {
@@ -76,7 +79,7 @@ export function AddressAutocomplete({
           const city = get('locality') || get('postal_town')
           const province = get('administrative_area_level_1')
           const formatted = place.formatted_address || place.name || ''
-          setInternalValue(formatted)
+          if (inputRef.current) inputRef.current.value = formatted
           onSelect({ formattedAddress: formatted, suburb, city, province, lat, lng })
         })
         setReady(true)
@@ -97,10 +100,9 @@ export function AddressAutocomplete({
         ref={inputRef}
         id={id}
         type="text"
-        value={internalValue}
-        onChange={(e) => {
-          setInternalValue(e.target.value)
-          if (e.target.value === '' && onClear) onClear()
+        defaultValue={value ?? ''}
+        onInput={(e) => {
+          if ((e.target as HTMLInputElement).value === '' && onClear) onClear()
         }}
         placeholder={loadError ? 'Address lookup unavailable' : placeholder}
         required={required}
