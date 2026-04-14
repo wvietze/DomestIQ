@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { loadGoogleMaps, isGoogleMapsLoaded } from '@/lib/maps/google-maps'
 
 export interface AddressResult {
@@ -14,15 +14,14 @@ export interface AddressResult {
 
 interface AddressAutocompleteProps {
   id?: string
-  // Optional initial / externally-driven value. Synced into the DOM input
-  // imperatively so the input stays uncontrolled — Google Places mutates the
-  // input element directly, which fights a React-controlled value.
-  value?: string
+  // Rendered via defaultValue only. Parents that need to reset or prefill
+  // after mount should pass a new `key` to force a remount — the input must
+  // stay uncontrolled so Google Places can mutate it directly without React
+  // fighting back (this was the bug behind the previous 'cannot type' issue).
+  initialValue?: string
   placeholder?: string
   required?: boolean
-  disabled?: boolean
   onSelect: (result: AddressResult) => void
-  onClear?: () => void
   className?: string
 }
 
@@ -34,26 +33,14 @@ interface AddressComponent {
 
 export function AddressAutocomplete({
   id,
-  value,
+  initialValue,
   placeholder = 'Start typing your address…',
   required,
-  disabled,
   onSelect,
-  onClear,
   className = '',
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const instanceRef = useRef<google.maps.places.Autocomplete | null>(null)
-  const [ready, setReady] = useState(false)
-  const [loadError, setLoadError] = useState(false)
-
-  // Imperatively sync an externally-provided value into the DOM input without
-  // making the input React-controlled.
-  useEffect(() => {
-    if (inputRef.current && value !== undefined && inputRef.current.value !== value) {
-      inputRef.current.value = value
-    }
-  }, [value])
 
   useEffect(() => {
     let mounted = true
@@ -79,12 +66,10 @@ export function AddressAutocomplete({
           const city = get('locality') || get('postal_town')
           const province = get('administrative_area_level_1')
           const formatted = place.formatted_address || place.name || ''
-          if (inputRef.current) inputRef.current.value = formatted
           onSelect({ formattedAddress: formatted, suburb, city, province, lat, lng })
         })
-        setReady(true)
       } catch {
-        setLoadError(true)
+        // Google Maps unavailable — the input still works as a plain text field.
       }
     }
     init()
@@ -95,29 +80,18 @@ export function AddressAutocomplete({
   }, [])
 
   return (
-    <div className="relative">
-      <input
-        ref={inputRef}
-        id={id}
-        type="text"
-        defaultValue={value ?? ''}
-        onInput={(e) => {
-          if ((e.target as HTMLInputElement).value === '' && onClear) onClear()
-        }}
-        placeholder={loadError ? 'Address lookup unavailable' : placeholder}
-        required={required}
-        disabled={disabled || loadError}
-        autoComplete="off"
-        className={
-          className ||
-          'flex h-10 w-full rounded-lg bg-[#f4f4f2] border-none px-3 py-2 text-sm placeholder:text-[#6e7a73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#005d42]/30 disabled:cursor-not-allowed disabled:opacity-50'
-        }
-      />
-      {!ready && !loadError && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-[#6e7a73] animate-spin">
-          progress_activity
-        </span>
-      )}
-    </div>
+    <input
+      ref={inputRef}
+      id={id}
+      type="text"
+      defaultValue={initialValue ?? ''}
+      placeholder={placeholder}
+      required={required}
+      autoComplete="new-password"
+      className={
+        className ||
+        'flex h-10 w-full rounded-lg bg-[#f4f4f2] border-none px-3 py-2 text-sm placeholder:text-[#6e7a73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#005d42]/30'
+      }
+    />
   )
 }

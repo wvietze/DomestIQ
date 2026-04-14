@@ -209,7 +209,6 @@ export default function ClientRegistrationPage() {
               id="address"
               placeholder="Start typing your address…"
               onSelect={setAddress}
-              onClear={() => setAddress(null)}
             />
             {address && (
               <p className="text-xs text-[#005d42] flex items-center gap-1">

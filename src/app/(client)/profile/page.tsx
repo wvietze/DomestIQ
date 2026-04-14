@@ -323,8 +323,11 @@ export default function ClientProfilePage() {
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <AddressAutocomplete
+              // key forces a remount once the saved address has loaded so the
+              // uncontrolled input picks up the prefill via defaultValue.
+              key={isLoading ? 'loading' : 'loaded'}
               id="address"
-              value={address}
+              initialValue={address}
               placeholder="Start typing your address…"
               onSelect={(result: AddressResult) => {
                 setAddress(result.formattedAddress)
@@ -333,14 +336,6 @@ export default function ClientProfilePage() {
                 setProvince(result.province)
                 setLocationLat(result.lat)
                 setLocationLng(result.lng)
-              }}
-              onClear={() => {
-                setAddress('')
-                setSuburb(null)
-                setCity(null)
-                setProvince(null)
-                setLocationLat(null)
-                setLocationLng(null)
               }}
             />
           </div>
