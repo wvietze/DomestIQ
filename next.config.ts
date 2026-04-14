@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
     },
     // Strict CSP for pages that don't need Google Maps
     {
-      source: '/((?!search|workers|helpdesk|worker-profile|register).*)',
+      source: '/((?!search|workers|helpdesk|worker-profile|register|profile).*)',
       headers: [
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
     },
     // Relaxed CSP for pages that load Google Maps (unsafe-eval required by Maps JS SDK)
     {
-      source: '/(search|workers|helpdesk|worker-profile|register)(.*)',
+      source: '/(search|workers|helpdesk|worker-profile|register|profile)(.*)',
       headers: [
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },

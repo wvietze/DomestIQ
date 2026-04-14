@@ -23,6 +23,10 @@ export function loadGoogleMaps(): Promise<void> {
     script.onerror = () => reject(new Error('Failed to load Google Maps'))
     document.head.appendChild(script)
   })
+  // Clear the cached promise on failure so a later call can retry instead of
+  // inheriting the same rejection (e.g. when the first attempt happened on a
+  // page with a CSP that blocked Google Maps).
+  loadPromise.catch(() => { loadPromise = null })
   return loadPromise
 }
 
