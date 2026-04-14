@@ -1,6 +1,6 @@
 // DomestIQ Service Worker — Push Notifications + Offline Cache
 
-const CACHE_NAME = 'domestiq-v2'
+const CACHE_NAME = 'domestiq-v3'
 const STATIC_ASSETS = ['/', '/offline', '/manifest.json', '/icons/icon-192x192.png', '/icons/icon-512x512.png']
 
 // Install — cache static assets including offline fallback

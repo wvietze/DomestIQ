@@ -10,12 +10,20 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // favorite_workers.worker_id references profiles(id). worker_profiles joins
+  // through profiles via its own user_id FK, so the nested join has to go
+  // through profiles rather than being requested as a sibling.
   const { data, error } = await supabase
     .from('favorite_workers')
     .select(`
       id, client_id, worker_id, created_at,
-      profiles!worker_id(full_name, avatar_url),
-      worker_profiles!inner(hourly_rate, overall_rating, total_reviews, id_verified, criminal_check_clear, bio)
+      profiles!worker_id(
+        full_name,
+        avatar_url,
+        worker_profiles(
+          hourly_rate, overall_rating, total_reviews, id_verified, criminal_check_clear, bio
+        )
+      )
     `)
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
