@@ -15,6 +15,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
+import { AddressAutocomplete, type AddressResult } from "@/components/address/address-autocomplete"
 
 export default function ClientRegistrationPage() {
   const router = useRouter()
@@ -23,7 +24,7 @@ export default function ClientRegistrationPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [phone, setPhone] = useState("")
-  const [address, setAddress] = useState("")
+  const [address, setAddress] = useState<AddressResult | null>(null)
   const [popiConsent, setPopiConsent] = useState(false)
 
   const [loading, setLoading] = useState(false)
@@ -67,7 +68,7 @@ export default function ClientRegistrationPage() {
     }
 
     // Trigger handle_new_user() creates the profiles row. Fill in phone + POPI
-    // consent, then create the client_profiles row.
+    // consent, then create the client_profiles row with geocoded address.
     if (data.user) {
       const { error: profileError } = await supabase
         .from("profiles")
@@ -85,7 +86,12 @@ export default function ClientRegistrationPage() {
         .from("client_profiles")
         .insert({
           user_id: data.user.id,
-          address: address || null,
+          address: address?.formattedAddress ?? null,
+          suburb: address?.suburb ?? null,
+          city: address?.city ?? null,
+          province: address?.province ?? null,
+          location_lat: address?.lat ?? null,
+          location_lng: address?.lng ?? null,
         })
 
       if (clientProfileError) {
@@ -196,17 +202,21 @@ export default function ClientRegistrationPage() {
 
           <div className="space-y-2">
             <Label htmlFor="address">
-              Address{" "}
+              Home Address{" "}
               <span className="text-muted-foreground">(optional)</span>
             </Label>
-            <Input
+            <AddressAutocomplete
               id="address"
-              type="text"
-              placeholder="Enter your address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              autoComplete="street-address"
+              placeholder="Start typing your address…"
+              onSelect={setAddress}
+              onClear={() => setAddress(null)}
             />
+            {address && (
+              <p className="text-xs text-[#005d42] flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">check_circle</span>
+                {address.formattedAddress}
+              </p>
+            )}
           </div>
 
           {/* POPI Consent */}

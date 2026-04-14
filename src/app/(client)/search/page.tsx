@@ -11,6 +11,7 @@ import { StarRating } from '@/components/ui/star-rating'
 import { EstateSearchInput } from '@/components/estate/estate-search-input'
 import { EstateTag } from '@/components/estate/estate-tag'
 import type { Estate } from '@/lib/types/estate'
+import { AddressAutocomplete, type AddressResult } from '@/components/address/address-autocomplete'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -49,35 +50,12 @@ const SORT_OPTIONS: { value: SortOption; label: string; icon: string }[] = [
 ]
 
 /* ------------------------------------------------------------------ */
-/*  Material icon helper for service types                             */
-/* ------------------------------------------------------------------ */
-
-const SERVICE_ICON_MAP: Record<string, string> = {
-  'domestic-worker': 'home',
-  gardener: 'yard',
-  painter: 'format_paint',
-  welder: 'local_fire_department',
-  electrician: 'bolt',
-  plumber: 'plumbing',
-  carpenter: 'carpenter',
-  tiler: 'grid_view',
-  roofer: 'roofing',
-  'pool-cleaner': 'pool',
-  'pest-control': 'pest_control',
-  'window-cleaner': 'window',
-  handyman: 'handyman',
-  babysitter: 'child_care',
-  'dog-walker': 'pets',
-  'security-guard': 'security',
-}
-
-/* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
 export default function SearchPage() {
   const supabase = createClient()
-  const { filters, setFilter, resetFilters, isSearching, setSearching } = useSearchStore()
+  const { filters, setFilter, setFilters, resetFilters, isSearching, setSearching } = useSearchStore()
   const { t } = useTranslation()
   const { setFavorites, loaded: favoritesLoaded } = useFavoritesStore()
   const [workers, setWorkers] = useState<WorkerResult[]>([])
@@ -85,6 +63,8 @@ export default function SearchPage() {
   const [hasMore, setHasMore] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedEstate, setSelectedEstate] = useState<Estate | null>(null)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [homeLocation, setHomeLocation] = useState<{ lat: number; lng: number; label: string } | null>(null)
 
   /* Active filter count for badge */
   const activeFilterCount = [
@@ -112,6 +92,53 @@ export default function SearchPage() {
     }
     loadFavs()
   }, [favoritesLoaded, setFavorites])
+
+  /* ---- Load client's saved home address on mount --------------- */
+  useEffect(() => {
+    let cancelled = false
+    async function loadHome() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || cancelled) return
+
+      const { data: clientProfile } = await supabase
+        .from('client_profiles')
+        .select('address, suburb, city, location_lat, location_lng')
+        .eq('user_id', user.id)
+        .single<{
+          address: string | null
+          suburb: string | null
+          city: string | null
+          location_lat: number | null
+          location_lng: number | null
+        }>()
+
+      if (cancelled || !clientProfile?.location_lat || !clientProfile?.location_lng) return
+
+      const label =
+        [clientProfile.suburb, clientProfile.city].filter(Boolean).join(', ') ||
+        clientProfile.address ||
+        'Home'
+
+      setHomeLocation({
+        lat: clientProfile.location_lat,
+        lng: clientProfile.location_lng,
+        label,
+      })
+
+      // Only seed the search filter if the user hasn't already set a location
+      // this session (e.g. via GPS or estate pick).
+      if (filters.locationLat === null) {
+        setFilters({
+          locationLat: clientProfile.location_lat,
+          locationLng: clientProfile.location_lng,
+          locationLabel: label,
+        })
+      }
+    }
+    loadHome()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /* ---- Search workers ------------------------------------------- */
   const searchWorkers = useCallback(async (reset = false) => {
@@ -194,33 +221,16 @@ export default function SearchPage() {
           </div>
 
           {/* Location context */}
-          {filters.locationLat ? (
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className="material-symbols-outlined text-[#904d00] text-sm">location_on</span>
-              <span className="font-semibold text-sm tracking-tight text-[#1a1c1b]">Location set</span>
-              <span className="material-symbols-outlined text-[#6e7a73] text-xs">keyboard_arrow_down</span>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                navigator.geolocation.getCurrentPosition(
-                  pos => {
-                    setFilter('locationLat', pos.coords.latitude)
-                    setFilter('locationLng', pos.coords.longitude)
-                  },
-                  () => {},
-                  { enableHighAccuracy: true }
-                )
-              }}
-              className="flex items-center gap-1.5 mb-2 group"
-            >
-              <span className="material-symbols-outlined text-[#904d00] text-sm">location_on</span>
-              <span className="font-semibold text-sm tracking-tight text-[#3e4943] group-hover:text-[#1a1c1b] transition-colors">
-                Detect your location
-              </span>
-              <span className="material-symbols-outlined text-[#6e7a73] text-xs">keyboard_arrow_down</span>
-            </button>
-          )}
+          <button
+            onClick={() => setShowLocationPicker(true)}
+            className="flex items-center gap-1.5 mb-2 group min-w-0 text-left"
+          >
+            <span className="material-symbols-outlined text-[#904d00] text-sm shrink-0">location_on</span>
+            <span className="font-semibold text-sm tracking-tight text-[#1a1c1b] truncate group-hover:text-[#005d42] transition-colors">
+              {filters.locationLabel ?? (filters.locationLat ? 'Location set' : 'Set your location')}
+            </span>
+            <span className="material-symbols-outlined text-[#6e7a73] text-xs shrink-0">keyboard_arrow_down</span>
+          </button>
 
           {/* Search input */}
           <div className="relative mb-1">
@@ -412,22 +422,17 @@ export default function SearchPage() {
 
             {/* Location */}
             <div>
-              <label className="text-sm font-semibold text-[#1a1c1b]">Your Location</label>
+              <label className="text-sm font-semibold text-[#1a1c1b]">Search Location</label>
               <button
-                className="mt-2 w-full h-10 flex items-center justify-center gap-2 rounded-lg border border-[#bdc9c1] text-sm font-medium text-[#3e4943] hover:border-[#005d42] hover:text-[#005d42] transition-colors duration-200"
-                onClick={() => {
-                  navigator.geolocation.getCurrentPosition(
-                    pos => {
-                      setFilter('locationLat', pos.coords.latitude)
-                      setFilter('locationLng', pos.coords.longitude)
-                    },
-                    () => {},
-                    { enableHighAccuracy: true }
-                  )
-                }}
+                type="button"
+                onClick={() => setShowLocationPicker(true)}
+                className="mt-2 w-full h-10 flex items-center gap-2 px-3 rounded-lg border border-[#bdc9c1] text-sm font-medium text-[#3e4943] hover:border-[#005d42] hover:text-[#005d42] transition-colors duration-200"
               >
-                <span className="material-symbols-outlined text-base">my_location</span>
-                {filters.locationLat ? 'Location Set' : 'Detect Location'}
+                <span className="material-symbols-outlined text-base shrink-0">edit_location</span>
+                <span className="truncate flex-1 text-left">
+                  {filters.locationLabel ?? (filters.locationLat ? 'Location set' : 'Set location')}
+                </span>
+                <span className="material-symbols-outlined text-sm shrink-0">chevron_right</span>
               </button>
             </div>
 
@@ -454,9 +459,12 @@ export default function SearchPage() {
                       setSelectedEstate(estate)
                       setFilter('estateId', estate.id)
                       if (estate.location_lat && estate.location_lng) {
-                        setFilter('locationLat', estate.location_lat)
-                        setFilter('locationLng', estate.location_lng)
-                        setFilter('maxDistance', 10)
+                        setFilters({
+                          locationLat: estate.location_lat,
+                          locationLng: estate.location_lng,
+                          locationLabel: estate.name,
+                          maxDistance: 10,
+                        })
                       }
                     }}
                   />
@@ -545,6 +553,97 @@ export default function SearchPage() {
           )}
         </div>
       </main>
+
+      {/* ── Location picker sheet ──────────────────────────────── */}
+      {showLocationPicker && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
+          onClick={() => setShowLocationPicker(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-heading font-bold text-lg text-[#1a1c1b]">Search location</h3>
+                <p className="text-sm text-[#3e4943] mt-0.5">
+                  Looking for someone else? Enter a different address.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowLocationPicker(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f4f4f2]"
+              >
+                <span className="material-symbols-outlined text-[#3e4943]">close</span>
+              </button>
+            </div>
+
+            {homeLocation && (
+              <button
+                onClick={() => {
+                  setFilters({
+                    locationLat: homeLocation.lat,
+                    locationLng: homeLocation.lng,
+                    locationLabel: homeLocation.label,
+                  })
+                  setShowLocationPicker(false)
+                }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#bdc9c1] hover:border-[#005d42] hover:bg-[#f4f4f2] text-left transition-colors"
+              >
+                <span className="material-symbols-outlined text-[#005d42]">home</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[#1a1c1b]">My home</p>
+                  <p className="text-xs text-[#3e4943] truncate">{homeLocation.label}</p>
+                </div>
+                <span className="material-symbols-outlined text-[#6e7a73]">chevron_right</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    setFilters({
+                      locationLat: pos.coords.latitude,
+                      locationLng: pos.coords.longitude,
+                      locationLabel: 'Current location',
+                    })
+                    setShowLocationPicker(false)
+                  },
+                  () => {},
+                  { enableHighAccuracy: true }
+                )
+              }}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#bdc9c1] hover:border-[#005d42] hover:bg-[#f4f4f2] text-left transition-colors"
+            >
+              <span className="material-symbols-outlined text-[#005d42]">my_location</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-[#1a1c1b]">Use my current location</p>
+                <p className="text-xs text-[#3e4943]">GPS-based</p>
+              </div>
+              <span className="material-symbols-outlined text-[#6e7a73]">chevron_right</span>
+            </button>
+
+            <div>
+              <label className="text-sm font-semibold text-[#1a1c1b] block mb-2">Or search a different address</label>
+              <AddressAutocomplete
+                placeholder="Start typing an address…"
+                onSelect={(result: AddressResult) => {
+                  const label =
+                    [result.suburb, result.city].filter(Boolean).join(', ') || result.formattedAddress
+                  setFilters({
+                    locationLat: result.lat,
+                    locationLng: result.lng,
+                    locationLabel: label,
+                  })
+                  setShowLocationPicker(false)
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -586,26 +685,32 @@ function StitchWorkerCard({ worker }: { worker: WorkerResult }) {
       {/* Left accent bar */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#005d42]" />
 
-      <div className="p-4 flex gap-5">
+      {/* Favorite — top-right corner so it never steals space from the name */}
+      <span className="absolute top-3 right-3 material-symbols-outlined text-xl text-[#bdc9c1] group-hover:text-[#ba1a1a] transition-colors duration-200">
+        favorite
+      </span>
+
+      <div className="p-4 pl-5 flex gap-4">
         {/* Avatar / Photo */}
         <div className="relative flex-shrink-0">
           {worker.avatar_url ? (
             <Image
               src={worker.avatar_url}
               alt={worker.full_name}
-              width={96}
-              height={128}
-              className="w-24 h-32 object-cover rounded-lg"
+              width={80}
+              height={104}
+              className="w-20 h-26 object-cover rounded-lg"
+              style={{ height: '6.5rem' }}
             />
           ) : (
-            <div className="w-24 h-32 rounded-lg bg-[#e8e8e6] flex items-center justify-center">
+            <div className="w-20 rounded-lg bg-[#e8e8e6] flex items-center justify-center" style={{ height: '6.5rem' }}>
               <span className="text-xl font-heading font-bold text-[#3e4943]">{initials}</span>
             </div>
           )}
           {verificationIcon && (
-            <div className="absolute -top-2 -right-2 bg-[#005d42] text-white p-1 rounded-full shadow-sm">
+            <div className="absolute -top-1.5 -right-1.5 bg-[#005d42] text-white p-1 rounded-full shadow-sm">
               <span
-                className="material-symbols-outlined text-[16px]"
+                className="material-symbols-outlined text-[14px]"
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
                 {verificationIcon}
@@ -615,25 +720,18 @@ function StitchWorkerCard({ worker }: { worker: WorkerResult }) {
         </div>
 
         {/* Details */}
-        <div className="flex-grow flex flex-col justify-between min-w-0">
-          <div>
-            {/* Name + favorite */}
-            <div className="flex justify-between items-start">
-              <div className="min-w-0">
-                <h3 className="text-lg font-bold text-[#1a1c1b] leading-tight truncate group-hover:text-[#005d42] transition-colors duration-200">
-                  {worker.full_name}
-                </h3>
-                <span className="text-xs font-bold tracking-widest text-[#3e4943] uppercase">
-                  {primaryService}
-                </span>
-              </div>
-              <span className="material-symbols-outlined text-xl text-[#bdc9c1] group-hover:text-[#ba1a1a] transition-colors duration-200 shrink-0 ml-2">
-                favorite
-              </span>
-            </div>
+        <div className="flex-grow flex flex-col justify-between min-w-0 pr-6">
+          <div className="min-w-0">
+            {/* Name — allowed to wrap to 2 lines */}
+            <h3 className="text-base font-bold text-[#1a1c1b] leading-snug line-clamp-2 group-hover:text-[#005d42] transition-colors duration-200">
+              {worker.full_name}
+            </h3>
+            <span className="text-[11px] font-bold tracking-widest text-[#3e4943] uppercase mt-0.5 block">
+              {primaryService}
+            </span>
 
             {/* Rating */}
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1 mt-1.5">
               <span
                 className="material-symbols-outlined text-[#904d00] text-sm"
                 style={{ fontVariationSettings: "'FILL' 1" }}
@@ -644,56 +742,33 @@ function StitchWorkerCard({ worker }: { worker: WorkerResult }) {
                 {worker.overall_rating > 0 ? worker.overall_rating.toFixed(1) : 'New'}
               </span>
               {worker.total_reviews > 0 && (
-                <span className="text-xs text-[#3e4943]">({worker.total_reviews} reviews)</span>
+                <span className="text-xs text-[#3e4943]">({worker.total_reviews})</span>
               )}
             </div>
 
-            {/* Extra service badges (if more than 1 service) */}
-            {worker.services.length > 1 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {worker.services.slice(1, 4).map(svc => (
-                  <span
-                    key={svc.id}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#f4f4f2] text-[10px] font-medium text-[#3e4943]"
-                  >
-                    <span className="material-symbols-outlined text-[12px]">
-                      {SERVICE_ICON_MAP[svc.id] ?? 'handyman'}
-                    </span>
-                    {svc.name}
-                  </span>
-                ))}
-                {worker.services.length > 4 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#f4f4f2] text-[10px] font-medium text-[#3e4943]">
-                    +{worker.services.length - 4}
-                  </span>
-                )}
-              </div>
+            {verificationLabel && (
+              <p className="text-[11px] text-[#005d42] font-bold mt-1">{verificationLabel}</p>
             )}
           </div>
 
           {/* Bottom row: location + price */}
-          <div className="flex items-end justify-between mt-3">
-            <div className="space-y-0.5">
-              {(worker.location_name || worker.distance_km !== null) && (
-                <div className="flex items-center gap-1 text-[#3e4943]">
-                  <span className="material-symbols-outlined text-xs">near_me</span>
-                  <span className="text-xs font-medium">
-                    {worker.distance_km !== null && `${worker.distance_km.toFixed(1)}km`}
-                    {worker.distance_km !== null && worker.location_name && ' · '}
-                    {worker.location_name}
-                  </span>
-                </div>
-              )}
-              {verificationLabel && (
-                <p className="text-xs text-[#005d42] font-bold">{verificationLabel}</p>
-              )}
-            </div>
+          <div className="flex items-end justify-between gap-2 mt-2.5">
+            {(worker.location_name || worker.distance_km !== null) && (
+              <div className="flex items-center gap-1 text-[#3e4943] min-w-0">
+                <span className="material-symbols-outlined text-xs shrink-0">near_me</span>
+                <span className="text-xs font-medium truncate">
+                  {worker.distance_km !== null && `${worker.distance_km.toFixed(1)}km`}
+                  {worker.distance_km !== null && worker.location_name && ' · '}
+                  {worker.location_name}
+                </span>
+              </div>
+            )}
             {worker.hourly_rate !== null && (
-              <div className="text-right shrink-0">
-                <span className="text-xl font-heading font-extrabold text-[#1a1c1b]">
+              <div className="text-right shrink-0 leading-none">
+                <span className="text-lg font-heading font-extrabold text-[#1a1c1b]">
                   R{worker.hourly_rate}
                 </span>
-                <span className="text-xs text-[#3e4943] font-medium">/hr</span>
+                <span className="text-[11px] text-[#3e4943] font-medium">/hr</span>
               </div>
             )}
           </div>

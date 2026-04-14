@@ -15,6 +15,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter, DialogTrigger
 } from '@/components/ui/dialog'
+import { AddressAutocomplete, type AddressResult } from '@/components/address/address-autocomplete'
 
 function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
   return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
@@ -33,6 +34,8 @@ interface ClientData {
   suburb: string | null
   city: string | null
   province: string | null
+  location_lat: number | null
+  location_lng: number | null
 }
 
 export default function ClientProfilePage() {
@@ -54,9 +57,11 @@ export default function ClientProfilePage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
-  const [suburb, setSuburb] = useState('')
-  const [city, setCity] = useState('')
-  const [province, setProvince] = useState('')
+  const [suburb, setSuburb] = useState<string | null>(null)
+  const [city, setCity] = useState<string | null>(null)
+  const [province, setProvince] = useState<string | null>(null)
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
 
   useEffect(() => {
     async function loadProfile() {
@@ -87,9 +92,11 @@ export default function ClientProfilePage() {
         if (clientProfile) {
           const cp = clientProfile as unknown as ClientData
           setAddress(cp.address || '')
-          setSuburb(cp.suburb || '')
-          setCity(cp.city || '')
-          setProvince(cp.province || '')
+          setSuburb(cp.suburb)
+          setCity(cp.city)
+          setProvince(cp.province)
+          setLocationLat(cp.location_lat)
+          setLocationLng(cp.location_lng)
         }
       } catch (err) {
         console.error('Profile load error:', err)
@@ -163,6 +170,8 @@ export default function ClientProfilePage() {
           suburb: suburb || null,
           city: city || null,
           province: province || null,
+          location_lat: locationLat,
+          location_lng: locationLng,
         }, { onConflict: 'user_id' })
 
       setSaveSuccess(true)
@@ -306,48 +315,51 @@ export default function ClientProfilePage() {
       {/* Address Info */}
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h2 className="font-semibold">Address</h2>
+          <h2 className="font-semibold">Home Address</h2>
+          <p className="text-sm text-muted-foreground -mt-2">
+            We use this to find workers near you. Start typing and pick your address from the list.
+          </p>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Street Address</Label>
-            <Input
+            <Label htmlFor="address">Address</Label>
+            <AddressAutocomplete
               id="address"
               value={address}
-              onChange={e => setAddress(e.target.value)}
-              placeholder="Street address"
+              placeholder="Start typing your address…"
+              onSelect={(result: AddressResult) => {
+                setAddress(result.formattedAddress)
+                setSuburb(result.suburb)
+                setCity(result.city)
+                setProvince(result.province)
+                setLocationLat(result.lat)
+                setLocationLng(result.lng)
+              }}
+              onClear={() => {
+                setAddress('')
+                setSuburb(null)
+                setCity(null)
+                setProvince(null)
+                setLocationLat(null)
+                setLocationLng(null)
+              }}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="suburb">Suburb</Label>
-            <Input
-              id="suburb"
-              value={suburb}
-              onChange={e => setSuburb(e.target.value)}
-              placeholder="Suburb"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={city}
-                onChange={e => setCity(e.target.value)}
-                placeholder="City"
-              />
+          {locationLat && locationLng && (
+            <div className="rounded-lg bg-[#9ffdd3]/30 border border-[#97f5cc] p-3 text-sm">
+              <div className="flex items-start gap-2">
+                <Icon name="check_circle" className="text-[#005d42] shrink-0 mt-0.5" style={{ fontSize: '18px' }} />
+                <div className="min-w-0">
+                  <p className="font-medium text-[#005d42] truncate">{address}</p>
+                  {(suburb || city || province) && (
+                    <p className="text-xs text-[#005d42]/80 mt-0.5">
+                      {[suburb, city, province].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="province">Province</Label>
-              <Input
-                id="province"
-                value={province}
-                onChange={e => setProvince(e.target.value)}
-                placeholder="Province"
-              />
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 

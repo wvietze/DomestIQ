@@ -9,6 +9,7 @@ interface SearchFilters {
   availableDay: number | null // 0-6 (Sun-Sat)
   locationLat: number | null
   locationLng: number | null
+  locationLabel: string | null
   radiusKm: number
   query: string
   minPrice: number | null
@@ -34,6 +35,7 @@ const defaultFilters: SearchFilters = {
   availableDay: null,
   locationLat: null,
   locationLng: null,
+  locationLabel: null,
   radiusKm: 25,
   query: '',
   minPrice: null,
