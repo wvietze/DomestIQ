@@ -66,22 +66,30 @@ export default function ClientRegistrationPage() {
       return
     }
 
-    // Create client_profile entry if user was created
+    // Trigger handle_new_user() creates the profiles row. Fill in phone + POPI
+    // consent, then create the client_profiles row.
     if (data.user) {
       const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          phone: phone || null,
+          popi_consent: true,
+        })
+        .eq("id", data.user.id)
+
+      if (profileError) {
+        console.error("Profile update error:", profileError.message)
+      }
+
+      const { error: clientProfileError } = await supabase
         .from("client_profiles")
         .insert({
-          id: data.user.id,
-          full_name: fullName,
-          email,
-          phone: phone || null,
+          user_id: data.user.id,
           address: address || null,
         })
 
-      if (profileError) {
-        // Profile creation failed, but the auth account was created.
-        // The profile can be created later via a trigger or on first login.
-        console.error("Profile creation error:", profileError.message)
+      if (clientProfileError) {
+        console.error("Client profile creation error:", clientProfileError.message)
       }
     }
 
