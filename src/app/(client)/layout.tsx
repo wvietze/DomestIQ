@@ -9,7 +9,7 @@ export default function ClientLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-[#f9f9f7] text-[#1a1c1b]">
       <OfflineIndicator />
 
       {/* Sidebar (includes desktop fixed sidebar + mobile hamburger/drawer) */}

@@ -33,7 +33,7 @@ export function LogoPulse({ size = 'full' }: { size?: Size }) {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          background: 'radial-gradient(circle, rgba(4,120,87,0.25) 0%, rgba(13,148,136,0.1) 60%, transparent 80%)',
+          background: 'radial-gradient(circle, rgba(0,93,66,0.25) 0%, rgba(4,120,87,0.1) 60%, transparent 80%)',
         }}
       />
       {/* Logo */}
@@ -56,14 +56,14 @@ export function LogoPulse({ size = 'full' }: { size?: Size }) {
             <path d="M12 28V16l8-6 8 6v12H22v-6h-4v6z" fill="white" />
             <defs>
               <linearGradient id="lp-grad" x1="0" y1="0" x2="40" y2="40">
-                <stop stopColor="#047857" />
-                <stop offset="1" stopColor="#0d9488" />
+                <stop stopColor="#005d42" />
+                <stop offset="1" stopColor="#047857" />
               </linearGradient>
             </defs>
           </svg>
         )}
       </motion.div>
-      {!isInline && <span className={`font-semibold text-emerald-700 ${cfg.text} relative z-10`}>Loading...</span>}
+      {!isInline && <span className={`font-semibold text-[#005d42] ${cfg.text} relative z-10`}>Loading...</span>}
     </div>
   )
 

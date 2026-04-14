@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { ExternalLink } from 'lucide-react'
 
 interface SponsorData {
   id: string
@@ -77,7 +76,7 @@ export function SponsorBadge({ placement }: { placement: string }) {
           style={{ color: sponsor.text_color }}
         >
           {sponsor.cta_text}
-          <ExternalLink className="w-3 h-3" />
+          <span className="material-symbols-outlined text-sm">open_in_new</span>
         </a>
       )}
       <span className="text-[10px] opacity-50">Sponsored</span>

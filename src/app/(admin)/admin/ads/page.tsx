@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,10 +9,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import {
-  Megaphone, Plus, X, Eye, MousePointerClick, Loader2, Edit2, Power,
-} from 'lucide-react'
 import type { Ad } from '@/lib/types'
+
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 const placementOptions = [
   { value: 'worker_dashboard', label: 'Worker Dashboard' },
@@ -50,13 +51,14 @@ export default function AdminAdsPage() {
   }
   const [form, setForm] = useState(emptyForm)
 
-  useEffect(() => { loadData() }, [])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const { data } = await supabase.from('ad_placements').select('*').order('created_at', { ascending: false })
     if (data) setAds(data as Ad[])
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData() }, [loadData])
 
   function startEdit(ad: Ad) {
     setForm({
@@ -133,21 +135,21 @@ export default function AdminAdsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Megaphone className="w-6 h-6 text-violet-600" />
+          <h1 className="text-2xl font-bold font-heading flex items-center gap-2 text-[#1a1c1b]">
+            <Icon name="campaign" className="text-[#005d42]" style={{ fontSize: 28 }} />
             Ad Management
           </h1>
-          <p className="text-muted-foreground mt-1">Create and manage ad placements</p>
+          <p className="text-[#3e4943] mt-1">Create and manage ad placements</p>
         </div>
-        <Button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(!showForm) }}>
-          {showForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+        <Button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(!showForm) }} className="bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg active:scale-[0.98] transition-all">
+          <Icon name={showForm ? 'close' : 'add'} className="mr-2" style={{ fontSize: 18 }} />
           {showForm ? 'Cancel' : 'New Ad'}
         </Button>
       </div>
 
       {/* Create/Edit Form */}
       {showForm && (
-        <Card className="border-violet-200">
+        <Card className="border-[#bdc9c1] bg-white rounded-xl shadow-sm">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -211,8 +213,8 @@ export default function AdminAdsPage() {
                 </div>
               </div>
 
-              <Button type="submit" disabled={saving}>
-                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              <Button type="submit" disabled={saving} className="bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg active:scale-[0.98] transition-all">
+                {saving ? <Icon name="progress_activity" className="mr-2 animate-spin" style={{ fontSize: 18 }} /> : null}
                 {editingId ? 'Update Ad' : 'Create Ad'}
               </Button>
             </form>
@@ -244,8 +246,8 @@ export default function AdminAdsPage() {
               <Card key={ad.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-                      <Megaphone className="w-5 h-5 text-violet-600" />
+                    <div className="w-12 h-12 rounded-lg bg-[#eeeeec] flex items-center justify-center shrink-0">
+                      <Icon name="campaign" className="text-[#005d42]" style={{ fontSize: 22 }} />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -271,9 +273,9 @@ export default function AdminAdsPage() {
                       )}
 
                       {/* Performance */}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {ad.impressions.toLocaleString()} impressions</span>
-                        <span className="flex items-center gap-1"><MousePointerClick className="w-3 h-3" /> {ad.clicks.toLocaleString()} clicks</span>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-[#3e4943]">
+                        <span className="flex items-center gap-1"><Icon name="visibility" style={{ fontSize: 14 }} /> {ad.impressions.toLocaleString()} impressions</span>
+                        <span className="flex items-center gap-1"><Icon name="ads_click" style={{ fontSize: 14 }} /> {ad.clicks.toLocaleString()} clicks</span>
                         <span>{ctr}% CTR</span>
                       </div>
                     </div>
@@ -281,10 +283,10 @@ export default function AdminAdsPage() {
                     {/* Actions */}
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => startEdit(ad)} title="Edit">
-                        <Edit2 className="w-4 h-4" />
+                        <Icon name="edit" style={{ fontSize: 18 }} />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => toggleActive(ad.id, ad.is_active)} title={ad.is_active ? 'Deactivate' : 'Activate'}>
-                        <Power className={`w-4 h-4 ${ad.is_active ? 'text-emerald-500' : 'text-gray-400'}`} />
+                        <Icon name="power_settings_new" style={{ fontSize: 18, color: ad.is_active ? '#047857' : '#6e7a73' }} />
                       </Button>
                     </div>
                   </div>

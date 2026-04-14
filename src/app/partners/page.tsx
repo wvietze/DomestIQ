@@ -343,7 +343,7 @@ export default function PartnersPage() {
           <Section delay={0.2} className="mt-12">
             <Card className="max-w-3xl mx-auto bg-gray-900 text-gray-100 border-gray-800 overflow-hidden">
               <CardContent className="p-6">
-                <p className="text-xs font-mono text-emerald-400 mb-3">// Sample API Response — GET /api/partners/analytics</p>
+                <p className="text-xs font-mono text-emerald-400 mb-3">{'// Sample API Response — GET /api/partners/analytics'}</p>
                 <pre className="text-xs font-mono text-gray-300 overflow-x-auto leading-relaxed">{`{
   "total_workers": 2047,
   "total_clients": 3891,

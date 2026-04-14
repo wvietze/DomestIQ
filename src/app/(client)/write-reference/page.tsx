@@ -8,8 +8,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Send, Quote } from 'lucide-react'
 import { WaveBars, StackingBlocks } from '@/components/loading'
+
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 function WriteReferenceContent() {
  const searchParams = useSearchParams()
@@ -69,7 +72,7 @@ function WriteReferenceContent() {
  <Card>
  <CardContent className="p-12 text-center">
  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
- <Quote className="w-8 h-8 text-green-600"/>
+ <Icon name="format_quote" className="text-green-600" style={{ fontSize: '32px' }} />
  </div>
  <h2 className="text-xl font-bold mb-2">Reference Submitted</h2>
  <p className="text-muted-foreground mb-6">
@@ -89,7 +92,7 @@ function WriteReferenceContent() {
  <Card>
  <CardHeader>
  <CardTitle className="flex items-center gap-2">
- <Quote className="w-5 h-5 text-blue-500"/>
+ <Icon name="format_quote" className="text-blue-500" style={{ fontSize: '20px' }} />
  Write a Reference for {workerName}
  </CardTitle>
  </CardHeader>
@@ -148,7 +151,7 @@ function WriteReferenceContent() {
  {loading ? (
  <WaveBars size="sm"/>
  ) : (
- <><Send className="w-4 h-4 mr-2"/>Submit Reference</>
+ <><Icon name="send" className="mr-2" style={{ fontSize: '16px' }} />Submit Reference</>
  )}
  </Button>
  </CardContent>

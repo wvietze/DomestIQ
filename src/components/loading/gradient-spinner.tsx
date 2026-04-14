@@ -13,10 +13,8 @@ const sizeConfig: Record<Size, { s: number; stroke: number }> = {
 
 // Shield path centered in a 40x40 viewBox
 const shieldPath = 'M20 3 L34 10 C34 10 34 26 20 37 C6 26 6 10 6 10 Z'
-const shieldLength = 100
 // Checkmark inside shield
 const checkPath = 'M13 20 L18 25 L27 15'
-const checkLength = 22
 
 export function GradientSpinner({ size = 'full' }: { size?: Size }) {
   const cfg = sizeConfig[size]

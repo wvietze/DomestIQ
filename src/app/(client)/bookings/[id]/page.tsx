@@ -2,30 +2,21 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/ui/star-rating'
-import { Separator } from '@/components/ui/separator'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter, DialogTrigger
 } from '@/components/ui/dialog'
-import {
-  ArrowLeft, CalendarDays, Clock, MapPin, MessageSquare,
-  XCircle, CheckCircle2, AlertTriangle, FileText
-} from 'lucide-react'
-import { WaveBars } from '@/components/loading'
 
 // Payment imports — commented out for future restoration
-// import { CreditCard } from 'lucide-react'
 // import { calculatePlatformFee } from '@/lib/types/payment'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface BookingDetail {
   id: string
@@ -64,29 +55,19 @@ interface ExistingReview {
   created_at: string
 }
 
-interface BookingTransaction {
-  id: string
-  booking_id: string
-  worker_amount: number
-  platform_fee: number
-  total_amount: number
-  platform_fee_percent: number
-  currency: string
-  status: string
-  paystack_reference: string | null
-  paid_at: string | null
-  created_at: string
-}
+// ---------------------------------------------------------------------------
+// Status config — Stitch design system
+// ---------------------------------------------------------------------------
 
-const statusColors: Record<string, string> = {
-  pending: 'warning',
-  accepted: 'default',
-  confirmed: 'default',
-  in_progress: 'success',
-  completed: 'secondary',
-  cancelled: 'destructive',
-  declined: 'destructive',
-  no_show: 'destructive',
+const statusBadgeStyles: Record<string, string> = {
+  pending: 'bg-[#ffdcc3] text-[#904d00]',
+  accepted: 'bg-[#97f5cc] text-[#005d42]',
+  confirmed: 'bg-[#97f5cc] text-[#005d42]',
+  in_progress: 'bg-[#97f5cc] text-[#005d42]',
+  completed: 'bg-[#e8e8e6] text-[#3e4943]',
+  cancelled: 'bg-[#ffdad6] text-[#ba1a1a]',
+  declined: 'bg-[#ffdad6] text-[#ba1a1a]',
+  no_show: 'bg-[#ffdad6] text-[#ba1a1a]',
 }
 
 const statusLabels: Record<string, string> = {
@@ -100,6 +81,21 @@ const statusLabels: Record<string, string> = {
   no_show: 'No Show',
 }
 
+const statusIcons: Record<string, string> = {
+  pending: 'schedule',
+  accepted: 'task_alt',
+  confirmed: 'check_circle',
+  in_progress: 'play_circle',
+  completed: 'verified',
+  cancelled: 'cancel',
+  declined: 'block',
+  no_show: 'person_off',
+}
+
+// ---------------------------------------------------------------------------
+// Page component
+// ---------------------------------------------------------------------------
+
 export default function BookingDetailPage({
   params,
 }: {
@@ -112,7 +108,6 @@ export default function BookingDetailPage({
 
   const [booking, setBooking] = useState<BookingDetail | null>(null)
   const [review, setReview] = useState<ExistingReview | null>(null)
-  const [transaction, setTransaction] = useState<BookingTransaction | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   // Payment: isPaymentLoading state commented out for future restoration
   // const [isPaymentLoading, setIsPaymentLoading] = useState(false)
@@ -208,31 +203,24 @@ export default function BookingDetailPage({
     setIsCancelling(true)
 
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({
+      const res = await fetch(`/api/bookings/${booking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           status: 'cancelled',
           cancellation_reason: cancelReason || null,
-          cancelled_by: user.id,
-          cancelled_at: new Date().toISOString(),
-        })
-        .eq('id', booking.id)
+        }),
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: 'Failed to cancel booking' }))
+        throw new Error(error || 'Failed to cancel booking')
+      }
 
       setBooking(prev =>
         prev ? { ...prev, status: 'cancelled', cancellation_reason: cancelReason } : null
       )
       setCancelDialogOpen(false)
-
-      // Notify the worker
-      await supabase.from('notifications').insert({
-        user_id: booking.worker_id,
-        type: 'booking_cancelled',
-        title: 'Booking Cancelled',
-        body: `A booking for ${formatDate(booking.scheduled_date)} has been cancelled.`,
-        action_url: '/worker-bookings',
-      })
     } catch (err) {
       console.error('Failed to cancel booking:', err)
     } finally {
@@ -284,45 +272,13 @@ export default function BookingDetailPage({
   }
 
   // Payment: handlePayNow commented out for future restoration
-  // const handlePayNow = async () => {
-  //   if (!booking) return
-  //   setIsPaymentLoading(true)
-  //
-  //   try {
-  //     const res = await fetch('/api/payments/initialize', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ booking_id: booking.id }),
-  //     })
-  //
-  //     const data = await res.json()
-  //
-  //     if (!res.ok) {
-  //       console.error('Payment init failed:', data.error)
-  //       return
-  //     }
-  //
-  //     // Redirect to Paystack checkout
-  //     if (data.authorization_url) {
-  //       window.location.href = data.authorization_url
-  //     }
-  //   } catch (err) {
-  //     console.error('Payment initialization error:', err)
-  //   } finally {
-  //     setIsPaymentLoading(false)
-  //   }
-  // }
+  // const handlePayNow = async () => { ... }
 
-  const formatCurrency = (amount: number) => {
-    return `R${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  }
-
-  const formatDate = (dateStr: string) => {
+  const formatDateShort = (dateStr: string) => {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, {
-      weekday: 'long',
-      month: 'long',
+      weekday: 'short',
       day: 'numeric',
-      year: 'numeric',
+      month: 'long',
     })
   }
 
@@ -332,266 +288,258 @@ export default function BookingDetailPage({
     booking &&
     ['pending', 'accepted', 'confirmed'].includes(booking.status)
 
+  // ---------------------------------------------------------------------------
+  // Loading skeleton
+  // ---------------------------------------------------------------------------
+
   if (isLoading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="max-w-2xl mx-auto px-5 pt-6 space-y-6">
         <div className="flex items-center gap-3">
-          <Skeleton className="w-10 h-10 rounded-full" />
-          <Skeleton className="h-6 w-40" />
+          <div className="w-10 h-10 rounded-full bg-[#e8e8e6] animate-pulse" />
+          <div className="h-6 w-40 bg-[#e8e8e6] rounded-lg animate-pulse" />
         </div>
-        <Skeleton className="h-48 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
+        <div className="h-48 w-full bg-[#e8e8e6] rounded-xl animate-pulse" />
+        <div className="h-32 w-full bg-[#e8e8e6] rounded-xl animate-pulse" />
+        <div className="h-24 w-full bg-[#e8e8e6] rounded-xl animate-pulse" />
       </div>
     )
   }
+
+  // ---------------------------------------------------------------------------
+  // Not found
+  // ---------------------------------------------------------------------------
 
   if (!booking) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <p className="text-lg font-medium">Booking not found</p>
-        <Button variant="outline" className="mt-4" onClick={() => router.back()}>
+      <div className="max-w-2xl mx-auto px-5 pt-20 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-[#e8e8e6] flex items-center justify-center mx-auto">
+          <span className="material-symbols-outlined text-[#6e7a73] text-3xl">search_off</span>
+        </div>
+        <p className="font-heading text-lg font-bold text-[#1a1c1b]">Booking not found</p>
+        <button
+          onClick={() => router.back()}
+          className="px-6 py-2.5 rounded-lg border border-[#bdc9c1] text-[#3e4943] font-medium text-sm hover:bg-[#f4f4f2] transition-colors"
+        >
           Go Back
-        </Button>
+        </button>
       </div>
     )
   }
 
+  // ---------------------------------------------------------------------------
+  // Worker initials
+  // ---------------------------------------------------------------------------
+
+  const workerInitials = booking.worker_name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto pb-8">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/bookings')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h1 className="text-2xl font-bold">Booking Details</h1>
-      </div>
-
-      {/* Status Badge */}
-      <div className="flex items-center justify-between">
-        <Badge
-          variant={
-            (statusColors[booking.status] as
-              | 'default'
-              | 'secondary'
-              | 'destructive'
-              | 'outline'
-              | 'success'
-              | 'warning') || 'outline'
-          }
-          className="text-sm px-3 py-1"
+      <div className="flex items-center px-4 h-16 sticky top-0 bg-[#f9f9f7] z-20">
+        <button
+          onClick={() => router.push('/bookings')}
+          className="p-2 rounded-full text-[#005d42] hover:bg-[#e2e3e1] transition-colors active:scale-95"
         >
-          {statusLabels[booking.status] || booking.status}
-        </Badge>
-        <span className="text-sm text-muted-foreground">
-          Booked {new Date(booking.created_at).toLocaleDateString()}
-        </span>
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 className="ml-4 font-heading font-bold tracking-tight text-[#1a1c1b]">
+          Booking Details
+        </h1>
       </div>
 
-      {/* Worker Info */}
-      <Card>
-        <CardContent className="p-4 flex items-center gap-4">
-          <Avatar className="w-14 h-14">
-            <AvatarImage src={booking.worker_avatar || undefined} />
-            <AvatarFallback className="text-lg">
-              {booking.worker_name
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-lg">{booking.worker_name}</p>
-            <p className="text-muted-foreground">{booking.service_name}</p>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.push(`/messages?with=${booking.worker_id}`)}
+      <main className="px-6 space-y-10 pt-4">
+        {/* Status & Title Section */}
+        <section className="space-y-4">
+          <div
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${statusBadgeStyles[booking.status] || 'bg-[#e8e8e6] text-[#3e4943]'}`}
           >
-            <MessageSquare className="w-5 h-5" />
-          </Button>
-        </CardContent>
-      </Card>
+            <span
+              className="material-symbols-outlined text-sm mr-1"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              {statusIcons[booking.status] || 'info'}
+            </span>
+            {statusLabels[booking.status] || booking.status}
+          </div>
+          <h2 className="font-heading text-3xl font-extrabold tracking-tight text-[#1a1c1b] leading-tight">
+            {booking.service_name} <br />
+            <span className="text-[#005d42]">{formatDateShort(booking.scheduled_date)}</span>
+          </h2>
+        </section>
 
-      {/* Schedule & Location */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <CalendarDays className="w-5 h-5 text-primary" />
+        {/* Worker Card */}
+        <div className="bg-white rounded-xl overflow-hidden shadow-[0_8px_24px_rgba(26,28,27,0.04)] flex relative border-l-4 border-[#005d42]">
+          <div className="p-6 flex items-center space-x-6 w-full">
+            {booking.worker_avatar ? (
+              <Image
+                className="w-20 h-20 rounded-lg object-cover"
+                src={booking.worker_avatar}
+                alt={booking.worker_name}
+                width={80}
+                height={80}
+                unoptimized
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-lg bg-[#e8e8e6] flex items-center justify-center text-[#3e4943] font-heading font-bold text-xl">
+                {workerInitials}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[#3e4943] text-xs font-medium uppercase tracking-widest mb-1">
+                Service Professional
+              </p>
+              <h3 className="font-heading text-xl font-bold text-[#1a1c1b]">
+                {booking.worker_name}
+              </h3>
+              <p className="text-[#3e4943] text-sm mt-1">{booking.service_name}</p>
             </div>
-            <div>
-              <p className="font-medium">{formatDate(booking.scheduled_date)}</p>
-              <p className="text-sm text-muted-foreground">
-                {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
-                {booking.estimated_duration_mins && (
-                  <span> ({booking.estimated_duration_mins} min)</span>
+          </div>
+        </div>
+
+        {/* Details Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Time and Date */}
+          <div className="bg-[#f4f4f2] p-6 rounded-xl space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="bg-[#e2e3e1] p-2 rounded-lg">
+                <span className="material-symbols-outlined text-[#005d42]">schedule</span>
+              </div>
+              <div>
+                <p className="text-[#3e4943] text-xs font-medium">Time Slot</p>
+                <p className="font-heading font-bold text-[#1a1c1b]">
+                  {formatTime(booking.start_time)} — {formatTime(booking.end_time)}
+                </p>
+              </div>
+            </div>
+            {booking.estimated_duration_mins && (
+              <div className="pt-4 border-t border-[#bdc9c1]/20">
+                <p className="text-[#3e4943] text-xs font-medium">Duration</p>
+                <p className="font-semibold text-[#1a1c1b]">
+                  {booking.estimated_duration_mins} Minutes
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Location */}
+          <div className="bg-[#f4f4f2] p-6 rounded-xl space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="bg-[#e2e3e1] p-2 rounded-lg">
+                <span className="material-symbols-outlined text-[#005d42]">location_on</span>
+              </div>
+              <div>
+                <p className="text-[#3e4943] text-xs font-medium">Location</p>
+                <p className="font-heading font-bold text-[#1a1c1b] truncate">
+                  {booking.address}
+                </p>
+              </div>
+            </div>
+            {(booking.address_line2 || booking.city || booking.province) && (
+              <div className="pt-4 border-t border-[#bdc9c1]/20">
+                {booking.address_line2 && (
+                  <p className="text-sm text-[#3e4943]">{booking.address_line2}</p>
                 )}
+                {(booking.city || booking.province) && (
+                  <p className="text-sm text-[#3e4943]">
+                    {[booking.city, booking.province, booking.postal_code]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Special Instructions (full width) */}
+          {booking.instructions && (
+            <div className="md:col-span-2 bg-[#f4f4f2] p-6 rounded-xl">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="material-symbols-outlined text-[#005d42]">assignment</span>
+                <p className="text-[#3e4943] text-xs font-medium uppercase tracking-widest">
+                  Special Instructions
+                </p>
+              </div>
+              <p className="text-[#1a1c1b] text-lg font-medium italic whitespace-pre-wrap">
+                &ldquo;{booking.instructions}&rdquo;
               </p>
             </div>
-          </div>
+          )}
 
-          <Separator />
-
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <MapPin className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="font-medium">{booking.address}</p>
-              {booking.address_line2 && (
-                <p className="text-sm text-muted-foreground">{booking.address_line2}</p>
-              )}
-              {(booking.city || booking.province) && (
-                <p className="text-sm text-muted-foreground">
-                  {[booking.city, booking.province, booking.postal_code]
-                    .filter(Boolean)
-                    .join(', ')}
+          {/* Estimated Rate — informational only */}
+          {booking.total_amount > 0 && (
+            <div className="md:col-span-2 bg-[#005d42] text-white p-6 rounded-xl flex justify-between items-center shadow-lg shadow-[#005d42]/10">
+              <div>
+                <p className="text-[#97f5cc] text-xs font-medium uppercase tracking-widest opacity-80">
+                  Estimated Rate
                 </p>
-              )}
+                <p className="font-heading text-3xl font-extrabold tracking-tight">
+                  R{booking.total_amount}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs opacity-70">Arranged directly</p>
+                <p className="text-xs font-bold">Between you &amp; the worker</p>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Cancellation Info */}
+        {booking.status === 'cancelled' && booking.cancellation_reason && (
+          <div className="bg-[#ffdad6] border border-[#ba1a1a]/20 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="material-symbols-outlined text-[#ba1a1a]">warning</span>
+              <h3 className="font-heading font-bold text-[#ba1a1a]">Cancellation Reason</h3>
+            </div>
+            <p className="text-sm text-[#93000a]">{booking.cancellation_reason}</p>
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* Instructions */}
-      {booking.instructions && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              <h3 className="font-semibold">Special Instructions</h3>
-            </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {booking.instructions}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Payment: Original Payment Summary and Payment Status sections commented out for future restoration */}
-      {/* {booking.total_amount > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">Total Amount</span>
-              <span className="text-xl font-bold text-primary">
-                R{booking.total_amount.toFixed(2)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )} */}
-
-      {/* Payment: Original Payment Status section (transaction display + Pay Now card) commented out
-       * for future restoration. See git history for full Paystack payment flow. */}
-
-      {/* Estimated Rate — informational only */}
-      {booking.total_amount > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Estimated rate</span>
-              <span className="font-medium text-emerald-700">R{booking.total_amount}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Payment is arranged directly between you and the worker.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Cancellation Info */}
-      {booking.status === 'cancelled' && booking.cancellation_reason && (
-        <Card className="border-destructive/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-destructive" />
-              <h3 className="font-semibold text-destructive">Cancellation Reason</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">{booking.cancellation_reason}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Action Buttons */}
-      {canCancel && (
-        <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive" className="w-full gap-2">
-              <XCircle className="w-5 h-5" />
-              Cancel Booking
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Cancel Booking</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to cancel this booking? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2">
-              <Label>Reason (optional)</Label>
-              <Textarea
-                value={cancelReason}
-                onChange={e => setCancelReason(e.target.value)}
-                placeholder="Why are you cancelling?"
-                rows={3}
-              />
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setCancelDialogOpen(false)}
-              >
-                Keep Booking
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleCancel}
-                disabled={isCancelling}
-              >
-                {isCancelling ? (
-                  <WaveBars size="sm" />
-                ) : null}
-                Confirm Cancellation
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Review Section */}
-      {booking.status === 'completed' && (
-        <div id="review" className="space-y-4">
-          <Separator />
-          <h2 className="text-lg font-semibold">Review</h2>
-
-          {review ? (
-            <Card>
-              <CardContent className="p-4 space-y-3">
+        {/* Review Section */}
+        {booking.status === 'completed' && (
+          <div id="review" className="space-y-6">
+            {review ? (
+              /* Existing review display */
+              <div className="bg-white p-8 rounded-xl border border-[#bdc9c1]/20 space-y-4">
                 <div className="flex items-center justify-between">
-                  <StarRating rating={review.overall_rating} />
-                  <span className="text-sm text-muted-foreground">
+                  <h4 className="font-heading text-xl font-bold text-[#1a1c1b]">Your Review</h4>
+                  <span className="text-sm text-[#6e7a73]">
                     {new Date(review.created_at).toLocaleDateString()}
                   </span>
                 </div>
+                <StarRating rating={review.overall_rating} />
                 {review.comment && (
-                  <p className="text-sm text-muted-foreground">{review.comment}</p>
+                  <p className="text-sm text-[#3e4943] italic">&ldquo;{review.comment}&rdquo;</p>
                 )}
-                <div className="flex gap-4 text-xs text-muted-foreground">
+                <div className="flex gap-4 text-xs text-[#6e7a73]">
                   <span>Punctuality: {review.sub_ratings.punctuality}/5</span>
                   <span>Quality: {review.sub_ratings.quality}/5</span>
                   <span>Communication: {review.sub_ratings.communication}/5</span>
                 </div>
-              </CardContent>
-            </Card>
-          ) : showReviewForm ? (
-            <Card>
-              <CardContent className="p-4 space-y-4">
+              </div>
+            ) : showReviewForm ? (
+              /* Review form */
+              <div className="bg-white p-8 rounded-xl border border-[#bdc9c1]/20 space-y-5">
+                <h4 className="font-heading text-xl font-bold text-[#1a1c1b]">
+                  How was {booking.worker_name}?
+                </h4>
+                <p className="text-[#3e4943]">
+                  Your feedback helps maintain our community quality.
+                </p>
+
                 <div className="space-y-2">
-                  <Label>Overall Rating</Label>
+                  <label className="text-xs font-bold text-[#3e4943] uppercase tracking-widest">
+                    Overall Rating
+                  </label>
                   <StarRating
                     rating={overallRating}
                     interactive
@@ -602,7 +550,7 @@ export default function BookingDetailPage({
 
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs">Punctuality</Label>
+                    <label className="text-xs text-[#6e7a73]">Punctuality</label>
                     <StarRating
                       rating={punctualityRating}
                       interactive
@@ -611,7 +559,7 @@ export default function BookingDetailPage({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Quality</Label>
+                    <label className="text-xs text-[#6e7a73]">Quality</label>
                     <StarRating
                       rating={qualityRating}
                       interactive
@@ -620,7 +568,7 @@ export default function BookingDetailPage({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Communication</Label>
+                    <label className="text-xs text-[#6e7a73]">Communication</label>
                     <StarRating
                       rating={communicationRating}
                       interactive
@@ -631,49 +579,134 @@ export default function BookingDetailPage({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Comment (optional)</Label>
-                  <Textarea
+                  <label className="text-xs font-bold text-[#3e4943] uppercase tracking-widest">
+                    Comment (optional)
+                  </label>
+                  <textarea
                     value={reviewComment}
                     onChange={e => setReviewComment(e.target.value)}
                     placeholder="Share your experience..."
                     rows={4}
+                    className="w-full rounded-xl border border-[#bdc9c1] bg-[#f4f4f2] px-4 py-3 text-sm text-[#1a1c1b] placeholder:text-[#6e7a73] focus:outline-none focus:ring-2 focus:ring-[#005d42] focus:border-transparent resize-none"
                   />
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
+                <div className="flex gap-3">
+                  <button
                     onClick={() => setShowReviewForm(false)}
+                    className="flex-1 h-12 rounded-xl border border-[#bdc9c1] text-[#3e4943] font-medium hover:bg-[#f4f4f2] transition-colors"
                   >
                     Cancel
-                  </Button>
-                  <Button
-                    className="flex-1"
+                  </button>
+                  <button
                     onClick={handleSubmitReview}
                     disabled={overallRating === 0 || isSubmittingReview}
+                    className="flex-1 h-12 rounded-xl bg-[#005d42] text-white font-bold flex items-center justify-center gap-2 hover:bg-[#047857] transition-colors disabled:opacity-50"
                   >
                     {isSubmittingReview ? (
-                      <WaveBars size="sm" />
+                      <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                     ) : (
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      <span className="material-symbols-outlined text-lg">check_circle</span>
                     )}
                     Submit Review
-                  </Button>
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setShowReviewForm(true)}
-            >
-              Write a Review
-            </Button>
+              </div>
+            ) : (
+              /* Review nudge card */
+              <div className="bg-white p-8 rounded-xl border border-[#bdc9c1]/20 text-center space-y-4">
+                <h4 className="font-heading text-xl font-bold text-[#1a1c1b]">
+                  How was {booking.worker_name}?
+                </h4>
+                <p className="text-[#3e4943]">
+                  Your feedback helps maintain our community quality.
+                </p>
+                <div className="flex justify-center space-x-2">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <span
+                      key={star}
+                      onClick={() => {
+                        setOverallRating(star)
+                        setShowReviewForm(true)
+                      }}
+                      className="material-symbols-outlined text-[#e8e8e6] text-4xl cursor-pointer hover:text-[#fe932c] transition-colors"
+                    >
+                      star
+                    </span>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowReviewForm(true)}
+                  className="pt-2 text-[#005d42] font-bold font-heading text-sm uppercase tracking-widest hover:underline"
+                >
+                  Leave a review
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="space-y-6 pt-2">
+          {/* Message Worker */}
+          <button
+            onClick={() => router.push(`/messages?with=${booking.worker_id}`)}
+            className="w-full h-14 rounded-xl bg-[#e2e3e1] text-[#005d42] font-heading font-bold flex items-center justify-center space-x-2 transition-all hover:bg-[#dadad8] active:scale-[0.98] border border-[#005d42]/10"
+          >
+            <span className="material-symbols-outlined">chat_bubble</span>
+            <span>Message {booking.worker_name.split(' ')[0]}</span>
+          </button>
+
+          {/* Cancel Booking */}
+          {canCancel && (
+            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+              <DialogTrigger asChild>
+                <div className="flex justify-center">
+                  <button className="text-[#ba1a1a] font-medium hover:underline text-sm uppercase tracking-widest transition-colors">
+                    Cancel Booking
+                  </button>
+                </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Cancel Booking</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to cancel this booking? This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#1a1c1b]">Reason (optional)</label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={e => setCancelReason(e.target.value)}
+                    placeholder="Why are you cancelling?"
+                    rows={3}
+                    className="w-full rounded-xl border border-[#bdc9c1] bg-[#f4f4f2] px-4 py-3 text-sm text-[#1a1c1b] placeholder:text-[#6e7a73] focus:outline-none focus:ring-2 focus:ring-[#005d42] focus:border-transparent resize-none"
+                  />
+                </div>
+                <DialogFooter>
+                  <button
+                    onClick={() => setCancelDialogOpen(false)}
+                    className="px-6 py-2.5 rounded-lg border border-[#bdc9c1] text-[#3e4943] font-medium text-sm hover:bg-[#f4f4f2] transition-colors"
+                  >
+                    Keep Booking
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    disabled={isCancelling}
+                    className="px-6 py-2.5 rounded-lg bg-[#ffdad6] text-[#ba1a1a] font-bold text-sm hover:bg-[#ffdad6]/80 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isCancelling && (
+                      <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                    )}
+                    Confirm Cancellation
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
-      )}
+      </main>
     </div>
   )
 }

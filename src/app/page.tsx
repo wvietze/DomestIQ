@@ -8,13 +8,12 @@ import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'fra
 import {
   Search, Shield, Star, MapPin, MessageSquare, Clock,
   ArrowRight, Phone, Globe, CheckCircle2,
-  Heart, Users, Zap, Eye, Lock, ChevronRight,
+  Heart, Users, Zap, ChevronRight,
   Briefcase, TrendingUp, Award, Gift, FileText, Download,
 } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
 import { MagneticButton } from '@/components/landing/magnetic-button'
-import { TiltCard } from '@/components/landing/tilt-card'
 import { AnimatedCountersSection } from '@/components/landing/animated-counters-section'
 import { TrustBadgesSection } from '@/components/landing/trust-badges-section'
 import { CityCoverageSection } from '@/components/landing/city-coverage-section'
@@ -24,7 +23,6 @@ import { PwaInstallSection } from '@/components/landing/pwa-install-section'
 /* ─── Animation Variants ─── */
 
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }
-const fadeIn = { hidden: { opacity: 0 }, visible: { opacity: 1 } }
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }
 const scaleIn = { hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }
 const slideLeft = { hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0 } }

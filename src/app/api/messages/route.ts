@@ -8,7 +8,7 @@ import { sendMessageSchema, parseBody } from '@/lib/validations/api'
  * Get conversations for authenticated user.
  * Includes last message preview and unread count.
  */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const {

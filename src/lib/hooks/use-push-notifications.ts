@@ -15,41 +15,38 @@ function urlBase64ToUint8Array(base64String: string) {
   return output
 }
 
+function getInitialState(): PushState {
+  if (typeof window === 'undefined') return 'unsupported'
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported'
+  if (Notification.permission === 'denied') return 'denied'
+  return 'prompt'
+}
+
 export function usePushNotifications() {
-  const [state, setState] = useState<PushState>('unsupported')
+  const [state, setState] = useState<PushState>(getInitialState)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      setState('unsupported')
-      return
-    }
+    if (state === 'unsupported' || state === 'denied') return
 
-    // Check current permission
-    const perm = Notification.permission
-    if (perm === 'denied') {
-      setState('denied')
-      return
-    }
-
-    // Check if already subscribed
+    let cancelled = false
     navigator.serviceWorker.ready.then(reg => {
       reg.pushManager.getSubscription().then(sub => {
-        setState(sub ? 'subscribed' : perm === 'granted' ? 'granted' : 'prompt')
+        if (cancelled) return
+        setState(sub ? 'subscribed' : Notification.permission === 'granted' ? 'granted' : 'prompt')
       })
     })
-  }, [])
+    return () => { cancelled = true }
+  }, [state])
 
   const subscribe = useCallback(async () => {
     if (state === 'unsupported' || state === 'denied') return false
     setIsLoading(true)
 
     try {
-      // Register service worker if not already
       const registration = await navigator.serviceWorker.register('/sw.js')
       await navigator.serviceWorker.ready
 
-      // Request permission
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
         setState('denied')
@@ -57,13 +54,11 @@ export function usePushNotifications() {
         return false
       }
 
-      // Subscribe to push
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: VAPID_PUBLIC_KEY ? urlBase64ToUint8Array(VAPID_PUBLIC_KEY) : undefined,
       })
 
-      // Send subscription to server
       const res = await fetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

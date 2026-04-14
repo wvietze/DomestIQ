@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { MapPin, Minus, Plus } from 'lucide-react'
 import { WaveBars } from '@/components/loading'
 import { cn } from '@/lib/utils'
 
@@ -50,23 +49,23 @@ export function MapAreaPicker({ center, radius, onCenterChange, onRadiusChange, 
 
   return (
     <div className={cn('space-y-3', className)}>
-      <Label>Search Area</Label>
+      <Label className="text-[#1a1c1b]">Search Area</Label>
       {!center ? (
-        <Button type="button" variant="outline" className="w-full h-14" onClick={detectLocation} disabled={detecting}>
-          {detecting ? <WaveBars size="sm" /> : <MapPin className="w-5 h-5 mr-2" />}
+        <Button type="button" variant="outline" className="w-full h-14 border-[#bdc9c1] text-[#1a1c1b] hover:bg-[#f4f4f2]" onClick={detectLocation} disabled={detecting}>
+          {detecting ? <WaveBars size="sm" /> : <span className="material-symbols-outlined text-xl mr-2">location_on</span>}
           {detecting ? 'Detecting...' : 'Set My Location'}
         </Button>
       ) : (
         <>
-          <div ref={mapRef} className="w-full h-48 rounded-xl bg-gray-100 border overflow-hidden" />
+          <div ref={mapRef} className="w-full h-48 rounded-xl bg-[#f4f4f2] border border-[#bdc9c1] overflow-hidden" />
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Radius: {radius} km</span>
+            <span className="text-sm text-[#3e4943]">Radius: {radius} km</span>
             <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="icon" className="w-8 h-8" onClick={() => onRadiusChange(Math.max(1, radius - 5))}><Minus className="w-4 h-4" /></Button>
-              <Button type="button" variant="outline" size="icon" className="w-8 h-8" onClick={() => onRadiusChange(Math.min(100, radius + 5))}><Plus className="w-4 h-4" /></Button>
+              <Button type="button" variant="outline" size="icon" className="w-8 h-8 border-[#bdc9c1]" onClick={() => onRadiusChange(Math.max(1, radius - 5))}><span className="material-symbols-outlined text-base">remove</span></Button>
+              <Button type="button" variant="outline" size="icon" className="w-8 h-8 border-[#bdc9c1]" onClick={() => onRadiusChange(Math.min(100, radius + 5))}><span className="material-symbols-outlined text-base">add</span></Button>
             </div>
           </div>
-          <Button type="button" variant="ghost" size="sm" onClick={detectLocation} disabled={detecting}><MapPin className="w-4 h-4 mr-1" />Re-detect location</Button>
+          <Button type="button" variant="ghost" size="sm" className="text-[#005d42]" onClick={detectLocation} disabled={detecting}><span className="material-symbols-outlined text-base mr-1">location_on</span>Re-detect location</Button>
         </>
       )}
     </div>

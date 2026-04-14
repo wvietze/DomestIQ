@@ -21,7 +21,6 @@ export function ProgressSweep({ size = 'full' }: { size?: Size }) {
 
   // Semicircle arc path above horizon
   const arcPath = `M ${cx - arcR} ${horizonY} A ${arcR} ${arcR} 0 0 1 ${cx + arcR} ${horizonY}`
-  const arcLength = Math.PI * arcR
 
   // Sun rays fanning out
   const rayCount = isSmall ? 3 : 7

@@ -4,18 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { VerificationBadge } from '@/components/worker/verification-badge'
 import { SponsorBadge } from '@/components/shared/sponsor-badge'
-import {
-  ShieldCheck, FileText, Upload, CheckCircle2,
-  XCircle, Clock, Loader2, AlertTriangle, Eye, ArrowLeft
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
 
 interface DocumentRecord {
   id: string
@@ -28,10 +17,30 @@ interface DocumentRecord {
   created_at: string
 }
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'warning' | 'success'; icon: typeof Clock }> = {
-  pending: { label: 'Pending Review', variant: 'warning', icon: Clock },
-  approved: { label: 'Approved', variant: 'success', icon: CheckCircle2 },
-  rejected: { label: 'Rejected', variant: 'destructive', icon: XCircle },
+type StatusKey = 'pending' | 'approved' | 'rejected'
+
+const STATUS_META: Record<
+  StatusKey,
+  { label: string; icon: string; badgeBg: string; badgeText: string }
+> = {
+  pending: {
+    label: 'Pending Review',
+    icon: 'schedule',
+    badgeBg: 'bg-[#ffdcc3]',
+    badgeText: 'text-[#904d00]',
+  },
+  approved: {
+    label: 'Approved',
+    icon: 'check_circle',
+    badgeBg: 'bg-[#97f5cc]',
+    badgeText: 'text-[#005d42]',
+  },
+  rejected: {
+    label: 'Rejected',
+    icon: 'cancel',
+    badgeBg: 'bg-[#ffdad6]',
+    badgeText: 'text-[#ba1a1a]',
+  },
 }
 
 export default function WorkerVerificationPage() {
@@ -47,16 +56,16 @@ export default function WorkerVerificationPage() {
     async function loadData() {
       if (!user) return
 
-      // Get documents
       const { data: docs } = await supabase
         .from('documents')
-        .select('id, document_type, file_url, file_name, verification_status, rejection_reason, ocr_extracted_data, created_at')
+        .select(
+          'id, document_type, file_url, file_name, verification_status, rejection_reason, ocr_extracted_data, created_at'
+        )
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (docs) setDocuments(docs as unknown as DocumentRecord[])
 
-      // Get verification status from worker_profiles
       const { data: wp } = await supabase
         .from('worker_profiles')
         .select('id_verified, criminal_check_clear')
@@ -73,11 +82,10 @@ export default function WorkerVerificationPage() {
     if (!userLoading) loadData()
   }, [user, userLoading, supabase])
 
-  const getDocByType = (type: string) => documents.find(d => d.document_type === type)
+  const getDocByType = (type: string) =>
+    documents.find((d) => d.document_type === type)
   const idDoc = getDocByType('id_document')
-  const criminalDoc = getDocByType('criminal_clearance')
 
-  // Calculate progress
   const calculateProgress = (): number => {
     if (idVerified && criminalCheckClear) return 100
     if (idDoc?.verification_status === 'approved') return 75
@@ -95,16 +103,16 @@ export default function WorkerVerificationPage() {
       const ext = file.name.split('.').pop()
       const path = `${user.id}/${docType}-${Date.now()}.${ext}`
 
-      // Upload to storage
       const { error: uploadErr } = await supabase.storage
         .from('documents')
         .upload(path, file)
 
       if (uploadErr) throw uploadErr
 
-      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(path)
 
-      // Create document record
       const { data: doc, error: insertErr } = await supabase
         .from('documents')
         .insert({
@@ -120,10 +128,12 @@ export default function WorkerVerificationPage() {
       if (insertErr) throw insertErr
 
       if (doc) {
-        setDocuments(prev => [doc as unknown as DocumentRecord, ...prev.filter(d => d.document_type !== docType)])
+        setDocuments((prev) => [
+          doc as unknown as DocumentRecord,
+          ...prev.filter((d) => d.document_type !== docType),
+        ])
       }
 
-      // Trigger OCR
       try {
         await fetch('/api/ai/ocr', {
           method: 'POST',
@@ -134,7 +144,7 @@ export default function WorkerVerificationPage() {
           }),
         })
       } catch {
-        // OCR is non-blocking
+        /* OCR is non-blocking */
       }
     } catch (err) {
       console.error('Upload failed:', err)
@@ -143,99 +153,145 @@ export default function WorkerVerificationPage() {
     }
   }
 
-  if (userLoading || isLoading) {
-    return (
-      <div className="max-w-2xl mx-auto p-4 space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-32 rounded-xl" />
-        <Skeleton className="h-32 rounded-xl" />
-      </div>
-    )
-  }
-
-  const renderDocCard = (type: string, label: string, description: string) => {
+  const renderDocSection = (
+    type: string,
+    label: string,
+    description: string,
+    iconName: string,
+    iconColor: 'primary' | 'secondary'
+  ) => {
     const doc = getDocByType(type)
-    const status = doc ? statusConfig[doc.verification_status] || statusConfig.pending : null
-    const StatusIcon = status?.icon || Clock
+    const statusKey: StatusKey = (doc?.verification_status as StatusKey) || 'pending'
+    const status = doc ? STATUS_META[statusKey] : null
+
+    const iconBg = iconColor === 'primary' ? 'bg-[#9ffdd3]' : 'bg-[#ffdcc3]'
+    const iconFg = iconColor === 'primary' ? 'text-[#005d42]' : 'text-[#904d00]'
 
     return (
-      <Card className={cn(
-        doc?.verification_status === 'approved' && 'border-emerald-200',
-        doc?.verification_status === 'rejected' && 'border-red-200',
-      )}>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center',
-                doc?.verification_status === 'approved' ? 'bg-emerald-50' :
-                doc?.verification_status === 'rejected' ? 'bg-red-50' :
-                doc ? 'bg-amber-50' : 'bg-gray-100'
-              )}>
-                <FileText className={cn(
-                  'w-5 h-5',
-                  doc?.verification_status === 'approved' ? 'text-emerald-600' :
-                  doc?.verification_status === 'rejected' ? 'text-red-500' :
-                  doc ? 'text-amber-600' : 'text-gray-400'
-                )} />
+      <section className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-6 gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className={`${iconBg} p-2.5 rounded-lg shrink-0`}>
+                <span className={`material-symbols-outlined ${iconFg}`}>
+                  {iconName}
+                </span>
               </div>
-              <div>
-                <h3 className="font-semibold">{label}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
+              <div className="min-w-0">
+                <h3 className="font-heading font-bold text-base text-[#1a1c1b] truncate">
+                  {label}
+                </h3>
+                <p className="text-xs text-[#3e4943] truncate">{description}</p>
               </div>
             </div>
             {status && (
-              <Badge variant={status.variant} className="gap-1 shrink-0">
-                <StatusIcon className="w-3 h-3" />
+              <div
+                className={`${status.badgeBg} ${status.badgeText} flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shrink-0`}
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  {status.icon}
+                </span>
                 {status.label}
-              </Badge>
+              </div>
             )}
           </div>
 
           {/* Rejection reason */}
           {doc?.verification_status === 'rejected' && doc.rejection_reason && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+            <div className="bg-[#ffdad6] rounded-lg p-3 flex items-start gap-2 mb-4">
+              <span className="material-symbols-outlined text-[#ba1a1a] text-base shrink-0 mt-0.5">
+                error
+              </span>
               <div>
-                <p className="text-sm font-medium text-red-800">Rejected</p>
-                <p className="text-sm text-red-700">{doc.rejection_reason}</p>
+                <p className="text-sm font-semibold text-[#ba1a1a]">Rejected</p>
+                <p className="text-sm text-[#ba1a1a]">{doc.rejection_reason}</p>
               </div>
             </div>
           )}
 
           {/* OCR extracted data preview */}
-          {doc?.ocr_extracted_data && Object.keys(doc.ocr_extracted_data).length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-3 space-y-1">
-              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                <Eye className="w-3 h-3" /> Extracted Information
-              </p>
-              {Object.entries(doc.ocr_extracted_data).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                  <span className="font-medium">{value}</span>
-                </div>
-              ))}
+          {doc?.ocr_extracted_data &&
+            Object.keys(doc.ocr_extracted_data).length > 0 && (
+              <div className="bg-[#f4f4f2] rounded-lg p-4 space-y-1 mb-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#3e4943] flex items-center gap-1 mb-2">
+                  <span className="material-symbols-outlined text-sm">
+                    visibility
+                  </span>
+                  Extracted Information
+                </p>
+                {Object.entries(doc.ocr_extracted_data).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-[#3e4943] capitalize">
+                      {key.replace(/_/g, ' ')}
+                    </span>
+                    <span className="font-semibold text-[#1a1c1b]">{value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+          {/* Submission info */}
+          {doc && doc.verification_status !== 'approved' && (
+            <div className="flex gap-4 items-center p-4 bg-[#f4f4f2] rounded-lg mb-4">
+              <div className="w-14 h-16 bg-white rounded border border-[#e8e8e6] flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[#bdc9c1] text-2xl">
+                  description
+                </span>
+              </div>
+              <div>
+                <p className="font-semibold text-[#1a1c1b] text-sm mb-0.5">
+                  Submitted{' '}
+                  {new Date(doc.created_at).toLocaleDateString('en-ZA', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+                <p className="text-xs text-[#3e4943]">
+                  Under review by our trust &amp; safety team.
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Upload / Re-upload button */}
+          {doc && doc.verification_status === 'approved' && (
+            <div className="bg-[#f4f4f2] p-3 rounded-lg flex items-center gap-3 mb-4">
+              <span className="material-symbols-outlined text-[#005d42]">
+                security
+              </span>
+              <span className="text-xs text-[#3e4943] leading-tight">
+                Identity data is encrypted using 256-bit AES protocol.
+              </span>
+            </div>
+          )}
+
+          {/* Upload button */}
           <label className="cursor-pointer block">
-            <div className={cn(
-              "flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-3 transition-colors",
-              uploading === type
-                ? "border-emerald-300 bg-emerald-50"
-                : "border-border hover:border-emerald-400 hover:bg-emerald-50/50"
-            )}>
+            <div
+              className={`flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors ${
+                uploading === type
+                  ? 'border-[#005d42] bg-[#9ffdd3]/30'
+                  : 'border-[#bdc9c1] hover:border-[#005d42] hover:bg-[#f4f4f2]'
+              }`}
+            >
               {uploading === type ? (
                 <>
-                  <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
-                  <span className="text-sm font-medium text-emerald-700">Uploading...</span>
+                  <span className="material-symbols-outlined text-[#005d42] animate-spin">
+                    progress_activity
+                  </span>
+                  <span className="text-sm font-semibold text-[#005d42]">
+                    Uploading...
+                  </span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="material-symbols-outlined text-[#3e4943]">
+                    upload
+                  </span>
+                  <span className="text-sm font-semibold text-[#3e4943]">
                     {doc ? 'Re-upload Document' : 'Upload Document'}
                   </span>
                 </>
@@ -254,100 +310,137 @@ export default function WorkerVerificationPage() {
               disabled={uploading !== null}
             />
           </label>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+    )
+  }
+
+  if (userLoading || isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f9f9f7] flex items-center justify-center">
+        <span className="material-symbols-outlined text-4xl text-[#6e7a73] animate-spin">
+          progress_activity
+        </span>
+      </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3"
-      >
-        <Link href="/worker-profile/edit">
-          <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground -ml-2">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Button>
+    <div className="min-h-screen bg-[#f9f9f7] pb-16">
+      {/* Top App Bar */}
+      <header className="bg-[#f9f9f7] sticky top-0 z-40 flex items-center px-4 h-16 border-b border-[#e8e8e6]/40">
+        <Link
+          href="/worker-profile/edit"
+          className="p-2 -ml-2 rounded-full hover:bg-[#e8e8e6] active:scale-95 transition-all text-[#005d42]"
+          aria-label="Back"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
         </Link>
-      </motion.div>
+        <h1 className="ml-2 font-heading font-bold tracking-tight text-lg text-[#1a1c1b]">
+          Identity Verification
+        </h1>
+      </header>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="flex items-center gap-3"
-      >
-        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-          <ShieldCheck className="w-5 h-5 text-amber-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Verification</h1>
-          <VerificationBadge idVerified={idVerified} criminalCheckClear={criminalCheckClear} size="sm" />
-        </div>
-      </motion.div>
-
-      {/* Progress Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Verification Progress</span>
-              <span className="text-sm font-bold text-emerald-600">{progress}%</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-3">
-              <div
-                className={cn(
-                  'h-3 rounded-full transition-all duration-700',
-                  progress === 100
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500'
-                    : 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                )}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
-              <span>Upload</span>
-              <span>ID Approved</span>
-              <span>Fully Verified</span>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Why Verify */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4">
-          <h3 className="font-semibold text-emerald-900 mb-1">Why get verified?</h3>
-          <p className="text-sm text-emerald-800">
-            Verified workers get up to 3x more bookings. Clients trust the gold shield badge and are more likely to book you.
+      <main className="max-w-xl mx-auto px-5 pt-8 pb-12">
+        {/* Hero */}
+        <div className="mb-8">
+          <span className="text-[#3e4943] text-[11px] font-bold tracking-widest uppercase mb-2 block">
+            Worker: Verification
+          </span>
+          <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-[#1a1c1b] leading-tight mb-3 tracking-tight">
+            Get verified.
+            <br />
+            Get more bookings.
+          </h2>
+          <p className="text-[#3e4943] text-base leading-relaxed max-w-md">
+            Verified workers are prioritized in search results and earn a trust
+            badge for their profile.
           </p>
         </div>
-        <div className="mt-3">
+
+        {/* Progress Card */}
+        <section className="bg-white rounded-xl shadow-sm p-5 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#3e4943]">
+              Verification Progress
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#005d42]">
+              {progress}% complete
+            </span>
+          </div>
+          <div className="h-2 w-full bg-[#e8e8e6] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#005d42] rounded-full transition-all duration-700"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2 text-[10px] text-[#6e7a73]">
+            <span>Upload</span>
+            <span>ID Approved</span>
+            <span>Fully Verified</span>
+          </div>
+        </section>
+
+        {/* Sponsor */}
+        <div className="mb-6">
           <SponsorBadge placement="verification" />
         </div>
-      </motion.div>
 
-      {/* Document Cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-4"
-      >
-        {renderDocCard('id_document', 'SA ID Document', 'Photo of your ID book or smart ID card')}
-        {renderDocCard('criminal_clearance', 'Criminal Clearance', 'Police clearance certificate (SAPS)')}
-      </motion.div>
+        {/* Document Sections */}
+        <div className="space-y-4">
+          {renderDocSection(
+            'id_document',
+            'SA ID Document',
+            'Photo of your ID book or smart ID card',
+            'verified_user',
+            'primary'
+          )}
+          {renderDocSection(
+            'criminal_clearance',
+            'Criminal Clearance',
+            'Police clearance certificate (SAPS)',
+            'gavel',
+            'secondary'
+          )}
+        </div>
+
+        {/* Footer Card */}
+        <footer className="bg-[#f4f4f2] rounded-xl p-6 mt-6">
+          <div className="flex gap-4">
+            <span className="material-symbols-outlined text-[#005d42] text-3xl shrink-0">
+              verified
+            </span>
+            <div className="space-y-3">
+              <h4 className="font-heading font-bold text-[#1a1c1b]">
+                Safe &amp; Secure
+              </h4>
+              <p className="text-sm text-[#3e4943] leading-relaxed">
+                Our team reviews documents within 48 hours. Your information is
+                encrypted and stored securely per POPIA (Protection of Personal
+                Information Act) requirements.
+              </p>
+              <div className="pt-1 flex flex-wrap gap-4">
+                <div className="flex items-center gap-1.5 text-[#3e4943]">
+                  <span className="material-symbols-outlined text-base">
+                    lock_person
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-tight">
+                    POPIA Compliant
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[#3e4943]">
+                  <span className="material-symbols-outlined text-base">
+                    encrypted
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-tight">
+                    256-bit AES
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </main>
     </div>
   )
 }

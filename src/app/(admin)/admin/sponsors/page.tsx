@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,11 +9,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import {
-  Award, Plus, X, Eye, MousePointerClick, Edit2, Power,
-} from 'lucide-react'
 import { WaveBars } from '@/components/loading'
 import type { Sponsorship } from '@/lib/types'
+
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 const placementOptions = [
   { value: 'verification', label: 'Verification Page' },
@@ -47,13 +48,14 @@ export default function AdminSponsorsPage() {
   }
   const [form, setForm] = useState(emptyForm)
 
-  useEffect(() => { loadData() }, [])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const { data } = await supabase.from('sponsorships').select('*').order('created_at', { ascending: false })
     if (data) setSponsorships(data as Sponsorship[])
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData() }, [loadData])
 
   function startEdit(s: Sponsorship) {
     setForm({
@@ -124,21 +126,21 @@ export default function AdminSponsorsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Award className="w-6 h-6 text-amber-600" />
+          <h1 className="text-2xl font-bold font-heading flex items-center gap-2 text-[#1a1c1b]">
+            <Icon name="emoji_events" className="text-[#904d00]" style={{ fontSize: 28 }} />
             Sponsor Management
           </h1>
-          <p className="text-muted-foreground mt-1">Create and manage sponsorship placements</p>
+          <p className="text-[#3e4943] mt-1">Create and manage sponsorship placements</p>
         </div>
-        <Button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(!showForm) }}>
-          {showForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+        <Button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(!showForm) }} className="bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg active:scale-[0.98] transition-all">
+          <Icon name={showForm ? 'close' : 'add'} className="mr-2" style={{ fontSize: 18 }} />
           {showForm ? 'Cancel' : 'New Sponsorship'}
         </Button>
       </div>
 
       {/* Create/Edit Form */}
       {showForm && (
-        <Card className="border-amber-200">
+        <Card className="border-[#ffdcc3] bg-white rounded-xl shadow-sm">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -252,8 +254,8 @@ export default function AdminSponsorsPage() {
 
                       {/* Performance */}
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {s.impressions.toLocaleString()} impressions</span>
-                        <span className="flex items-center gap-1"><MousePointerClick className="w-3 h-3" /> {s.clicks.toLocaleString()} clicks</span>
+                        <span className="flex items-center gap-1"><Icon name="visibility" style={{ fontSize: 14 }} /> {s.impressions.toLocaleString()} impressions</span>
+                        <span className="flex items-center gap-1"><Icon name="ads_click" style={{ fontSize: 14 }} /> {s.clicks.toLocaleString()} clicks</span>
                         <span>{ctr}% CTR</span>
                       </div>
                     </div>
@@ -261,10 +263,10 @@ export default function AdminSponsorsPage() {
                     {/* Actions */}
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => startEdit(s)} title="Edit">
-                        <Edit2 className="w-4 h-4" />
+                        <Icon name="edit" style={{ fontSize: 18 }} />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => toggleActive(s.id, s.is_active)} title={s.is_active ? 'Deactivate' : 'Activate'}>
-                        <Power className={`w-4 h-4 ${s.is_active ? 'text-emerald-500' : 'text-gray-400'}`} />
+                        <Icon name="power_settings_new" style={{ fontSize: 18, color: s.is_active ? '#047857' : '#6e7a73' }} />
                       </Button>
                     </div>
                   </div>

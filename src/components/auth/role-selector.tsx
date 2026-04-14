@@ -1,85 +1,88 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Briefcase, Home, ArrowRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
-type Role = 'client' | 'worker'
 
 export function RoleSelector() {
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const router = useRouter()
 
-  const roles = [
-    {
-      id: 'client' as Role,
-      title: 'I Need Help',
-      subtitle: 'Find trusted workers near you',
-      icon: Home,
-      color: 'from-blue-500 to-blue-600',
-      borderColor: 'border-blue-500',
-      features: ['Search verified workers', 'Book & schedule', 'Message directly', 'Rate & review'],
-    },
-    {
-      id: 'worker' as Role,
-      title: 'I Offer Services',
-      subtitle: 'Get discovered by households',
-      icon: Briefcase,
-      color: 'from-emerald-500 to-emerald-600',
-      borderColor: 'border-emerald-500',
-      features: ['Create your profile', 'Set your rates', 'Manage bookings', 'Build reputation'],
-    },
-  ]
-
-  const handleContinue = () => {
-    if (selectedRole === 'worker') router.push('/register/worker')
-    else if (selectedRole === 'client') router.push('/register/client')
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">Join DomestIQ</h1>
-        <p className="text-muted-foreground mt-1">How would you like to use the platform?</p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {roles.map((role) => {
-          const Icon = role.icon
-          const isSelected = selectedRole === role.id
-          return (
-            <Card
-              key={role.id}
-              className={cn(
-                'cursor-pointer transition-all duration-200 hover:shadow-lg',
-                isSelected ? `ring-2 ring-offset-2 ${role.borderColor} shadow-lg` : 'hover:border-gray-300'
-              )}
-              onClick={() => setSelectedRole(role.id)}
-            >
-              <CardContent className="p-6 text-center">
-                <div className={cn('w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br', role.color)}>
-                  <Icon className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-xl font-bold mb-1">{role.title}</h2>
-                <p className="text-sm text-muted-foreground mb-4">{role.subtitle}</p>
-                <ul className="text-left space-y-2">
-                  {role.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className={cn('w-1.5 h-1.5 rounded-full bg-gradient-to-br', role.color)} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-      <Button className="w-full h-12 text-base" disabled={!selectedRole} onClick={handleContinue}>
-        Continue <ArrowRight className="w-5 h-5 ml-2" />
-      </Button>
+    <div className="text-[#1a1c1b] flex flex-col min-h-screen">
+      <header className="w-full flex justify-center pt-10 pb-6 px-6">
+        <span className="font-heading font-bold text-xl text-[#005d42] uppercase tracking-wider">
+          DomestIQ
+        </span>
+      </header>
+
+      <main className="flex-1 flex flex-col px-8 max-w-md mx-auto w-full justify-center">
+        <div className="mb-10 text-left">
+          <h1 className="font-heading font-bold text-3xl tracking-tight mb-3">
+            How can we help you?
+          </h1>
+          <p className="text-[#44483e] text-lg leading-relaxed">
+            Choose how you&apos;d like to use DomestIQ
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          {/* Worker Card */}
+          <button
+            onClick={() => router.push('/register/worker')}
+            className="w-full text-left bg-white rounded-xl overflow-hidden transition-transform active:scale-[0.98] flex group relative"
+            style={{ boxShadow: '0 8px 24px 0 rgba(26, 28, 27, 0.06)' }}
+          >
+            <div className="w-1.5 bg-[#005d42] self-stretch" />
+            <div className="flex-1 p-6 flex items-start gap-5">
+              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[#f4f4f2] flex items-center justify-center text-[#005d42]">
+                <span className="material-symbols-outlined text-3xl">cleaning_services</span>
+              </div>
+              <div className="flex-1">
+                <h2 className="font-heading font-bold text-xl mb-1">I&apos;m a Worker</h2>
+                <p className="text-sm text-[#44483e] leading-snug">
+                  I offer domestic services — cleaning, gardening, painting, and more
+                </p>
+              </div>
+              <div className="self-center text-[#74796d] opacity-40 group-hover:opacity-100 transition-opacity">
+                <span className="material-symbols-outlined">chevron_right</span>
+              </div>
+            </div>
+          </button>
+
+          {/* Client Card */}
+          <button
+            onClick={() => router.push('/register/client')}
+            className="w-full text-left bg-white rounded-xl overflow-hidden transition-transform active:scale-[0.98] flex group relative"
+            style={{ boxShadow: '0 8px 24px 0 rgba(26, 28, 27, 0.06)' }}
+          >
+            <div className="w-1.5 bg-[#005d42] self-stretch" />
+            <div className="flex-1 p-6 flex items-start gap-5">
+              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[#f4f4f2] flex items-center justify-center text-[#005d42]">
+                <span className="material-symbols-outlined text-3xl">home</span>
+              </div>
+              <div className="flex-1">
+                <h2 className="font-heading font-bold text-xl mb-1">I Need Help at Home</h2>
+                <p className="text-sm text-[#44483e] leading-snug">
+                  I&apos;m looking for reliable help around my home
+                </p>
+              </div>
+              <div className="self-center text-[#74796d] opacity-40 group-hover:opacity-100 transition-opacity">
+                <span className="material-symbols-outlined">chevron_right</span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </main>
+
+      <footer className="p-8 w-full max-w-md mx-auto text-center">
+        <p className="text-[#44483e] text-sm">
+          Already have an account?{' '}
+          <a
+            className="text-[#005d42] font-bold ml-1 hover:underline underline-offset-4 cursor-pointer"
+            href="/login"
+          >
+            Log in
+          </a>
+        </p>
+      </footer>
     </div>
   )
 }

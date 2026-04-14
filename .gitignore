@@ -41,3 +41,16 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# Claude Code + dev tooling
+.claude/
+.agents/
+.playwright-mcp/
+memory/
+skills-lock.json
+
+# Local screenshots + tmp
+stitch-*.png
+
+# Supabase local tmp
+supabase/.temp/

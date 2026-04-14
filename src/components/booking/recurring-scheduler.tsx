@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Repeat, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface RecurringSchedule {
@@ -37,27 +36,63 @@ export function RecurringScheduler({ onScheduleChange, className }: RecurringSch
 
   return (
     <div className={cn('space-y-4', className)}>
-      <Button type="button" variant={enabled ? 'default' : 'outline'} className="w-full h-12" onClick={toggle}>
-        {enabled ? <X className="w-4 h-4 mr-2" /> : <Repeat className="w-4 h-4 mr-2" />}
+      <Button
+        type="button"
+        variant={enabled ? 'default' : 'outline'}
+        className={cn(
+          'w-full h-12',
+          enabled ? 'bg-[#005d42] hover:bg-[#047857] text-white' : 'border-[#bdc9c1] text-[#1a1c1b] hover:bg-[#f4f4f2]'
+        )}
+        onClick={toggle}
+      >
+        <span className="material-symbols-outlined text-base mr-2">{enabled ? 'close' : 'repeat'}</span>
         {enabled ? 'Remove Recurring Schedule' : 'Make Recurring'}
       </Button>
       {enabled && (
-        <div className="space-y-4 p-4 bg-card border rounded-xl">
+        <div className="space-y-4 p-4 bg-white border border-[#bdc9c1] rounded-xl">
           <div>
-            <Label>Frequency</Label>
+            <Label className="text-[#1a1c1b]">Frequency</Label>
             <div className="flex gap-2 mt-1">
-              {FREQUENCIES.map(f => (<Badge key={f.id} variant={schedule.frequency === f.id ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5" onClick={() => updateSchedule({ frequency: f.id })}>{f.label}</Badge>))}
+              {FREQUENCIES.map(f => (
+                <Badge
+                  key={f.id}
+                  variant={schedule.frequency === f.id ? 'default' : 'outline'}
+                  className={cn(
+                    'cursor-pointer px-3 py-1.5',
+                    schedule.frequency === f.id
+                      ? 'bg-[#005d42] text-white border-0'
+                      : 'border-[#bdc9c1] text-[#1a1c1b]'
+                  )}
+                  onClick={() => updateSchedule({ frequency: f.id })}
+                >
+                  {f.label}
+                </Badge>
+              ))}
             </div>
           </div>
           <div>
-            <Label>On These Days</Label>
+            <Label className="text-[#1a1c1b]">On These Days</Label>
             <div className="flex gap-1.5 mt-1">
-              {DAYS.map((day, i) => (<button key={i} type="button" onClick={() => toggleDay(day.idx)} className={cn('w-10 h-10 rounded-lg text-sm font-medium transition-colors', schedule.days.includes(day.idx) ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80')}>{day.short}</button>))}
+              {DAYS.map((day, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleDay(day.idx)}
+                  className={cn(
+                    'w-10 h-10 rounded-lg text-sm font-medium transition-colors',
+                    schedule.days.includes(day.idx)
+                      ? 'bg-[#005d42] text-white'
+                      : 'bg-[#f4f4f2] text-[#1a1c1b] hover:bg-[#eeeeec]'
+                  )}
+                >
+                  {day.short}
+                </button>
+              ))}
             </div>
           </div>
           <div>
-            <Label htmlFor="endDate">Until (optional)</Label>
-            <Input id="endDate" type="date" value={schedule.endDate || ''} onChange={e => updateSchedule({ endDate: e.target.value || null })} className="mt-1" />
+            <Label htmlFor="endDate" className="text-[#1a1c1b]">Until (optional)</Label>
+            <Input id="endDate" type="date" value={schedule.endDate || ''} onChange={e => updateSchedule({ endDate: e.target.value || null })} className="mt-1 bg-[#f4f4f2] border-none focus:ring-2 focus:ring-[#005d42]/30" />
           </div>
         </div>
       )}

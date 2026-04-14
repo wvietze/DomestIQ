@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/lib/types'
 
@@ -77,6 +76,7 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
   // ---- Initial load --------------------------------------------------------
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications()
     fetchUnreadCount()
   }, [fetchNotifications, fetchUnreadCount])
@@ -179,11 +179,11 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
       >
-        <Bell className="h-5 w-5" />
+        <span className="material-symbols-outlined text-xl">notifications</span>
         {showBadge && (
           <span
             className={cn(
-              'absolute flex items-center justify-center rounded-full bg-red-500 text-white font-bold',
+              'absolute flex items-center justify-center rounded-full bg-[#ba1a1a] text-white font-bold',
               badgeText
                 ? 'top-0 right-0 h-5 min-w-5 px-1 text-[10px]'
                 : 'top-1 right-1 h-2.5 w-2.5'
@@ -196,14 +196,14 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border z-50">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-[#bdc9c1] z-50">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b">
-            <h3 className="font-semibold text-sm">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e8e8e6]">
+            <h3 className="font-semibold text-sm text-[#1a1c1b]">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-primary hover:underline font-medium"
+                className="text-xs text-[#005d42] hover:underline font-medium"
               >
                 Mark all as read
               </button>
@@ -216,19 +216,19 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="h-2.5 w-2.5 rounded-full bg-gray-200 mt-1.5 shrink-0" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#eeeeec] mt-1.5 shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-3/4 rounded bg-gray-200" />
-                      <div className="h-3 w-full rounded bg-gray-200" />
-                      <div className="h-2.5 w-16 rounded bg-gray-200" />
+                      <div className="h-3.5 w-3/4 rounded bg-[#eeeeec]" />
+                      <div className="h-3 w-full rounded bg-[#eeeeec]" />
+                      <div className="h-2.5 w-16 rounded bg-[#eeeeec]" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <Bell className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
+                <span className="material-symbols-outlined text-4xl text-[#bdc9c1] mb-2 block">notifications</span>
+                <p className="text-sm text-[#3e4943]">
                   No notifications yet
                 </p>
               </div>
@@ -238,8 +238,8 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
                   className={cn(
-                    'w-full text-left px-4 py-3 flex gap-3 hover:bg-gray-50 transition-colors border-b last:border-b-0',
-                    !notification.is_read && 'bg-primary/5'
+                    'w-full text-left px-4 py-3 flex gap-3 hover:bg-[#f4f4f2] transition-colors border-b border-[#e8e8e6] last:border-b-0',
+                    !notification.is_read && 'bg-[#9ffdd3]/20'
                   )}
                 >
                   {/* Unread indicator */}
@@ -247,7 +247,7 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
                     <div
                       className={cn(
                         'h-2 w-2 rounded-full',
-                        notification.is_read ? 'bg-transparent' : 'bg-primary'
+                        notification.is_read ? 'bg-transparent' : 'bg-[#005d42]'
                       )}
                     />
                   </div>
@@ -258,18 +258,18 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
                       className={cn(
                         'text-sm leading-snug',
                         !notification.is_read
-                          ? 'font-semibold text-gray-900'
-                          : 'font-medium text-gray-700'
+                          ? 'font-semibold text-[#1a1c1b]'
+                          : 'font-medium text-[#3e4943]'
                       )}
                     >
                       {notification.title}
                     </p>
                     {notification.body && (
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                      <p className="text-xs text-[#3e4943] mt-0.5 line-clamp-2">
                         {notification.body}
                       </p>
                     )}
-                    <p className="text-[11px] text-gray-400 mt-1">
+                    <p className="text-[11px] text-[#6e7a73] mt-1">
                       {timeAgo(notification.created_at)}
                     </p>
                   </div>
@@ -280,13 +280,13 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="border-t px-4 py-2.5">
+            <div className="border-t border-[#e8e8e6] px-4 py-2.5">
               <button
                 onClick={() => {
                   setIsOpen(false)
                   router.push(notificationsHref)
                 }}
-                className="text-sm text-primary hover:underline font-medium w-full text-center"
+                className="text-sm text-[#005d42] hover:underline font-medium w-full text-center"
               >
                 View all notifications
               </button>

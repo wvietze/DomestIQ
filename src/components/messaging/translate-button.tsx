@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Languages, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface TranslateButtonProps {
@@ -31,11 +30,13 @@ export function TranslateButton({ text, targetLanguage = 'en', onTranslated, siz
 
   return (
     <div className={cn('', className)}>
-      <Button variant="ghost" size={size} onClick={handleTranslate} disabled={translating} className="gap-1.5">
-        {translating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Languages className="w-3.5 h-3.5" />}
+      <Button variant="ghost" size={size} onClick={handleTranslate} disabled={translating} className="gap-1.5 text-[#005d42]">
+        <span className={cn('material-symbols-outlined text-sm', translating && 'animate-spin')}>
+          {translating ? 'progress_activity' : 'translate'}
+        </span>
         {translated ? (showOriginal ? 'Translated' : 'Original') : 'Translate'}
       </Button>
-      {translated && !showOriginal && <p className="mt-1 text-sm italic text-muted-foreground">{translated}</p>}
+      {translated && !showOriginal && <p className="mt-1 text-sm italic text-[#3e4943]">{translated}</p>}
     </div>
   )
 }

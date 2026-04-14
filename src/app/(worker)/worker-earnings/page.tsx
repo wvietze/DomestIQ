@@ -1,17 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import {
-  TrendingUp, DollarSign, Calendar, FileText, Download,
-  ChevronRight, Loader2, ShieldCheck, Banknote, Briefcase,
-} from 'lucide-react'
-import { motion } from 'framer-motion'
 
 type Period = 'week' | 'month' | 'year' | 'all'
 
@@ -39,6 +31,13 @@ interface IncomeStatement {
   verification_hash: string
   is_shared: boolean
   generated_at: string
+}
+
+const PERIOD_LABELS: Record<Period, string> = {
+  week: 'Week',
+  month: 'Month',
+  year: 'Year',
+  all: 'All Time',
 }
 
 export default function WorkerEarningsPage() {
@@ -90,7 +89,6 @@ export default function WorkerEarningsPage() {
       })
 
       if (res.ok) {
-        // Refresh data
         const refreshRes = await fetch(`/api/income?period=${period}`)
         if (refreshRes.ok) {
           const data = await refreshRes.json()
@@ -107,12 +105,10 @@ export default function WorkerEarningsPage() {
   const formatCurrency = (amount: number) =>
     `R${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-ZA', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    })
+  const formatShortDate = (dateStr: string) =>
+    new Date(dateStr)
+      .toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
+      .toUpperCase()
 
   const formatMonthYear = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-ZA', {
@@ -122,225 +118,223 @@ export default function WorkerEarningsPage() {
 
   if (userLoading || (isLoading && !summary)) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-3 gap-4">
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
-        </div>
-        <Skeleton className="h-64 rounded-xl" />
+      <div className="min-h-screen bg-[#f9f9f7] flex items-center justify-center">
+        <span className="material-symbols-outlined text-4xl text-[#6e7a73] animate-spin">
+          progress_activity
+        </span>
       </div>
     )
   }
 
+  const totalEarnings = summary?.total_earnings || 0
+  const totalBookings = summary?.total_bookings || 0
+  const avgPerJob = summary?.avg_booking_value || 0
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex items-center justify-between"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-            <Briefcase className="w-5 h-5 text-emerald-600" />
-          </div>
-          <h1 className="text-2xl font-bold">Work History</h1>
-        </div>
-        <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+    <div className="min-h-screen bg-[#f9f9f7] pb-16">
+      {/* Top App Bar */}
+      <header className="bg-[#f9f9f7] sticky top-0 z-40 flex items-center px-4 h-16 border-b border-[#e8e8e6]/40">
+        <Link
+          href="/worker-dashboard"
+          className="p-2 -ml-2 rounded-full hover:bg-[#e8e8e6] active:scale-95 transition-all text-[#005d42]"
+          aria-label="Back"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+        </Link>
+        <h1 className="ml-2 font-heading font-bold tracking-tight text-lg text-[#1a1c1b]">
+          Earnings &amp; History
+        </h1>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-5 pt-4">
+        {/* Period Filter */}
+        <div className="flex items-center gap-2 overflow-x-auto py-4 no-scrollbar">
           {(['week', 'month', 'year', 'all'] as Period[]).map((p) => (
             <button
               key={p}
+              type="button"
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors active:scale-[0.98] ${
                 period === p
-                  ? 'bg-white text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-[#005d42] text-white shadow-sm'
+                  : 'bg-[#e8e8e6] text-[#3e4943]'
               }`}
             >
-              {p === 'all' ? 'All' : p.charAt(0).toUpperCase() + p.slice(1)}
+              {PERIOD_LABELS[p]}
             </button>
           ))}
         </div>
-      </motion.div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
-          <CardContent className="p-4 text-center">
-            <DollarSign className="w-6 h-6 mx-auto text-emerald-500 mb-2" />
-            <p className="text-2xl font-bold text-emerald-600">
-              {summary ? formatCurrency(summary.total_earnings) : 'R0.00'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Total Income</p>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-sky-400 to-sky-600" />
-          <CardContent className="p-4 text-center">
-            <Calendar className="w-6 h-6 mx-auto text-sky-500 mb-2" />
-            <p className="text-2xl font-bold">
-              {summary?.total_bookings || 0}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Jobs Completed</p>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
-          <CardContent className="p-4 text-center">
-            <TrendingUp className="w-6 h-6 mx-auto text-amber-500 mb-2" />
-            <p className="text-2xl font-bold">
-              {summary ? formatCurrency(summary.avg_booking_value) : 'R0.00'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Avg per Job</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Income Verification Banner */}
-      <Card className="border-blue-200 bg-blue-50/50">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-blue-900">Income Verification</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                Your work on DomestIQ is tracked and verified. Generate a work history
-                report for loan applications, rental agreements, or bank accounts.
+        {/* Summary Stats Card */}
+        <section className="mt-4 bg-white rounded-xl p-6 shadow-sm border-l-4 border-[#005d42]">
+          <p className="text-[#3e4943] font-semibold text-xs uppercase tracking-widest mb-1">
+            Total Earned this {PERIOD_LABELS[period]}
+          </p>
+          <h2 className="font-heading font-extrabold text-4xl text-[#1a1c1b] tracking-tight">
+            {formatCurrency(totalEarnings)}
+          </h2>
+          <div className="flex items-center gap-8 mt-5 pt-5 border-t border-[#f4f4f2]">
+            <div>
+              <p className="text-[#3e4943] text-[10px] font-bold uppercase tracking-wider">
+                Jobs Completed
               </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-3 gap-2"
-                onClick={handleGenerateStatement}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <FileText className="w-4 h-4" />
-                )}
-                {isGenerating ? 'Generating...' : 'Generate This Month\'s Report'}
-              </Button>
+              <p className="font-heading font-bold text-xl text-[#005d42] mt-0.5">
+                {totalBookings}
+              </p>
+            </div>
+            <div>
+              <p className="text-[#3e4943] text-[10px] font-bold uppercase tracking-wider">
+                Avg per Job
+              </p>
+              <p className="font-heading font-bold text-xl text-[#904d00] mt-0.5">
+                {formatCurrency(avgPerJob)}
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Income Statements */}
-      {statements.length > 0 && (
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Work History Reports
-              </h2>
-            </div>
-
-            <div className="space-y-2">
-              {statements.map((stmt) => (
-                <div
-                  key={stmt.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div>
-                    <p className="font-medium text-sm">
-                      {formatMonthYear(stmt.period_start)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {stmt.total_bookings} jobs
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-emerald-600">
-                      {formatCurrency(Number(stmt.total_earnings))}
-                    </span>
-                    <Button variant="ghost" size="sm" className="gap-1">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recent Transactions */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold flex items-center gap-2">
-              <Banknote className="w-5 h-5" />
-              Recent Jobs
-            </h2>
-          </div>
-
+        {/* Recent Jobs List */}
+        <section className="mt-10">
+          <h3 className="font-heading font-bold text-lg text-[#1a1c1b] mb-6">
+            Recent Jobs
+          </h3>
           {transactions.length === 0 ? (
-            <div className="text-center py-8">
-              <Briefcase className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">No completed jobs yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+              <span className="material-symbols-outlined text-5xl text-[#bdc9c1] mb-3">
+                work_history
+              </span>
+              <p className="text-[#3e4943] font-medium">
+                No completed jobs yet
+              </p>
+              <p className="text-sm text-[#6e7a73] mt-1">
                 Your completed work will be tracked here
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-6">
               {transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex justify-between items-start"
                 >
-                  <div>
-                    <p className="font-medium text-sm">
-                      Completed Job
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {tx.paid_at ? formatDate(tx.paid_at) : 'Pending'}
-                    </p>
+                  <div className="flex gap-4 min-w-0">
+                    <div className="w-12 h-12 rounded-lg bg-[#e8e8e6] flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[#005d42]">
+                        cleaning_services
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-[#1a1c1b] truncate">
+                        Completed Job
+                      </p>
+                      <p className="text-sm text-[#3e4943]">
+                        {tx.status}
+                      </p>
+                      <p className="text-[11px] font-bold text-[#3e4943] mt-1 uppercase tracking-wider">
+                        {tx.paid_at ? formatShortDate(tx.paid_at) : 'Pending'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-emerald-600">
-                      +{formatCurrency(Number(tx.worker_amount))}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </div>
+                  <p className="font-heading font-extrabold text-[#1a1c1b] shrink-0">
+                    {formatCurrency(Number(tx.worker_amount))}
+                  </p>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </section>
 
-      {false && (
-      <>
-      <Separator />
-
-      {/* Bank Details CTA */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Banknote className="w-6 h-6 text-muted-foreground shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold">Bank Account for Payouts</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Add your bank account details to receive direct payouts from completed bookings.
-                We support all major South African banks including Capitec, FNB, Standard Bank,
-                Absa, Nedbank, and TymeBank.
-              </p>
-              <Button size="sm" className="mt-3 gap-2">
-                Set Up Bank Account
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+        {/* Financial Verification Section */}
+        <section className="mt-12 bg-[#eeeeec] rounded-xl p-6 border border-[#bdc9c1]/40">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="material-symbols-outlined text-[#005d42]">
+              verified_user
+            </span>
+            <h3 className="font-heading font-bold text-lg text-[#1a1c1b]">
+              Financial Verification
+            </h3>
           </div>
-        </CardContent>
-      </Card>
-      </>
-      )}
+          <p className="text-[#3e4943] text-sm leading-relaxed mb-6">
+            Generate a verifiable income statement for banks, landlords, or loan
+            applications. Your work history at DomestIQ serves as official proof
+            of earnings.
+          </p>
+          <button
+            type="button"
+            onClick={handleGenerateStatement}
+            disabled={isGenerating}
+            className="w-full py-4 bg-[#005d42] text-white font-bold rounded-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {isGenerating ? (
+              <span className="material-symbols-outlined animate-spin">
+                progress_activity
+              </span>
+            ) : (
+              <span className="material-symbols-outlined text-base">
+                picture_as_pdf
+              </span>
+            )}
+            {isGenerating ? 'Generating...' : 'Generate Statement'}
+          </button>
+
+          {/* Previous Statements */}
+          {statements.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-[#bdc9c1]/40">
+              <p className="text-[10px] font-bold text-[#3e4943] uppercase tracking-widest mb-4">
+                Previous Statements
+              </p>
+              <div className="space-y-2">
+                {statements.map((stmt) => (
+                  <div
+                    key={stmt.id}
+                    className="flex items-center justify-between bg-white p-4 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="material-symbols-outlined text-[#3e4943] shrink-0">
+                        description
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm text-[#1a1c1b] truncate">
+                          {formatMonthYear(stmt.period_start)} —{' '}
+                          {formatCurrency(Number(stmt.total_earnings))}
+                        </p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-[10px] font-bold text-[#005d42] uppercase">
+                            Verified
+                          </span>
+                          <span className="material-symbols-outlined text-xs text-[#005d42]">
+                            check_circle
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <button
+                        type="button"
+                        className="p-2 rounded hover:bg-[#f4f4f2] transition-colors text-[#3e4943]"
+                        aria-label="Share"
+                      >
+                        <span className="material-symbols-outlined text-lg">
+                          share
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2 rounded hover:bg-[#f4f4f2] transition-colors text-[#3e4943]"
+                        aria-label="Download"
+                      >
+                        <span className="material-symbols-outlined text-lg">
+                          download
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
     </div>
   )
 }

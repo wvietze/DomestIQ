@@ -18,9 +18,6 @@ export function TiltCard({ children, className = '', maxTilt = 8 }: TiltCardProp
   const rotateX = useSpring(useTransform(y, [0, 1], [maxTilt, -maxTilt]), { stiffness: 300, damping: 20 })
   const rotateY = useSpring(useTransform(x, [0, 1], [-maxTilt, maxTilt]), { stiffness: 300, damping: 20 })
 
-  const shadowX = useTransform(rotateY, [-maxTilt, maxTilt], [-6, 6])
-  const shadowY = useTransform(rotateX, [-maxTilt, maxTilt], [6, -6])
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return
     if (window.matchMedia('(pointer: coarse)').matches) return

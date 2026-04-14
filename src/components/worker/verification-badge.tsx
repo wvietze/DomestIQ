@@ -1,6 +1,5 @@
 'use client'
 
-import { ShieldCheck, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface VerificationBadgeProps {
@@ -27,9 +26,9 @@ export function VerificationBadge({
   }
 
   const iconSizes = {
-    sm: 'w-3.5 h-3.5',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5',
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg',
   }
 
   const textSizes = {
@@ -41,8 +40,8 @@ export function VerificationBadge({
   if (unverified) {
     return (
       <span className={cn('inline-flex items-center', sizeClasses[size])}>
-        <Shield className={cn(iconSizes[size], 'text-gray-400')} />
-        {showLabel && <span className={cn(textSizes[size], 'text-gray-500 font-medium')}>Unverified</span>}
+        <span className={cn('material-symbols-outlined text-[#6e7a73]', iconSizes[size])}>shield</span>
+        {showLabel && <span className={cn(textSizes[size], 'text-[#6e7a73] font-medium')}>Unverified</span>}
       </span>
     )
   }
@@ -50,8 +49,8 @@ export function VerificationBadge({
   if (fullyVerified) {
     return (
       <span className={cn('inline-flex items-center', sizeClasses[size])}>
-        <ShieldCheck className={cn(iconSizes[size], 'text-amber-500')} />
-        {showLabel && <span className={cn(textSizes[size], 'text-amber-700 font-semibold')}>Fully Verified</span>}
+        <span className={cn('material-symbols-outlined text-[#fe932c]', iconSizes[size])}>verified_user</span>
+        {showLabel && <span className={cn(textSizes[size], 'text-[#904d00] font-semibold')}>Fully Verified</span>}
       </span>
     )
   }
@@ -59,8 +58,8 @@ export function VerificationBadge({
   if (partiallyVerified) {
     return (
       <span className={cn('inline-flex items-center', sizeClasses[size])}>
-        <ShieldCheck className={cn(iconSizes[size], 'text-emerald-500')} />
-        {showLabel && <span className={cn(textSizes[size], 'text-emerald-700 font-medium')}>ID Verified</span>}
+        <span className={cn('material-symbols-outlined text-[#005d42]', iconSizes[size])}>verified_user</span>
+        {showLabel && <span className={cn(textSizes[size], 'text-[#005d42] font-medium')}>ID Verified</span>}
       </span>
     )
   }

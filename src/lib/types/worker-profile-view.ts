@@ -1,4 +1,4 @@
-import type { WorkerProfile, WorkerService, WorkerAvailability } from './worker'
+import type { WorkerAvailability } from './worker'
 import type { PortfolioImage } from './portfolio'
 import type { Review } from './review'
 import type { WorkerReference } from './reference'

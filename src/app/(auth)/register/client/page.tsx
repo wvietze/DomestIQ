@@ -97,16 +97,8 @@ export default function ClientRegistrationPage() {
       <Card>
         <CardContent className="p-6 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-              <svg
-                className="h-8 w-8 text-emerald-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#9ffdd3]">
+              <span className="material-symbols-outlined text-4xl text-[#005d42]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
             </div>
           </div>
           <h3 className="text-lg font-semibold text-foreground">

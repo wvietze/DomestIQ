@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Shield, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const CONSENT_KEY = 'domestiq-popi-consent'
@@ -110,24 +109,24 @@ export function PopiConsentBanner() {
         <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Left content */}
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#97f5cc]">
               {bannerState === 'accepted' ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 animate-in zoom-in duration-300" />
+                <span className="material-symbols-outlined text-[#005d42] text-xl animate-in zoom-in duration-300">check_circle</span>
               ) : (
-                <Shield className="h-5 w-5 text-primary" />
+                <span className="material-symbols-outlined text-[#005d42] text-xl">shield</span>
               )}
             </div>
             <div className="space-y-0.5">
               {bannerState === 'accepted' ? (
-                <p className="text-sm font-medium text-emerald-700">
+                <p className="text-sm font-medium text-[#005d42]">
                   Thank you! Your consent has been recorded.
                 </p>
               ) : (
                 <>
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-[#1a1c1b]">
                     Your privacy matters
                   </p>
-                  <p className="text-sm leading-relaxed text-gray-600">
+                  <p className="text-sm leading-relaxed text-[#3e4943]">
                     DomestIQ processes personal information in accordance with
                     South Africa&apos;s Protection of Personal Information Act
                     (POPIA). By accepting, you consent to our data practices,
@@ -145,7 +144,7 @@ export function PopiConsentBanner() {
                 variant="outline"
                 size="sm"
                 asChild
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="border-[#bdc9c1] text-[#1a1c1b] hover:bg-[#f4f4f2]"
               >
                 <Link href="/privacy">Privacy Policy</Link>
               </Button>

@@ -1,6 +1,5 @@
 "use client"
 
-import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface StarRatingProps {
@@ -13,9 +12,9 @@ interface StarRatingProps {
 }
 
 const sizeClasses = {
-  sm: "h-3.5 w-3.5",
-  md: "h-5 w-5",
-  lg: "h-7 w-7",
+  sm: "text-sm",
+  md: "text-lg",
+  lg: "text-2xl",
 }
 
 export function StarRating({
@@ -43,14 +42,18 @@ export function StarRating({
               !interactive && "cursor-default"
             )}
           >
-            <Star
+            <span
               className={cn(
+                "material-symbols-outlined",
                 sizeClasses[size],
-                filled && "fill-amber-400 text-amber-400",
-                halfFilled && "fill-amber-400/50 text-amber-400",
-                !filled && !halfFilled && "fill-gray-200 text-gray-200"
+                filled && "text-[#fe932c]",
+                halfFilled && "text-[#fe932c]/50",
+                !filled && !halfFilled && "text-[#e2e3e1]"
               )}
-            />
+              style={filled || halfFilled ? { fontVariationSettings: "'FILL' 1" } : undefined}
+            >
+              star
+            </span>
           </button>
         )
       })}

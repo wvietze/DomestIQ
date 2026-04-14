@@ -23,21 +23,9 @@ import {
  SelectContent,
  SelectItem,
 } from '@/components/ui/select'
-import {
- AlertTriangle,
- CheckCircle2,
- Flag,
- Shield,
- ShieldOff,
- Eye,
- Clock,
- MessageSquare,
- Star,
- User,
- ExternalLink,
- XCircle,
- Loader2,
-} from 'lucide-react'
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+ return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -70,13 +58,13 @@ type ActionType = 'remove_content' | 'suspend_user' | 'remove_and_suspend'
 function contentTypeIcon(type: string) {
  switch (type) {
  case 'review':
- return <Star className="w-4 h-4"/>
+ return <Icon name="star" style={{ fontSize: 18 }}/>
  case 'message':
- return <MessageSquare className="w-4 h-4"/>
+ return <Icon name="chat" style={{ fontSize: 18 }}/>
  case 'profile':
- return <User className="w-4 h-4"/>
+ return <Icon name="person" style={{ fontSize: 18 }}/>
  default:
- return <Flag className="w-4 h-4"/>
+ return <Icon name="flag" style={{ fontSize: 18 }}/>
  }
 }
 
@@ -363,10 +351,10 @@ export default function ModerationPage() {
  {/* ── Header ── */}
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <Shield className="w-7 h-7 text-primary"/>
+ <Icon name="shield" className="text-[#005d42]" style={{ fontSize: 28 }}/>
  <div>
- <h1 className="text-2xl font-bold">Content Moderation</h1>
- <p className="text-sm text-muted-foreground">
+ <h1 className="text-2xl font-bold font-heading text-[#1a1c1b]">Content Moderation</h1>
+ <p className="text-sm text-[#3e4943]">
  Review reported content and take appropriate action
  </p>
  </div>
@@ -388,16 +376,16 @@ export default function ModerationPage() {
  <Tabs defaultValue="pending">
  <TabsList>
  <TabsTrigger value="pending"className="gap-2">
- <Flag className="w-4 h-4"/>
+ <Icon name="flag" style={{ fontSize: 18 }}/>
  Pending Reports
  {pendingReports.length > 0 && (
- <span className="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+ <span className="ml-1 bg-[#ba1a1a] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
  {pendingReports.length}
  </span>
  )}
  </TabsTrigger>
  <TabsTrigger value="resolved"className="gap-2">
- <Clock className="w-4 h-4"/>
+ <Icon name="schedule" style={{ fontSize: 18 }}/>
  Recent Actions
  </TabsTrigger>
  </TabsList>
@@ -441,8 +429,8 @@ export default function ModerationPage() {
  {filteredPending.length === 0 ? (
  <Card>
  <CardContent className="p-12 text-center">
- <CheckCircle2 className="w-14 h-14 text-emerald-500 mx-auto mb-4"/>
- <p className="text-lg font-medium">No pending reports</p>
+ <Icon name="check_circle" className="text-[#047857] mx-auto mb-4 block" style={{ fontSize: 56 }}/>
+ <p className="text-lg font-medium text-[#1a1c1b]">No pending reports</p>
  <p className="text-sm text-muted-foreground mt-1">
  All reported content has been reviewed. Check back later.
  </p>
@@ -458,11 +446,11 @@ export default function ModerationPage() {
  const isProcessing = processing === report.id
 
  return (
- <Card key={report.id} className="border-l-4 border-l-amber-500">
+ <Card key={report.id} className="border-l-4 border-l-[#fe932c] bg-white rounded-xl shadow-sm">
  <CardHeader className="pb-3">
  <CardTitle className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <Flag className="w-5 h-5 text-red-500"/>
+ <Icon name="flag" className="text-[#ba1a1a]" style={{ fontSize: 22 }}/>
  <span>{formatContentType(report.reported_content_type)} Report</span>
  <Badge variant={contentTypeBadgeVariant(report.reported_content_type)}>
  {contentTypeIcon(report.reported_content_type)}
@@ -525,7 +513,7 @@ export default function ModerationPage() {
  {/* Reason + Description */}
  <div className="rounded-lg border p-3 space-y-2">
  <div className="flex items-start gap-2">
- <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0"/>
+ <Icon name="warning" className="text-[#fe932c] mt-0.5 shrink-0" style={{ fontSize: 18 }}/>
  <div>
  <p className="text-sm font-medium">
  Reason: {report.reason}
@@ -547,9 +535,9 @@ export default function ModerationPage() {
  rel="noopener noreferrer"
  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
  >
- <Eye className="w-4 h-4"/>
+ <Icon name="visibility" style={{ fontSize: 18 }}/>
  View Reported {formatContentType(report.reported_content_type)}
- <ExternalLink className="w-3.5 h-3.5"/>
+ <Icon name="open_in_new" style={{ fontSize: 16 }}/>
  </a>
  )}
 
@@ -575,9 +563,9 @@ export default function ModerationPage() {
  className="flex-1 gap-1.5"
  >
  {isProcessing ? (
- <Loader2 className="w-4 h-4 animate-spin"/>
+ <Icon name="progress_activity" className="animate-spin" style={{ fontSize: 18 }}/>
  ) : (
- <ShieldOff className="w-4 h-4"/>
+ <Icon name="gpp_bad" style={{ fontSize: 18 }}/>
  )}
  Take Action
  </Button>
@@ -588,9 +576,9 @@ export default function ModerationPage() {
  className="flex-1 gap-1.5"
  >
  {isProcessing ? (
- <Loader2 className="w-4 h-4 animate-spin"/>
+ <Icon name="progress_activity" className="animate-spin" style={{ fontSize: 18 }}/>
  ) : (
- <XCircle className="w-4 h-4"/>
+ <Icon name="cancel" style={{ fontSize: 18 }}/>
  )}
  Dismiss
  </Button>
@@ -609,8 +597,8 @@ export default function ModerationPage() {
  {resolvedReports.length === 0 ? (
  <Card>
  <CardContent className="p-12 text-center">
- <Clock className="w-14 h-14 text-muted-foreground mx-auto mb-4"/>
- <p className="text-lg font-medium">No resolved reports yet</p>
+ <Icon name="schedule" className="text-[#6e7a73] mx-auto mb-4 block" style={{ fontSize: 56 }}/>
+ <p className="text-lg font-medium text-[#1a1c1b]">No resolved reports yet</p>
  <p className="text-sm text-muted-foreground mt-1">
  Resolved and dismissed reports will appear here.
  </p>
@@ -622,17 +610,17 @@ export default function ModerationPage() {
  key={report.id}
  className={
  report.status === 'action_taken'
- ? 'border-l-4 border-l-red-500 opacity-90'
- : 'border-l-4 border-l-gray-300 opacity-90'
+ ? 'border-l-4 border-l-[#ba1a1a] opacity-90 bg-white rounded-xl shadow-sm'
+ : 'border-l-4 border-l-[#bdc9c1] opacity-90 bg-white rounded-xl shadow-sm'
  }
  >
  <CardHeader className="pb-3">
  <CardTitle className="flex items-center justify-between text-base">
  <div className="flex items-center gap-2">
  {report.status === 'action_taken' ? (
- <ShieldOff className="w-4 h-4 text-red-500"/>
+ <Icon name="gpp_bad" className="text-[#ba1a1a]" style={{ fontSize: 18 }}/>
  ) : (
- <CheckCircle2 className="w-4 h-4 text-muted-foreground"/>
+ <Icon name="check_circle" className="text-[#6e7a73]" style={{ fontSize: 18 }}/>
  )}
  <span>
  {formatContentType(report.reported_content_type)} Report
@@ -709,7 +697,7 @@ export default function ModerationPage() {
  <DialogContent>
  <DialogHeader>
  <DialogTitle className="flex items-center gap-2">
- <AlertTriangle className="w-5 h-5 text-red-500"/>
+ <Icon name="warning" className="text-[#ba1a1a]" style={{ fontSize: 22 }}/>
  Confirm Moderation Action
  </DialogTitle>
  <DialogDescription>
@@ -750,8 +738,8 @@ export default function ModerationPage() {
  </Select>
  </div>
 
- <div className="rounded-lg border border-red-200 bg-red-50 p-3">
- <p className="text-sm text-red-700">
+ <div className="rounded-lg border border-[#ffdad6] bg-[#ffdad6]/40 p-3">
+ <p className="text-sm text-[#ba1a1a]">
  {selectedAction === 'remove_content' && (
  <>This will permanently remove the reported content.</>
  )}
@@ -782,9 +770,9 @@ export default function ModerationPage() {
  className="gap-1.5"
  >
  {processing ? (
- <Loader2 className="w-4 h-4 animate-spin"/>
+ <Icon name="progress_activity" className="animate-spin" style={{ fontSize: 18 }}/>
  ) : (
- <ShieldOff className="w-4 h-4"/>
+ <Icon name="gpp_bad" style={{ fontSize: 18 }}/>
  )}
  Confirm Action
  </Button>

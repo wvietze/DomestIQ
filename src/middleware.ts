@@ -1,9 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-// DEV MODE: Set to false to enable full auth + role-based routing
-const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
-
 const publicRoutes = ['/', '/login', '/register', '/callback', '/terms', '/privacy', '/demo', '/partners', '/references', '/helpdesk']
 const workerRoutes = ['/worker-dashboard', '/worker-profile', '/worker-calendar', '/worker-bookings', '/worker-messages', '/worker-reviews', '/worker-earnings', '/worker-settings', '/worker-notifications', '/worker-verification', '/worker-onboarding', '/worker-references', '/worker-cv']
 const clientRoutes = ['/dashboard', '/search', '/workers', '/bookings', '/messages', '/reviews', '/profile', '/notifications', '/favorites', '/onboarding', '/write-reference']
@@ -12,11 +9,6 @@ const adminRoutes = ['/admin']
 export async function middleware(request: NextRequest) {
   const { supabase, user, supabaseResponse } = await updateSession(request)
   const path = request.nextUrl.pathname
-
-  // DEV MODE: Allow all routes without authentication
-  if (DEV_MODE) {
-    return supabaseResponse
-  }
 
   // Allow public routes
   if (publicRoutes.some((route) => path === route) || path.startsWith('/api/')) {

@@ -4,116 +4,39 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import {
-  Bell,
-  CalendarDays,
-  CheckCircle2,
-  XCircle,
-  MessageSquare,
-  Star,
-  DollarSign,
-  ShieldCheck,
-  CheckCheck,
-} from 'lucide-react'
 import type { Notification } from '@/lib/types'
 
 // ---------------------------------------------------------------------------
-// Notification type icon mapping
+// Notification type -> Material Symbols icon mapping (Stitch design system)
 // ---------------------------------------------------------------------------
 
 interface IconConfig {
-  icon: React.ComponentType<{ className?: string }>
-  bgColor: string
-  iconColor: string
+  icon: string
+  tint: string
 }
 
 const notificationIconMap: Record<string, IconConfig> = {
-  new_booking: {
-    icon: CalendarDays,
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-  },
-  booking_request: {
-    icon: CalendarDays,
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-  },
-  booking_accepted: {
-    icon: CheckCircle2,
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600',
-  },
-  booking_confirmed: {
-    icon: CheckCircle2,
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600',
-  },
-  booking_cancelled: {
-    icon: XCircle,
-    bgColor: 'bg-red-100',
-    iconColor: 'text-red-600',
-  },
-  booking_declined: {
-    icon: XCircle,
-    bgColor: 'bg-red-100',
-    iconColor: 'text-red-600',
-  },
-  booking_completed: {
-    icon: CheckCircle2,
-    bgColor: 'bg-emerald-100',
-    iconColor: 'text-emerald-600',
-  },
-  booking_reminder: {
-    icon: CalendarDays,
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-  },
-  new_message: {
-    icon: MessageSquare,
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-  },
-  new_review: {
-    icon: Star,
-    bgColor: 'bg-amber-100',
-    iconColor: 'text-amber-600',
-  },
-  payment_received: {
-    icon: DollarSign,
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600',
-  },
-  document_verified: {
-    icon: ShieldCheck,
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-  },
-  verification_approved: {
-    icon: ShieldCheck,
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600',
-  },
-  verification_rejected: {
-    icon: XCircle,
-    bgColor: 'bg-red-100',
-    iconColor: 'text-red-600',
-  },
-  system_alert: {
-    icon: Bell,
-    bgColor: 'bg-gray-100',
-    iconColor: 'text-gray-600',
-  },
+  new_booking: { icon: 'event', tint: 'text-[#005d42]' },
+  booking_request: { icon: 'event', tint: 'text-[#005d42]' },
+  booking_accepted: { icon: 'bookmark', tint: 'text-[#005d42]' },
+  booking_confirmed: { icon: 'check_circle', tint: 'text-[#005d42]' },
+  booking_cancelled: { icon: 'cancel', tint: 'text-[#ba1a1a]' },
+  booking_declined: { icon: 'cancel', tint: 'text-[#ba1a1a]' },
+  booking_completed: { icon: 'task_alt', tint: 'text-[#005d42]' },
+  booking_reminder: { icon: 'calendar_today', tint: 'text-[#005d42]' },
+  new_message: { icon: 'chat', tint: 'text-[#005d42]' },
+  new_review: { icon: 'star', tint: 'text-[#904d00]' },
+  referral_joined: { icon: 'redeem', tint: 'text-[#904d00]' },
+  payment_received: { icon: 'payments', tint: 'text-[#005d42]' },
+  document_verified: { icon: 'verified', tint: 'text-[#005d42]' },
+  verification_approved: { icon: 'shield', tint: 'text-[#005d42]' },
+  verification_rejected: { icon: 'gpp_bad', tint: 'text-[#ba1a1a]' },
+  system_alert: { icon: 'notifications', tint: 'text-[#3e4943]' },
 }
 
 const defaultIconConfig: IconConfig = {
-  icon: Bell,
-  bgColor: 'bg-gray-100',
-  iconColor: 'text-gray-500',
+  icon: 'notifications',
+  tint: 'text-[#3e4943]',
 }
 
 function getIconConfig(type: string): IconConfig {
@@ -213,6 +136,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchNotifications()
     }
   }, [user, fetchNotifications])
@@ -283,23 +207,24 @@ export default function NotificationsPage() {
 
   if (userLoading || isLoading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
         <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-9 w-32 rounded-lg" />
+          <div className="h-8 w-40 bg-[#e8e8e6] animate-pulse rounded-full" />
+          <div className="h-6 w-24 bg-[#e8e8e6] animate-pulse rounded-full" />
         </div>
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4 flex items-start gap-3">
-                <Skeleton className="h-10 w-10 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </CardContent>
-            </Card>
+            <div
+              key={i}
+              className="bg-white shadow-sm flex items-center p-4 rounded-xl h-24"
+            >
+              <div className="mr-4 w-12 h-12 rounded-full bg-[#f4f4f2] animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 bg-[#e8e8e6] animate-pulse rounded-full" />
+                <div className="h-3 w-full bg-[#e8e8e6] animate-pulse rounded-full" />
+                <div className="h-3 w-20 bg-[#e8e8e6] animate-pulse rounded-full" />
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -314,106 +239,121 @@ export default function NotificationsPage() {
   // ---- Render --------------------------------------------------------------
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notifications</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="font-heading text-2xl font-bold tracking-tight text-[#1a1c1b]">
+          Notifications
+        </h1>
         {hasUnread && (
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             onClick={markAllAsRead}
             disabled={markingAll}
-            className="gap-2"
+            className="text-sm text-[#005d42] font-bold active:scale-95 transition-all disabled:opacity-50"
           >
-            <CheckCheck className="h-4 w-4" />
-            {markingAll ? 'Marking...' : 'Mark all as read'}
-          </Button>
+            {markingAll ? 'Marking...' : 'Mark all read'}
+          </button>
         )}
       </div>
 
       {/* Empty state */}
       {notifications.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bell className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="font-semibold text-lg text-gray-900 mb-1">
-              No notifications
-            </h3>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              When you receive bookings, messages, or updates, they will appear
-              here.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-xl shadow-sm p-10 text-center mt-8">
+          <div className="relative inline-block mb-6">
+            <span
+              className="material-symbols-outlined text-[#bdc9c1]"
+              style={{ fontSize: '72px' }}
+            >
+              notifications
+            </span>
+            <span
+              className="material-symbols-outlined text-[#005d42] absolute -bottom-1 -right-1"
+              style={{ fontVariationSettings: "'FILL' 1", fontSize: '28px' }}
+            >
+              check_circle
+            </span>
+          </div>
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#6e7a73] mb-2 block">
+            All caught up
+          </span>
+          <h3 className="font-heading font-bold text-xl text-[#1a1c1b] mb-3 leading-tight">
+            No notifications
+          </h3>
+          <p className="text-[#3e4943] text-sm max-w-xs mx-auto leading-relaxed">
+            When you receive bookings, messages, or updates, they will appear
+            here.
+          </p>
+        </div>
       )}
 
       {/* Notification groups */}
       {grouped.map((group) => (
-        <div key={group.label}>
+        <div key={group.label} className="mt-6">
           <div className="flex items-center gap-3 mb-3">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#6e7a73]">
               {group.label}
             </h2>
-            <Separator className="flex-1" />
+            <div className="flex-1 h-px bg-[#e8e8e6]" />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {group.items.map((notification) => {
               const iconConfig = getIconConfig(notification.type)
-              const Icon = iconConfig.icon
+              const isUnread = !notification.is_read
 
               return (
-                <Card
+                <button
+                  type="button"
                   key={notification.id}
-                  className={cn(
-                    'cursor-pointer hover:shadow-md transition-shadow',
-                    !notification.is_read && 'border-primary/20 bg-primary/[0.02]'
-                  )}
                   onClick={() => handleNotificationClick(notification)}
+                  className={`w-full text-left bg-white rounded-xl shadow-sm flex items-start p-4 relative overflow-hidden transition-all active:scale-[0.99] hover:shadow-md ${
+                    isUnread ? '' : 'opacity-90'
+                  }`}
                 >
-                  <CardContent className="p-4 flex items-start gap-3">
-                    {/* Type icon */}
-                    <div
-                      className={cn(
-                        'h-10 w-10 rounded-full flex items-center justify-center shrink-0',
-                        iconConfig.bgColor
-                      )}
-                    >
-                      <Icon className={cn('h-5 w-5', iconConfig.iconColor)} />
-                    </div>
+                  {isUnread && (
+                    <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#005d42]" />
+                  )}
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p
-                          className={cn(
-                            'text-sm leading-snug',
-                            !notification.is_read
-                              ? 'font-semibold text-gray-900'
-                              : 'font-medium text-gray-700'
-                          )}
-                        >
-                          {notification.title}
-                        </p>
-                        {/* Unread dot */}
-                        {!notification.is_read && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 mt-1" />
-                        )}
-                      </div>
-                      {notification.body && (
-                        <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                          {notification.body}
-                        </p>
+                  {/* Icon bubble */}
+                  <div className="mr-4 flex-shrink-0 bg-[#f4f4f2] p-3 rounded-full">
+                    <span
+                      className={`material-symbols-outlined ${iconConfig.tint}`}
+                      style={
+                        isUnread
+                          ? { fontVariationSettings: "'FILL' 1" }
+                          : undefined
+                      }
+                    >
+                      {iconConfig.icon}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <h3
+                        className={`text-sm truncate pr-2 ${
+                          isUnread
+                            ? 'font-bold text-[#1a1c1b]'
+                            : 'font-semibold text-[#1a1c1b]'
+                        }`}
+                      >
+                        {notification.title}
+                      </h3>
+                      {isUnread && (
+                        <span className="w-2 h-2 bg-[#005d42] rounded-full mt-1.5 flex-shrink-0" />
                       )}
-                      <p className="text-xs text-gray-400 mt-1.5">
-                        {formatTimestamp(notification.created_at)}
-                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                    {notification.body && (
+                      <p className="text-xs text-[#3e4943] font-medium mt-0.5 line-clamp-2">
+                        {notification.body}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-[#6e7a73] mt-1.5 uppercase tracking-wider font-medium">
+                      {formatTimestamp(notification.created_at)}
+                    </p>
+                  </div>
+                </button>
               )
             })}
           </div>

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { X, ExternalLink } from 'lucide-react'
 
 interface AdData {
   id: string
@@ -75,7 +74,7 @@ export function DashboardAd({ placement, role, service }: DashboardAdProps) {
                 className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
                 aria-label="Dismiss ad"
               >
-                <X className="w-4 h-4" />
+                <span className="material-symbols-outlined text-base">close</span>
               </button>
             </div>
             {ad.description && (
@@ -91,7 +90,7 @@ export function DashboardAd({ placement, role, service }: DashboardAdProps) {
               >
                 <Button size="sm" variant="outline" className="h-7 text-xs">
                   {ad.cta_text}
-                  <ExternalLink className="w-3 h-3 ml-1" />
+                  <span className="material-symbols-outlined text-sm ml-1">open_in_new</span>
                 </Button>
               </a>
             </div>

@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -60,7 +59,7 @@ export default function AdminUsersPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base text-[#3e4943]">search</span>
           <Input
             placeholder="Search users..."
             value={searchQuery}
@@ -118,11 +117,11 @@ export default function AdminUsersPage() {
 
       <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
-          <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+          <span className="material-symbols-outlined text-base mr-1">chevron_left</span> Previous
         </Button>
         <span className="text-sm text-muted-foreground">Page {page + 1}</span>
         <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={users.length < pageSize}>
-          Next <ChevronRight className="w-4 h-4 ml-1" />
+          Next <span className="material-symbols-outlined text-base ml-1">chevron_right</span>
         </Button>
       </div>
     </div>

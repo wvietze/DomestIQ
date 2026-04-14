@@ -2,17 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import {
-  ArrowLeft, Send, Camera, Check, CheckCheck,
-  Languages, Loader2, Image as ImageIcon, X
-} from 'lucide-react'
 import type { Message } from '@/lib/types'
 
 interface Participant {
@@ -51,7 +45,6 @@ export default function WorkerConversationPage({
       if (!user) return
 
       try {
-        // Get conversation details
         const { data: conversation } = await supabase
           .from('conversations')
           .select('*')
@@ -60,7 +53,6 @@ export default function WorkerConversationPage({
 
         if (!conversation) return
 
-        // Get other participant
         const otherUserId =
           conversation.participant_1 === user.id
             ? conversation.participant_2
@@ -76,7 +68,6 @@ export default function WorkerConversationPage({
           setOtherParticipant(profile as unknown as Participant)
         }
 
-        // Load messages
         const { data: messagesData } = await supabase
           .from('messages')
           .select('*')
@@ -128,7 +119,6 @@ export default function WorkerConversationPage({
             return [...prev, newMsg]
           })
 
-          // Mark as read if from other participant
           if (newMsg.sender_id !== user?.id) {
             await supabase
               .from('messages')
@@ -177,7 +167,6 @@ export default function WorkerConversationPage({
 
       if (error) throw error
 
-      // Update conversation last message
       await supabase
         .from('conversations')
         .update({
@@ -286,12 +275,15 @@ export default function WorkerConversationPage({
     })
   }
 
+  const getInitials = (name: string) =>
+    name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+
   if (isLoading) {
     return (
-      <div className="flex flex-col h-[calc(100vh-5rem)]">
-        <div className="flex items-center gap-3 p-4 border-b">
-          <Skeleton className="w-10 h-10 rounded-full" />
-          <Skeleton className="h-5 w-32" />
+      <div className="flex flex-col h-[calc(100dvh-5rem)] bg-[#f9f9f7]">
+        <div className="flex items-center gap-3 px-4 h-16 bg-[#f4f4f2]">
+          <Skeleton className="w-10 h-10 rounded-full bg-[#e8e8e6]" />
+          <Skeleton className="h-5 w-32 bg-[#e8e8e6]" />
         </div>
         <div className="flex-1 p-4 space-y-4">
           {[1, 2, 3, 4, 5].map(i => (
@@ -299,7 +291,10 @@ export default function WorkerConversationPage({
               key={i}
               className={cn('flex', i % 2 === 0 ? 'justify-end' : 'justify-start')}
             >
-              <Skeleton className="h-12 w-48 rounded-2xl" />
+              <Skeleton className={cn(
+                'h-12 w-48 bg-[#e8e8e6]',
+                i % 2 === 0 ? 'rounded-tl-xl rounded-bl-xl rounded-br-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'
+              )} />
             </div>
           ))}
         </div>
@@ -316,206 +311,239 @@ export default function WorkerConversationPage({
   })
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)]">
+    <div className="flex flex-col h-[calc(100dvh-5rem)] bg-[#f9f9f7]">
       {/* Top Bar */}
-      <div className="flex items-center gap-3 p-4 border-b bg-white sticky top-0 z-10">
-        <Button
-          variant="ghost"
-          size="icon"
+      <header className="flex items-center gap-3 px-4 h-16 bg-[#f4f4f2] sticky top-0 z-10">
+        <button
           onClick={() => router.push('/worker-messages')}
+          className="text-[#005d42] p-2 hover:bg-[#e8e8e6] rounded-full transition-colors active:scale-95"
         >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
         {otherParticipant && (
           <>
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={otherParticipant.avatar_url || undefined} />
-              <AvatarFallback>
-                {otherParticipant.full_name
-                  .split(' ')
-                  .map(n => n[0])
-                  .join('')
-                  .slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              {otherParticipant.avatar_url ? (
+                <Image
+                  src={otherParticipant.avatar_url}
+                  alt={otherParticipant.full_name}
+                  width={40}
+                  height={40}
+                  unoptimized
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-[#005d42] text-white flex items-center justify-center text-sm font-bold">
+                  {getInitials(otherParticipant.full_name)}
+                </div>
+              )}
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#047857] rounded-full border-2 border-[#f4f4f2]" />
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">
+              <p className="font-bold tracking-tight text-[#1a1c1b] text-base truncate">
                 {otherParticipant.full_name}
               </p>
+              <p className="text-[#3e4943] text-[12px] leading-tight">online</p>
             </div>
+            <button className="text-[#005d42] hover:bg-[#e8e8e6] transition-colors p-2 rounded-full">
+              <span className="material-symbols-outlined">call</span>
+            </button>
           </>
         )}
-      </div>
+      </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <main
+        className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6 bg-[#f9f9f7]"
+        style={{ scrollbarWidth: 'none' }}
+      >
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground text-center">
-              No messages yet. Start the conversation!
-            </p>
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <span className="material-symbols-outlined text-4xl text-[#6e7a73]">chat_bubble_outline</span>
+            <p className="text-sm text-[#3e4943]/70">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           Object.entries(messagesByDate).map(([dateKey, dayMessages]) => (
-            <div key={dateKey} className="space-y-3">
-              {/* Date Separator */}
-              <div className="flex items-center justify-center">
-                <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
+            <div key={dateKey}>
+              {/* Date separator - Stitch asymmetric editorial style */}
+              <div className="flex items-center gap-4 ml-6 mb-4">
+                <span className="text-[10px] font-medium text-[#3e4943]/40 tracking-widest uppercase">
                   {formatDateSeparator(dayMessages[0].created_at)}
                 </span>
+                <div className="h-px flex-1 bg-[#bdc9c1]/20" />
               </div>
 
-              {dayMessages.map(msg => {
-                const isOwn = msg.sender_id === user?.id
-                const isImage = msg.message_type === 'image'
-                return (
-                  <div
-                    key={msg.id}
-                    className={cn('flex', isOwn ? 'justify-end' : 'justify-start')}
-                  >
+              {/* Messages */}
+              <div className="flex flex-col gap-3">
+                {dayMessages.map(msg => {
+                  const isOwn = msg.sender_id === user?.id
+                  const isImage = msg.message_type === 'image'
+                  return (
                     <div
-                      className={cn(
-                        'max-w-[75%] rounded-2xl px-4 py-2 shadow-sm',
-                        isOwn
-                          ? 'bg-primary text-primary-foreground rounded-br-md'
-                          : 'bg-muted rounded-bl-md'
+                      key={msg.id}
+                      className={cn('flex flex-col', isOwn ? 'items-end' : 'items-start', 'max-w-[85%]',
+                        isOwn ? 'self-end' : 'self-start'
                       )}
                     >
+                      {/* Image message */}
                       {isImage && msg.image_url ? (
-                        <div className="space-y-1">
-                          <img
+                        <div className={cn(
+                          'rounded-xl overflow-hidden p-1 shadow-sm',
+                          isOwn ? 'bg-[#047857]' : 'bg-[#f4f4f2]'
+                        )}>
+                          <Image
                             src={msg.image_url}
-                            alt="Image"
-                            className="rounded-lg max-h-64 object-cover cursor-pointer"
+                            alt="Shared image"
+                            width={400}
+                            height={300}
+                            unoptimized
+                            className="rounded-lg object-cover aspect-video w-full max-h-64 cursor-pointer"
                             onClick={() => window.open(msg.image_url!, '_blank')}
                           />
+                          <div className={cn('flex items-center justify-end gap-1 px-2 py-1')}>
+                            <span className={cn(
+                              'text-[10px]',
+                              isOwn ? 'text-[#97f5cc]/80' : 'text-[#3e4943]/60'
+                            )}>
+                              {formatTime(msg.created_at)}
+                            </span>
+                            {isOwn && (
+                              <span
+                                className="material-symbols-outlined text-[14px] text-[#97f5cc]"
+                                style={msg.is_read ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                              >
+                                {msg.is_read ? 'done_all' : 'done'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ) : (
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {msg.content}
-                        </p>
-                      )}
-
-                      {/* Translation */}
-                      {translations[msg.id] && (
+                        /* Text message */
                         <div
                           className={cn(
-                            'mt-2 pt-2 border-t text-xs italic',
+                            'px-4 py-3 text-sm leading-relaxed',
                             isOwn
-                              ? 'border-primary-foreground/20 text-primary-foreground/80'
-                              : 'border-border text-muted-foreground'
+                              ? 'bg-[#047857] text-white rounded-tl-xl rounded-bl-xl rounded-br-xl shadow-sm'
+                              : 'bg-[#f4f4f2] text-[#1a1c1b] rounded-tr-xl rounded-br-xl rounded-bl-xl'
                           )}
                         >
-                          {translations[msg.id]}
+                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+
+                          {/* Translation */}
+                          {translations[msg.id] && (
+                            <div className={cn(
+                              'mt-2 pt-2 border-t text-xs italic',
+                              isOwn ? 'border-white/20 text-white/80' : 'border-[#bdc9c1] text-[#3e4943]'
+                            )}>
+                              {translations[msg.id]}
+                            </div>
+                          )}
+
+                          {/* Translate button for received messages */}
+                          {!isOwn && !translations[msg.id] && (
+                            <div className="flex items-center justify-end gap-2 mt-1">
+                              <button
+                                onClick={() => handleTranslate(msg.id, msg.content)}
+                                disabled={translatingId === msg.id}
+                                className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">translate</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-tighter">
+                                  {translatingId === msg.id ? '...' : 'Translate'}
+                                </span>
+                              </button>
+                            </div>
+                          )}
+                          {!isOwn && translations[msg.id] && (
+                            <div className="flex items-center justify-end gap-2 mt-1">
+                              <button
+                                onClick={() => setTranslations(prev => {
+                                  const next = { ...prev }
+                                  delete next[msg.id]
+                                  return next
+                                })}
+                                className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">close</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-tighter">
+                                  Hide translation
+                                </span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Timestamp + read receipt */}
+                          <div className={cn(
+                            'flex items-center gap-1 mt-1',
+                            isOwn ? 'justify-end' : 'justify-start'
+                          )}>
+                            <span className={cn(
+                              'text-[10px]',
+                              isOwn ? 'text-[#97f5cc]/80' : 'text-[#3e4943]/60'
+                            )}>
+                              {formatTime(msg.created_at)}
+                            </span>
+                            {isOwn && (
+                              <span
+                                className="material-symbols-outlined text-[14px] text-[#97f5cc]"
+                                style={msg.is_read ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                              >
+                                {msg.is_read ? 'done_all' : 'done'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
-
-                      {/* Time and read status */}
-                      <div
-                        className={cn(
-                          'flex items-center gap-1 mt-1',
-                          isOwn ? 'justify-end' : 'justify-start'
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'text-[10px]',
-                            isOwn
-                              ? 'text-primary-foreground/70'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {formatTime(msg.created_at)}
-                        </span>
-                        {isOwn && (
-                          msg.is_read ? (
-                            <CheckCheck className="w-3.5 h-3.5 text-primary-foreground/70" />
-                          ) : (
-                            <Check className="w-3.5 h-3.5 text-primary-foreground/70" />
-                          )
-                        )}
-                      </div>
-
-                      {/* Translate button for received messages */}
-                      {!isOwn && !translations[msg.id] && (
-                        <button
-                          onClick={() => handleTranslate(msg.id, msg.content)}
-                          disabled={translatingId === msg.id}
-                          className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {translatingId === msg.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Languages className="w-3 h-3" />
-                          )}
-                          Translate
-                        </button>
-                      )}
-                      {!isOwn && translations[msg.id] && (
-                        <button
-                          onClick={() =>
-                            setTranslations(prev => {
-                              const next = { ...prev }
-                              delete next[msg.id]
-                              return next
-                            })
-                          }
-                          className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                          Hide translation
-                        </button>
-                      )}
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           ))
         )}
         <div ref={messagesEndRef} />
-      </div>
+      </main>
 
       {/* Input Bar */}
-      <div className="border-t bg-white p-3 sticky bottom-0">
-        <div className="flex items-center gap-2">
+      <div className="bg-[#f9f9f7] border-t border-[#e2e3e1]/20 px-4 py-3 flex items-center gap-3 shadow-[0_-8px_24px_rgba(26,28,27,0.06)] sticky bottom-0 z-10">
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isSending}
+          className="flex items-center justify-center text-[#3e4943] p-2 hover:bg-[#f4f4f2] rounded-full transition-colors"
+        >
+          <span className="material-symbols-outlined">photo_camera</span>
+        </button>
+
+        <div className="flex-1 bg-[#f4f4f2] rounded-full px-5 py-2.5">
           <input
-            type="file"
-            ref={fileInputRef}
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isSending}
-            className="shrink-0"
-          >
-            <Camera className="w-5 h-5" />
-          </Button>
-          <Input
+            className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-sm placeholder:text-[#3e4943]/50 text-[#1a1c1b]"
+            placeholder="Type a message..."
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            className="flex-1"
             disabled={isSending}
           />
-          <Button
-            size="icon"
-            onClick={handleSend}
-            disabled={!newMessage.trim() || isSending}
-            className="shrink-0"
-          >
-            {isSending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </Button>
         </div>
+
+        <button
+          onClick={handleSend}
+          disabled={!newMessage.trim() || isSending}
+          className="flex items-center justify-center bg-[#047857] text-white rounded-full h-11 w-11 shadow-lg hover:scale-105 active:scale-95 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            {isSending ? 'hourglass_empty' : 'send'}
+          </span>
+        </button>
       </div>
     </div>
   )

@@ -6,12 +6,13 @@ import { useUser } from '@/lib/hooks/use-user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
 import { StarRating } from '@/components/ui/star-rating'
-import { Star, MessageSquare } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { TRAIT_LABELS, TRAIT_EMOJIS } from '@/lib/types/review'
 import { Badge } from '@/components/ui/badge'
+
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 interface ReviewItem {
   id: string
@@ -99,24 +100,19 @@ export default function WorkerReviewsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex items-center gap-3"
-      >
-        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-          <Star className="w-5 h-5 text-amber-600" />
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#ffdcc3] flex items-center justify-center">
+          <Icon name="star" className="text-[#904d00]" style={{ fontSize: '20px' }} />
         </div>
-        <h1 className="text-2xl font-bold">My Reviews</h1>
-      </motion.div>
+        <h1 className="font-heading text-2xl font-bold text-[#1a1c1b]">My Reviews</h1>
+      </div>
 
       {reviews.length === 0 ? (
-        <Card>
+        <Card className="bg-white rounded-xl shadow-sm">
           <CardContent className="p-8 text-center">
-            <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-            <h2 className="font-semibold text-lg mb-1">No Reviews Yet</h2>
-            <p className="text-muted-foreground text-sm">
+            <Icon name="chat" className="mx-auto text-[#6e7a73] mb-3 block" style={{ fontSize: '48px' }} />
+            <h2 className="font-heading font-semibold text-lg mb-1 text-[#1a1c1b]">No Reviews Yet</h2>
+            <p className="text-[#3e4943] text-sm">
               Complete bookings to start receiving reviews from clients.
             </p>
           </CardContent>
@@ -124,32 +120,24 @@ export default function WorkerReviewsPage() {
       ) : (
         <>
           {/* Overall Rating Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-          >
-            <Card>
+          <div>
+            <Card className="bg-white rounded-xl shadow-sm">
               <CardContent className="p-6 text-center">
-                <p className="text-5xl font-bold">{stats.overall.toFixed(1)}</p>
+                <p className="font-heading text-5xl font-bold text-[#1a1c1b]">{stats.overall.toFixed(1)}</p>
                 <StarRating rating={stats.overall} size="lg" className="justify-center mt-2" />
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-[#3e4943] mt-2">
                   Based on {stats.totalReviews} review{stats.totalReviews !== 1 ? 's' : ''}
                 </p>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Top Traits */}
           {Object.keys(stats.topTraits).length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card>
+            <div>
+              <Card className="bg-white rounded-xl shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Top Traits</CardTitle>
+                  <CardTitle className="font-heading text-base text-[#1a1c1b]">Top Traits</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
@@ -159,11 +147,11 @@ export default function WorkerReviewsPage() {
                         <Badge
                           key={trait}
                           variant="secondary"
-                          className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200 px-3 py-1.5 text-sm font-medium"
+                          className="bg-[#97f5cc]/30 text-[#005d42] hover:bg-[#97f5cc]/50 border border-[#97f5cc] px-3 py-1.5 text-sm font-medium"
                         >
                           {TRAIT_EMOJIS[trait as keyof typeof TRAIT_EMOJIS]}{' '}
                           {TRAIT_LABELS[trait as keyof typeof TRAIT_LABELS] || trait}
-                          <span className="ml-1.5 bg-emerald-200 text-emerald-800 rounded-full px-1.5 py-0.5 text-xs font-semibold">
+                          <span className="ml-1.5 bg-[#9ffdd3] text-[#005d42] rounded-full px-1.5 py-0.5 text-xs font-semibold">
                             {count}
                           </span>
                         </Badge>
@@ -171,14 +159,14 @@ export default function WorkerReviewsPage() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           )}
 
           {/* Individual Reviews */}
           <div>
-            <h2 className="font-semibold text-lg mb-3">All Reviews</h2>
+            <h2 className="font-heading font-semibold text-lg mb-3 text-[#1a1c1b]">All Reviews</h2>
             <div className="space-y-3">
-              {reviews.map((review, index) => {
+              {reviews.map(review => {
                 const initials = review.profiles.full_name
                   .split(' ')
                   .map(n => n[0])
@@ -186,48 +174,41 @@ export default function WorkerReviewsPage() {
                   .slice(0, 2)
 
                 return (
-                  <motion.div
-                    key={review.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 + index * 0.03 }}
-                  >
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Avatar className="h-10 w-10 flex-shrink-0">
-                            <AvatarImage src={review.profiles.avatar_url || undefined} />
-                            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="font-medium text-sm">{review.profiles.full_name}</p>
-                              <span className="text-xs text-muted-foreground flex-shrink-0">
-                                {new Date(review.created_at).toLocaleDateString('en-ZA', {
-                                  day: 'numeric', month: 'short', year: 'numeric'
-                                })}
-                              </span>
-                            </div>
-                            <StarRating rating={review.rating} size="sm" className="mt-1" />
-                            {review.comment && (
-                              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                                {review.comment}
-                              </p>
-                            )}
-                            {review.traits && review.traits.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {review.traits.map(trait => (
-                                  <span key={trait} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
-                                    {TRAIT_EMOJIS[trait as keyof typeof TRAIT_EMOJIS]} {TRAIT_LABELS[trait as keyof typeof TRAIT_LABELS] || trait}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                  <Card key={review.id} className="bg-white rounded-xl shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarImage src={review.profiles.avatar_url || undefined} />
+                          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-medium text-sm text-[#1a1c1b]">{review.profiles.full_name}</p>
+                            <span className="text-xs text-[#6e7a73] flex-shrink-0">
+                              {new Date(review.created_at).toLocaleDateString('en-ZA', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                              })}
+                            </span>
                           </div>
+                          <StarRating rating={review.rating} size="sm" className="mt-1" />
+                          {review.comment && (
+                            <p className="text-sm text-[#3e4943] mt-2 leading-relaxed">
+                              {review.comment}
+                            </p>
+                          )}
+                          {review.traits && review.traits.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {review.traits.map(trait => (
+                                <span key={trait} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#97f5cc]/30 text-[#005d42] text-xs font-medium">
+                                  {TRAIT_EMOJIS[trait as keyof typeof TRAIT_EMOJIS]} {TRAIT_LABELS[trait as keyof typeof TRAIT_LABELS] || trait}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 )
               })}
             </div>

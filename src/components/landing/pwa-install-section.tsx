@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Smartphone, X, Download, Share } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
@@ -13,23 +12,20 @@ export function PwaInstallSection() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    // Check if already dismissed
     if (typeof window !== 'undefined') {
       if (localStorage.getItem('domestiq_pwa_dismissed') === 'true') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDismissed(true)
         return
       }
     }
 
-    // Detect iOS
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
     setIsIOS(ios)
 
-    // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     if (isStandalone) return
 
-    // Listen for install prompt on Android/Chrome
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
@@ -38,7 +34,6 @@ export function PwaInstallSection() {
 
     window.addEventListener('beforeinstallprompt', handler)
 
-    // Show iOS prompt after a delay if on mobile
     if (ios && /Mobi/.test(navigator.userAgent)) {
       const timer = setTimeout(() => setShowPrompt(true), 3000)
       return () => {
@@ -76,42 +71,42 @@ export function PwaInstallSection() {
         transition={{ type: 'spring', damping: 25 }}
         className="fixed bottom-4 left-4 right-4 z-40 sm:left-auto sm:right-4 sm:max-w-sm"
       >
-        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 relative">
+        <div className="bg-white rounded-2xl shadow-2xl border border-[#e2e3e1] p-4 relative">
           <button
             onClick={handleDismiss}
-            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            className="absolute top-3 right-3 text-[#6e7a73] hover:text-[#1a1c1b]"
           >
-            <X className="w-4 h-4" />
+            <span className="material-symbols-outlined text-base">close</span>
           </button>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-              <Smartphone className="w-5 h-5 text-emerald-600" />
+            <div className="w-10 h-10 rounded-xl bg-[#9ffdd3] flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-xl text-[#005d42]">smartphone</span>
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-sm">{t('landing.pwa.title', 'Add DomestIQ to Home Screen')}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <h3 className="font-bold text-sm text-[#1a1c1b]">{t('landing.pwa.title', 'Add DomestIQ to Home Screen')}</h3>
+              <p className="text-xs text-[#3e4943] mt-0.5">
                 {t('landing.pwa.desc', 'Get quick access to bookings, messages, and more.')}
               </p>
             </div>
           </div>
 
           {isIOS ? (
-            <div className="mt-3 bg-gray-50 rounded-lg p-3 space-y-2">
-              <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
-                <Share className="w-3.5 h-3.5" /> {t('landing.pwa.ios_step1', 'Tap the share button')}
+            <div className="mt-3 bg-[#f4f4f2] rounded-lg p-3 space-y-2">
+              <p className="text-xs font-medium text-[#1a1c1b] flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-sm">ios_share</span> {t('landing.pwa.ios_step1', 'Tap the share button')}
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-[#3e4943]">
                 {t('landing.pwa.ios_step2', 'Then select "Add to Home Screen"')}
               </p>
             </div>
           ) : (
             <Button
               onClick={handleInstall}
-              className="w-full mt-3 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+              className="w-full mt-3 gap-2 bg-[#005d42] hover:bg-[#047857] text-white"
               size="sm"
             >
-              <Download className="w-4 h-4" />
+              <span className="material-symbols-outlined text-base">download</span>
               {t('landing.pwa.install', 'Install App')}
             </Button>
           )}

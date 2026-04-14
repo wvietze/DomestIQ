@@ -43,20 +43,20 @@ export function AvailabilityGrid({ slots, onChange, className }: AvailabilityGri
       <div className="min-w-[500px]">
         <div className="grid grid-cols-8 gap-1">
           <div />
-          {DAYS.map((day, i) => (<button key={day} type="button" onClick={() => toggleFullDay(i)} className="text-center text-xs font-medium text-muted-foreground py-1 hover:text-foreground">{day}</button>))}
+          {DAYS.map((day, i) => (<button key={day} type="button" onClick={() => toggleFullDay(i)} className="text-center text-xs font-medium text-[#3e4943] py-1 hover:text-[#1a1c1b]">{day}</button>))}
           {HOURS.map(hour => (
             <React.Fragment key={hour}>
-              <span className="text-[10px] text-muted-foreground text-right pr-1 py-0.5">{hour}</span>
+              <span className="text-[10px] text-[#3e4943] text-right pr-1 py-0.5">{hour}</span>
               {DAYS.map((_, dayIdx) => (
                 <button key={`${dayIdx}-${hour}`} type="button" onClick={() => toggleHour(dayIdx, hour)}
-                  className={cn('h-6 rounded transition-colors', isAvailable(dayIdx, hour) ? 'bg-emerald-400 hover:bg-emerald-500' : 'bg-gray-100 hover:bg-gray-200')} />
+                  className={cn('h-6 rounded transition-colors', isAvailable(dayIdx, hour) ? 'bg-[#005d42] hover:bg-[#047857]' : 'bg-[#eeeeec] hover:bg-[#e2e3e1]')} />
               ))}
             </React.Fragment>
           ))}
         </div>
-        <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-400" /> Available</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100" /> Not Available</span>
+        <div className="flex items-center gap-4 mt-3 text-xs text-[#3e4943]">
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#005d42]" /> Available</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#eeeeec]" /> Not Available</span>
         </div>
       </div>
     </div>

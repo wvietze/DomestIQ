@@ -6,12 +6,14 @@ import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/ui/star-rating'
 import { Separator } from '@/components/ui/separator'
-import { Star, ChevronRight, MessageSquareOff, MessageSquare } from 'lucide-react'
+
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 interface ReviewItem {
   id: string
@@ -160,22 +162,22 @@ export default function ClientReviewsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">My Reviews</h1>
+      <h1 className="font-heading text-2xl font-bold text-[#1a1c1b]">My Reviews</h1>
 
       {/* Review Requests from Workers */}
       {reviewRequests.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-semibold text-lg flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-emerald-500" />
+          <h2 className="font-heading font-semibold text-lg flex items-center gap-2 text-[#1a1c1b]">
+            <Icon name="chat" className="text-[#005d42]" style={{ fontSize: '20px' }} />
             Review Requests ({reviewRequests.length})
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[#3e4943]">
             These workers have requested your feedback
           </p>
           <div className="space-y-2">
             {reviewRequests.map(req => (
               <Link key={req.id} href={`/bookings/${req.booking_id}#review`}>
-                <Card className="hover:shadow-md transition-shadow border-emerald-100 bg-emerald-50/30">
+                <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-[#97f5cc]">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
@@ -185,15 +187,15 @@ export default function ClientReviewsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{req.worker_name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-[#1a1c1b]">{req.worker_name}</p>
+                        <p className="text-xs text-[#6e7a73]">
                           Requested {new Date(req.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}
                         </p>
                       </div>
                     </div>
-                    <Button variant="default" size="sm" className="gap-1 bg-emerald-600 hover:bg-emerald-700">
+                    <Button variant="default" size="sm" className="gap-1 bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg active:scale-[0.98]">
                       Write Review
-                      <ChevronRight className="w-4 h-4" />
+                      <Icon name="chevron_right" style={{ fontSize: '16px' }} />
                     </Button>
                   </CardContent>
                 </Card>
@@ -207,18 +209,18 @@ export default function ClientReviewsPage() {
       {/* Pending Reviews */}
       {unreviewedBookings.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-semibold text-lg flex items-center gap-2">
-            <Star className="w-5 h-5 text-amber-500" />
+          <h2 className="font-heading font-semibold text-lg flex items-center gap-2 text-[#1a1c1b]">
+            <Icon name="star" className="text-[#904d00]" style={{ fontSize: '20px' }} />
             Pending Reviews ({unreviewedBookings.length})
           </h2>
           <div className="space-y-2">
             {unreviewedBookings.map(booking => (
               <Link key={booking.id} href={`/bookings/${booking.id}#review`}>
-                <Card className="hover:shadow-md transition-shadow">
+                <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{booking.worker_name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-[#1a1c1b]">{booking.worker_name}</p>
+                      <p className="text-sm text-[#3e4943]">
                         {booking.service_name} -{' '}
                         {new Date(booking.scheduled_date + 'T00:00:00').toLocaleDateString(
                           undefined,
@@ -226,9 +228,9 @@ export default function ClientReviewsPage() {
                         )}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm" className="gap-1">
+                    <Button variant="outline" size="sm" className="gap-1 border border-[#bdc9c1] text-[#1a1c1b] bg-white active:scale-[0.98]">
                       Write Review
-                      <ChevronRight className="w-4 h-4" />
+                      <Icon name="chevron_right" style={{ fontSize: '16px' }} />
                     </Button>
                   </CardContent>
                 </Card>
@@ -242,22 +244,22 @@ export default function ClientReviewsPage() {
       {/* Reviews Written */}
       {reviews.length === 0 && unreviewedBookings.length === 0 ? (
         <div className="text-center py-16 space-y-3">
-          <MessageSquareOff className="w-12 h-12 text-muted-foreground mx-auto" />
-          <p className="text-lg font-medium">No reviews yet</p>
-          <p className="text-muted-foreground">
+          <Icon name="speaker_notes_off" className="text-[#6e7a73] mx-auto block" style={{ fontSize: '48px' }} />
+          <p className="text-lg font-medium text-[#1a1c1b]">No reviews yet</p>
+          <p className="text-[#3e4943]">
             Complete a booking to leave a review for your worker.
           </p>
-          <Button asChild>
+          <Button asChild className="bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg active:scale-[0.98]">
             <Link href="/bookings">View Bookings</Link>
           </Button>
         </div>
       ) : reviews.length > 0 ? (
         <div className="space-y-3">
           {unreviewedBookings.length > 0 && (
-            <h2 className="font-semibold text-lg">Your Reviews ({reviews.length})</h2>
+            <h2 className="font-heading font-semibold text-lg text-[#1a1c1b]">Your Reviews ({reviews.length})</h2>
           )}
           {reviews.map(review => (
-            <Card key={review.id}>
+            <Card key={review.id} className="bg-white rounded-xl shadow-sm">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
@@ -271,10 +273,10 @@ export default function ClientReviewsPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{review.worker_name}</p>
-                    <p className="text-sm text-muted-foreground">{review.service_name}</p>
+                    <p className="font-medium truncate text-[#1a1c1b]">{review.worker_name}</p>
+                    <p className="text-sm text-[#3e4943]">{review.service_name}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground shrink-0">
+                  <span className="text-xs text-[#6e7a73] shrink-0">
                     {new Date(review.created_at).toLocaleDateString()}
                   </span>
                 </div>
@@ -282,10 +284,10 @@ export default function ClientReviewsPage() {
                 <StarRating rating={review.overall_rating} />
 
                 {review.comment && (
-                  <p className="text-sm text-muted-foreground">{review.comment}</p>
+                  <p className="text-sm text-[#3e4943]">{review.comment}</p>
                 )}
 
-                <div className="flex gap-4 text-xs text-muted-foreground">
+                <div className="flex gap-4 text-xs text-[#6e7a73]">
                   <span>Punctuality: {review.sub_ratings.punctuality}/5</span>
                   <span>Quality: {review.sub_ratings.quality}/5</span>
                   <span>Communication: {review.sub_ratings.communication}/5</span>
@@ -294,7 +296,7 @@ export default function ClientReviewsPage() {
                 {review.traits && review.traits.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {review.traits.map((trait: string) => (
-                      <span key={trait} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
+                      <span key={trait} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#97f5cc]/30 text-[#005d42] text-xs font-medium">
                         {trait.replace(/-/g, ' ')}
                       </span>
                     ))}

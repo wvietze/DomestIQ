@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Camera, Upload, Loader2, FileText, Check } from 'lucide-react'
 
 interface OcrScannerProps {
   onScanComplete: (data: { raw_text: string; structured: Record<string, string> }) => void
@@ -37,25 +36,31 @@ export function OcrScanner({ onScanComplete, documentType = 'id', className }: O
   return (
     <Card className={className}>
       <CardContent className="p-4 space-y-4">
-        <div className="flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /><h3 className="font-semibold text-sm">Scan {labels[documentType]}</h3></div>
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-[#005d42] text-xl">description</span>
+          <h3 className="font-semibold text-sm text-[#1a1c1b]">Scan {labels[documentType]}</h3>
+        </div>
         <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f) }} className="hidden" />
         {preview ? (
           <div className="relative rounded-xl overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="Document preview" className="w-full rounded-xl" />
-            {scanning && <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl"><div className="text-center text-white"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" /><p className="text-sm font-medium">Scanning...</p></div></div>}
-            {result && <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center"><Check className="w-5 h-5 text-white" /></div>}
+            {scanning && <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl"><div className="text-center text-white"><span className="material-symbols-outlined text-3xl animate-spin block mb-2">progress_activity</span><p className="text-sm font-medium">Scanning...</p></div></div>}
+            {result && <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#005d42] flex items-center justify-center"><span className="material-symbols-outlined text-white text-base">check</span></div>}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="p-6 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors text-center">
-              <Camera className="w-8 h-8 mx-auto text-muted-foreground mb-2" /><p className="text-sm font-medium">Take Photo</p>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="p-6 rounded-xl border-2 border-dashed border-[#bdc9c1] hover:border-[#6e7a73] transition-colors text-center">
+              <span className="material-symbols-outlined text-3xl text-[#3e4943] block mb-2">photo_camera</span>
+              <p className="text-sm font-medium text-[#1a1c1b]">Take Photo</p>
             </button>
-            <button type="button" onClick={() => { if (fileInputRef.current) { fileInputRef.current.removeAttribute('capture'); fileInputRef.current.click(); fileInputRef.current.setAttribute('capture', 'environment') } }} className="p-6 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors text-center">
-              <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" /><p className="text-sm font-medium">Upload File</p>
+            <button type="button" onClick={() => { if (fileInputRef.current) { fileInputRef.current.removeAttribute('capture'); fileInputRef.current.click(); fileInputRef.current.setAttribute('capture', 'environment') } }} className="p-6 rounded-xl border-2 border-dashed border-[#bdc9c1] hover:border-[#6e7a73] transition-colors text-center">
+              <span className="material-symbols-outlined text-3xl text-[#3e4943] block mb-2">upload</span>
+              <p className="text-sm font-medium text-[#1a1c1b]">Upload File</p>
             </button>
           </div>
         )}
-        {result && <div className="space-y-2">{Object.entries(result.structured).map(([key, value]) => (<div key={key} className="flex justify-between text-sm p-2 bg-muted rounded-lg"><span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span><span className="font-medium">{value}</span></div>))}</div>}
+        {result && <div className="space-y-2">{Object.entries(result.structured).map(([key, value]) => (<div key={key} className="flex justify-between text-sm p-2 bg-[#f4f4f2] rounded-lg"><span className="text-[#3e4943] capitalize">{key.replace(/_/g, ' ')}</span><span className="font-medium text-[#1a1c1b]">{value}</span></div>))}</div>}
       </CardContent>
     </Card>
   )

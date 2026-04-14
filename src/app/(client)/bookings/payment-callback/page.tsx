@@ -3,15 +3,40 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-// Payment callback — currently unused (payments not yet active)
-// Original implementation preserved below for future activation
+// Payment callback — currently unused (payments not yet active).
+// Acts as a safe redirect back to bookings while rendering a branded spinner.
+// Original Paystack verification flow preserved in the comment block below.
 
 export default function PaymentCallbackPage() {
   const router = useRouter()
-  useEffect(() => { router.replace('/bookings') }, [router])
+
+  useEffect(() => {
+    const t = setTimeout(() => router.replace('/bookings'), 600)
+    return () => clearTimeout(t)
+  }, [router])
+
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <p className="text-muted-foreground">Redirecting to your bookings...</p>
+    <div className="min-h-[70vh] bg-[#f9f9f7] flex flex-col items-center justify-center px-6">
+      <div className="flex flex-col items-center gap-6">
+        <div className="w-20 h-20 bg-white rounded-2xl shadow-[0_8px_24px_rgba(26,28,27,0.04)] flex items-center justify-center animate-pulse">
+          <span
+            className="material-symbols-outlined text-[#005d42]"
+            style={{ fontVariationSettings: "'FILL' 1", fontSize: '48px' }}
+          >
+            event_available
+          </span>
+        </div>
+        <div className="flex flex-col items-center gap-4">
+          <p className="font-heading font-semibold text-[#1a1c1b] text-center tracking-tight">
+            Redirecting to your bookings...
+          </p>
+          <div className="flex gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#047857] animate-bounce [animation-delay:-0.3s]" />
+            <span className="w-2 h-2 rounded-full bg-[#047857] animate-bounce [animation-delay:-0.15s]" />
+            <span className="w-2 h-2 rounded-full bg-[#047857] animate-bounce" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -21,10 +46,8 @@ export default function PaymentCallbackPage() {
  *
  * import { useState, useEffect, Suspense } from 'react'
  * import { useSearchParams, useRouter } from 'next/navigation'
- * import { motion } from 'framer-motion'
  * import { Card, CardContent } from '@/components/ui/card'
  * import { Button } from '@/components/ui/button'
- * import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react'
  *
  * interface VerifiedTransaction {
  *   id: string
@@ -71,7 +94,5 @@ export default function PaymentCallbackPage() {
  *     }
  *     verifyPayment()
  *   }, [reference])
- *
- *   // ... loading / success / failed UI states with Paystack reference display
  * }
  */

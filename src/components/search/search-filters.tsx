@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { StarRating } from '@/components/ui/star-rating'
-import { Search, SlidersHorizontal, X, MapPin, ShieldCheck, ArrowUpDown } from 'lucide-react'
 import { useSearchStore, type SortOption } from '@/lib/stores/search-store'
 import { SERVICE_TYPES } from '@/lib/utils/constants'
 import { EstateSearchInput } from '@/components/estate/estate-search-input'
@@ -44,12 +43,12 @@ export function SearchFilters() {
     <div className="space-y-3">
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#3e4943]">search</span>
         <Input
           placeholder="Search workers..."
           value={filters.query}
           onChange={e => setFilter('query', e.target.value)}
-          className="pl-10 h-12 text-base"
+          className="pl-10 h-12 text-base bg-[#f4f4f2] border-none focus:ring-2 focus:ring-[#005d42]/30"
         />
         <Button
           variant="ghost"
@@ -58,9 +57,9 @@ export function SearchFilters() {
           onClick={() => setShowFilters(!showFilters)}
         >
           <div className="relative">
-            <SlidersHorizontal className="w-5 h-5" />
+            <span className="material-symbols-outlined text-xl text-[#3e4943]">tune</span>
             {activeFilterCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#005d42] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -72,7 +71,10 @@ export function SearchFilters() {
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         <Badge
           variant={filters.serviceId === null ? 'default' : 'outline'}
-          className="cursor-pointer whitespace-nowrap shrink-0 px-3 py-1.5"
+          className={cn(
+            'cursor-pointer whitespace-nowrap shrink-0 px-3 py-1.5',
+            filters.serviceId === null ? 'bg-[#005d42] text-white border-0' : 'border-[#bdc9c1] text-[#1a1c1b]'
+          )}
           onClick={() => setFilter('serviceId', null)}
         >
           All Services
@@ -81,7 +83,10 @@ export function SearchFilters() {
           <Badge
             key={svc.id}
             variant={filters.serviceId === svc.id ? 'default' : 'outline'}
-            className="cursor-pointer whitespace-nowrap shrink-0 px-3 py-1.5"
+            className={cn(
+              'cursor-pointer whitespace-nowrap shrink-0 px-3 py-1.5',
+              filters.serviceId === svc.id ? 'bg-[#005d42] text-white border-0' : 'border-[#bdc9c1] text-[#1a1c1b]'
+            )}
             onClick={() => setFilter('serviceId', filters.serviceId === svc.id ? null : svc.id)}
           >
             {svc.name}
@@ -91,16 +96,16 @@ export function SearchFilters() {
 
       {/* Sort Row */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        <ArrowUpDown className="w-4 h-4 text-muted-foreground shrink-0" />
+        <span className="material-symbols-outlined text-base text-[#3e4943] shrink-0">swap_vert</span>
         {SORT_OPTIONS.map(opt => (
           <button
             key={opt.value}
             onClick={() => setFilter('sortBy', opt.value)}
             className={cn(
-              "text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap transition-colors shrink-0",
+              'text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap transition-colors shrink-0',
               filters.sortBy === opt.value
-                ? "bg-emerald-100 text-emerald-800"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                ? 'bg-[#9ffdd3] text-[#005d42]'
+                : 'bg-[#f4f4f2] text-[#3e4943] hover:bg-[#eeeeec]'
             )}
           >
             {opt.label}
@@ -110,11 +115,11 @@ export function SearchFilters() {
 
       {/* Expandable Filters */}
       {showFilters && (
-        <div className="bg-card border rounded-xl p-4 space-y-4">
+        <div className="bg-white border border-[#bdc9c1] rounded-xl p-4 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Filters</h3>
-            <Button variant="ghost" size="sm" onClick={() => { resetFilters(); setShowFilters(false) }}>
-              <X className="w-4 h-4 mr-1" /> Clear All
+            <h3 className="font-semibold text-[#1a1c1b]">Filters</h3>
+            <Button variant="ghost" size="sm" onClick={() => { resetFilters(); setShowFilters(false) }} className="text-[#005d42]">
+              <span className="material-symbols-outlined text-base mr-1">close</span> Clear All
             </Button>
           </div>
 
@@ -123,14 +128,14 @@ export function SearchFilters() {
             <button
               onClick={() => setFilter('verifiedOnly', !filters.verifiedOnly)}
               className={cn(
-                "flex items-center gap-2 w-full p-3 rounded-lg border-2 transition-all",
+                'flex items-center gap-2 w-full p-3 rounded-lg border-2 transition-all',
                 filters.verifiedOnly
-                  ? "border-emerald-500 bg-emerald-50"
-                  : "border-border hover:border-emerald-300"
+                  ? 'border-[#005d42] bg-[#9ffdd3]/30'
+                  : 'border-[#bdc9c1] hover:border-[#97f5cc]'
               )}
             >
-              <ShieldCheck className={cn("w-5 h-5", filters.verifiedOnly ? "text-emerald-600" : "text-muted-foreground")} />
-              <span className={cn("text-sm font-medium", filters.verifiedOnly ? "text-emerald-800" : "text-muted-foreground")}>
+              <span className={cn('material-symbols-outlined text-xl', filters.verifiedOnly ? 'text-[#005d42]' : 'text-[#3e4943]')}>verified_user</span>
+              <span className={cn('text-sm font-medium', filters.verifiedOnly ? 'text-[#005d42]' : 'text-[#3e4943]')}>
                 Verified workers only
               </span>
             </button>
@@ -138,23 +143,23 @@ export function SearchFilters() {
 
           {/* Price Range */}
           <div>
-            <Label>Price Range (R/hr)</Label>
+            <Label className="text-[#1a1c1b]">Price Range (R/hr)</Label>
             <div className="flex items-center gap-2 mt-1">
               <Input
                 type="number"
                 placeholder="Min"
                 value={filters.minPrice ?? ''}
                 onChange={e => setFilter('minPrice', e.target.value ? Number(e.target.value) : null)}
-                className="h-10"
+                className="h-10 bg-[#f4f4f2] border-none focus:ring-2 focus:ring-[#005d42]/30"
                 min={0}
               />
-              <span className="text-muted-foreground text-sm">to</span>
+              <span className="text-[#3e4943] text-sm">to</span>
               <Input
                 type="number"
                 placeholder="Max"
                 value={filters.maxPrice ?? ''}
                 onChange={e => setFilter('maxPrice', e.target.value ? Number(e.target.value) : null)}
-                className="h-10"
+                className="h-10 bg-[#f4f4f2] border-none focus:ring-2 focus:ring-[#005d42]/30"
                 min={0}
               />
             </div>
@@ -162,7 +167,7 @@ export function SearchFilters() {
 
           {/* Min Rating */}
           <div>
-            <Label>Minimum Rating</Label>
+            <Label className="text-[#1a1c1b]">Minimum Rating</Label>
             <div className="mt-1">
               <StarRating
                 rating={filters.minRating}
@@ -175,17 +180,17 @@ export function SearchFilters() {
 
           {/* Available Day */}
           <div>
-            <Label>Available On</Label>
+            <Label className="text-[#1a1c1b]">Available On</Label>
             <div className="flex gap-1.5 mt-1">
               {DAYS.map((day, idx) => (
                 <button
                   key={day}
                   onClick={() => setFilter('availableDay', filters.availableDay === idx ? null : idx)}
                   className={cn(
-                    "w-10 h-10 rounded-lg text-xs font-medium transition-colors",
+                    'w-10 h-10 rounded-lg text-xs font-medium transition-colors',
                     filters.availableDay === idx
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-muted/80"
+                      ? 'bg-[#005d42] text-white'
+                      : 'bg-[#f4f4f2] text-[#1a1c1b] hover:bg-[#eeeeec]'
                   )}
                 >
                   {day}
@@ -196,7 +201,7 @@ export function SearchFilters() {
 
           {/* Distance */}
           <div>
-            <Label>Max Distance: {filters.maxDistance} km</Label>
+            <Label className="text-[#1a1c1b]">Max Distance: {filters.maxDistance} km</Label>
             <input
               type="range"
               min={5}
@@ -204,9 +209,9 @@ export function SearchFilters() {
               step={5}
               value={filters.maxDistance}
               onChange={e => setFilter('maxDistance', Number(e.target.value))}
-              className="w-full mt-1 accent-emerald-600"
+              className="w-full mt-1 accent-[#005d42]"
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-[#3e4943]">
               <span>5 km</span>
               <span>100 km</span>
             </div>
@@ -214,11 +219,11 @@ export function SearchFilters() {
 
           {/* Location */}
           <div>
-            <Label>Your Location</Label>
+            <Label className="text-[#1a1c1b]">Your Location</Label>
             <Button
               variant="outline"
               size="sm"
-              className="mt-1 w-full"
+              className="mt-1 w-full border-[#bdc9c1] text-[#1a1c1b] hover:bg-[#f4f4f2]"
               onClick={() => {
                 navigator.geolocation.getCurrentPosition(
                   pos => {
@@ -230,14 +235,14 @@ export function SearchFilters() {
                 )
               }}
             >
-              <MapPin className="w-4 h-4 mr-2" />
+              <span className="material-symbols-outlined text-base mr-2">location_on</span>
               {filters.locationLat ? 'Location Set' : 'Detect Location'}
             </Button>
           </div>
 
           {/* Estate Filter */}
           <div>
-            <Label>Estate/Complex</Label>
+            <Label className="text-[#1a1c1b]">Estate/Complex</Label>
             {selectedEstate ? (
               <div className="mt-1">
                 <EstateTag
@@ -257,7 +262,6 @@ export function SearchFilters() {
                   onSelect={(estate: Estate) => {
                     setSelectedEstate(estate)
                     setFilter('estateId', estate.id)
-                    // Use estate location for proximity search
                     if (estate.location_lat && estate.location_lng) {
                       setFilter('locationLat', estate.location_lat)
                       setFilter('locationLng', estate.location_lng)

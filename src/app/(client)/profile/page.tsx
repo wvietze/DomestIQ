@@ -15,9 +15,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter, DialogTrigger
 } from '@/components/ui/dialog'
-import {
-  Camera, Save, Loader2, Trash2, AlertTriangle, CheckCircle2
-} from 'lucide-react'
+
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
 
 interface ProfileData {
   id: string
@@ -249,9 +250,9 @@ export default function ClientProfilePage() {
             className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
           >
             {isUploadingAvatar ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Icon name="progress_activity" className="animate-spin" style={{ fontSize: '16px' }} />
             ) : (
-              <Camera className="w-4 h-4" />
+              <Icon name="photo_camera" style={{ fontSize: '16px' }} />
             )}
           </button>
         </div>
@@ -357,11 +358,11 @@ export default function ClientProfilePage() {
         className="w-full h-12 text-lg gap-2"
       >
         {isSaving ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Icon name="progress_activity" className="animate-spin" style={{ fontSize: '20px' }} />
         ) : saveSuccess ? (
-          <CheckCircle2 className="w-5 h-5" />
+          <Icon name="check_circle" style={{ fontSize: '20px' }} />
         ) : (
-          <Save className="w-5 h-5" />
+          <Icon name="save" style={{ fontSize: '20px' }} />
         )}
         {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Changes'}
       </Button>
@@ -372,7 +373,7 @@ export default function ClientProfilePage() {
       <Card className="border-destructive/30">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <Icon name="warning" className="text-destructive" style={{ fontSize: '20px' }} />
             <h2 className="font-semibold text-destructive">Danger Zone</h2>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -383,7 +384,7 @@ export default function ClientProfilePage() {
           <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="destructive" className="gap-2">
-                <Trash2 className="w-4 h-4" />
+                <Icon name="delete" style={{ fontSize: '16px' }} />
                 Delete Account
               </Button>
             </DialogTrigger>
@@ -419,7 +420,7 @@ export default function ClientProfilePage() {
                   disabled={deleteConfirmText !== 'DELETE' || isDeleting}
                 >
                   {isDeleting ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <Icon name="progress_activity" className="animate-spin mr-2" style={{ fontSize: '16px' }} />
                   ) : null}
                   Delete My Account
                 </Button>

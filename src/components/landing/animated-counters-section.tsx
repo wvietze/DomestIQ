@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState, useMemo } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Users, CalendarDays, MapPin, Star } from 'lucide-react'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 function AnimatedCounter({ value, suffix, decimal, inView }: { value: number; suffix: string; decimal?: boolean; inView: boolean }) {
@@ -42,17 +41,17 @@ export function AnimatedCountersSection() {
   const { t } = useTranslation()
 
   const counters = useMemo(() => [
-    { icon: Users, value: 500, suffix: '+', label: t('landing.counters.c1', 'Workers Registered'), color: 'text-emerald-400' },
-    { icon: CalendarDays, value: 1200, suffix: '+', label: t('landing.counters.c2', 'Bookings Made'), color: 'text-sky-400' },
-    { icon: MapPin, value: 9, suffix: '', label: t('landing.counters.c3', 'Cities Served'), color: 'text-amber-400' },
-    { icon: Star, value: 4.8, suffix: '', label: t('landing.counters.c4', 'Average Rating'), color: 'text-rose-400', decimal: true },
+    { icon: 'group', value: 500, suffix: '+', label: t('landing.counters.c1', 'Workers Registered'), color: 'text-[#9ffdd3]' },
+    { icon: 'event', value: 1200, suffix: '+', label: t('landing.counters.c2', 'Bookings Made'), color: 'text-[#97f5cc]' },
+    { icon: 'location_on', value: 9, suffix: '', label: t('landing.counters.c3', 'Cities Served'), color: 'text-[#ffdcc3]' },
+    { icon: 'star', value: 4.8, suffix: '', label: t('landing.counters.c4', 'Average Rating'), color: 'text-[#fe932c]', decimal: true },
   ], [t])
 
   return (
-    <section ref={ref} className="relative border-y bg-gradient-to-r from-gray-900 via-gray-900 to-emerald-950 text-white overflow-hidden">
+    <section ref={ref} className="relative border-y border-[#1a1c1b] bg-[#1a1c1b] text-white overflow-hidden">
       <div className="absolute inset-0 bg-dots opacity-10" />
-      <div className="absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full bg-emerald-500/10 blur-[80px]" />
-      <div className="absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full bg-amber-500/10 blur-[80px]" />
+      <div className="absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full bg-[#005d42]/20 blur-[80px]" />
+      <div className="absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full bg-[#fe932c]/10 blur-[80px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
         <motion.div
@@ -63,29 +62,26 @@ export function AnimatedCountersSection() {
         >
           <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
             {t('landing.counters.heading_1', 'Growing every day across')}{' '}
-            <span className="bg-gradient-to-r from-amber-400 to-emerald-400 bg-clip-text text-transparent">{t('landing.counters.heading_2', 'Mzansi')}</span>
+            <span className="text-[#9ffdd3]">{t('landing.counters.heading_2', 'Mzansi')}</span>
           </h2>
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {counters.map((c, i) => {
-            const Icon = c.icon
-            return (
-              <motion.div
-                key={c.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center"
-              >
-                <Icon className={`w-6 h-6 ${c.color} mx-auto mb-3`} />
-                <p className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                  <AnimatedCounter value={c.value} suffix={c.suffix} decimal={c.decimal} inView={inView} />
-                </p>
-                <p className="text-sm text-gray-400 mt-2">{c.label}</p>
-              </motion.div>
-            )
-          })}
+          {counters.map((c, i) => (
+            <motion.div
+              key={c.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={inView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="text-center"
+            >
+              <span className={`material-symbols-outlined text-2xl ${c.color} mx-auto mb-3 block`}>{c.icon}</span>
+              <p className="text-4xl md:text-5xl font-extrabold text-white">
+                <AnimatedCounter value={c.value} suffix={c.suffix} decimal={c.decimal} inView={inView} />
+              </p>
+              <p className="text-sm text-[#bdc9c1] mt-2">{c.label}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

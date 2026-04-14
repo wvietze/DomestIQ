@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const now = new Date().toISOString()
 
     // Fetch active ads matching placement and role
-    let query = supabase
+    const query = supabase
       .from('ad_placements')
       .select('id, advertiser_name, advertiser_logo_url, placement, headline, description, image_url, cta_text, cta_url')
       .eq('placement', placement)

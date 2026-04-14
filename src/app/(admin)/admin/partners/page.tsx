@@ -1,25 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Handshake, Clock, CheckCircle2, XCircle, MessageCircle,
-  ChevronDown, ChevronUp, Key, Eye, Loader2, Filter,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { PartnerApplication } from '@/lib/types'
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'warning' | 'success'; icon: typeof Clock }> = {
-  pending: { label: 'Pending', variant: 'warning', icon: Clock },
-  contacted: { label: 'Contacted', variant: 'default', icon: MessageCircle },
-  approved: { label: 'Approved', variant: 'success', icon: CheckCircle2 },
-  rejected: { label: 'Rejected', variant: 'destructive', icon: XCircle },
+function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
+}
+
+const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'warning' | 'success' }> = {
+  pending: { label: 'Pending', variant: 'warning' },
+  contacted: { label: 'Contacted', variant: 'default' },
+  approved: { label: 'Approved', variant: 'success' },
+  rejected: { label: 'Rejected', variant: 'destructive' },
 }
 
 const companyTypeLabels: Record<string, string> = {
@@ -51,11 +50,7 @@ export default function AdminPartnersPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const [{ data: apps }, { data: keys }] = await Promise.all([
       supabase.from('partner_applications').select('*').order('created_at', { ascending: false }),
       supabase.from('partner_api_keys').select('id, partner_name, partner_type, is_active, rate_limit_per_hour, last_used_at, created_at').order('created_at', { ascending: false }),
@@ -63,7 +58,12 @@ export default function AdminPartnersPage() {
     if (apps) setApplications(apps as PartnerApplication[])
     if (keys) setApiKeys(keys as ApiKeyRecord[])
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData()
+  }, [loadData])
 
   async function updateStatus(id: string, status: string) {
     setActionLoading(id)
@@ -96,16 +96,16 @@ export default function AdminPartnersPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Handshake className="w-6 h-6 text-emerald-600" />
+        <h1 className="text-2xl font-bold font-heading flex items-center gap-2 text-[#1a1c1b]">
+          <Icon name="handshake" className="text-[#005d42]" style={{ fontSize: 28 }} />
           Partner Applications
         </h1>
-        <p className="text-muted-foreground mt-1">Manage partner applications and API keys</p>
+        <p className="text-[#3e4943] mt-1">Manage partner applications and API keys</p>
       </div>
 
       {/* Status Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Filter className="w-4 h-4 text-muted-foreground" />
+        <Icon name="filter_alt" className="text-[#3e4943]" style={{ fontSize: 18 }} />
         {['all', 'pending', 'contacted', 'approved', 'rejected'].map((s) => (
           <Button
             key={s}
@@ -158,7 +158,7 @@ export default function AdminPartnersPage() {
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {new Date(app.created_at).toLocaleDateString('en-ZA')}
                     </div>
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                    <Icon name={isExpanded ? 'expand_less' : 'expand_more'} className="text-[#3e4943]" style={{ fontSize: 18 }} />
                   </button>
 
                   {/* Expanded Details */}
@@ -179,7 +179,7 @@ export default function AdminPartnersPage() {
                       {app.admin_notes && (
                         <div>
                           <span className="text-xs font-medium text-muted-foreground">Admin Notes</span>
-                          <p className="text-sm whitespace-pre-wrap text-amber-700">{app.admin_notes}</p>
+                          <p className="text-sm whitespace-pre-wrap text-[#904d00]">{app.admin_notes}</p>
                         </div>
                       )}
 
@@ -198,27 +198,27 @@ export default function AdminPartnersPage() {
                         {app.status === 'pending' && (
                           <>
                             <Button size="sm" variant="outline" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'contacted')}>
-                              {actionLoading === app.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <MessageCircle className="w-3 h-3 mr-1" />}
+                              {actionLoading === app.id ? <Icon name="progress_activity" className="animate-spin mr-1" style={{ fontSize: 14 }} /> : <Icon name="chat" className="mr-1" style={{ fontSize: 14 }} />}
                               Mark Contacted
                             </Button>
-                            <Button size="sm" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'approved')}>
-                              {actionLoading === app.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <CheckCircle2 className="w-3 h-3 mr-1" />}
+                            <Button size="sm" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'approved')} className="bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg">
+                              {actionLoading === app.id ? <Icon name="progress_activity" className="animate-spin mr-1" style={{ fontSize: 14 }} /> : <Icon name="check_circle" className="mr-1" style={{ fontSize: 14 }} />}
                               Approve
                             </Button>
                             <Button size="sm" variant="destructive" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'rejected')}>
-                              {actionLoading === app.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                              {actionLoading === app.id ? <Icon name="progress_activity" className="animate-spin mr-1" style={{ fontSize: 14 }} /> : <Icon name="cancel" className="mr-1" style={{ fontSize: 14 }} />}
                               Reject
                             </Button>
                           </>
                         )}
                         {app.status === 'contacted' && (
                           <>
-                            <Button size="sm" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'approved')}>
-                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                            <Button size="sm" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'approved')} className="bg-[#005d42] hover:bg-[#047857] text-white font-bold rounded-lg">
+                              <Icon name="check_circle" className="mr-1" style={{ fontSize: 14 }} />
                               Approve
                             </Button>
                             <Button size="sm" variant="destructive" disabled={actionLoading === app.id} onClick={() => updateStatus(app.id, 'rejected')}>
-                              <XCircle className="w-3 h-3 mr-1" />
+                              <Icon name="cancel" className="mr-1" style={{ fontSize: 14 }} />
                               Reject
                             </Button>
                           </>
@@ -235,8 +235,8 @@ export default function AdminPartnersPage() {
 
       {/* Active API Keys */}
       <div>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Key className="w-5 h-5 text-amber-600" />
+        <h2 className="text-xl font-bold font-heading flex items-center gap-2 mb-4 text-[#1a1c1b]">
+          <Icon name="key" className="text-[#904d00]" style={{ fontSize: 22 }} />
           Active API Keys
         </h2>
         {apiKeys.length === 0 ? (
@@ -250,7 +250,7 @@ export default function AdminPartnersPage() {
             {apiKeys.map((key) => (
               <Card key={key.id}>
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className={cn('w-2 h-2 rounded-full', key.is_active ? 'bg-emerald-500' : 'bg-gray-300')} />
+                  <div className={cn('w-2 h-2 rounded-full', key.is_active ? 'bg-[#047857]' : 'bg-[#bdc9c1]')} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium">{key.partner_name}</p>
                     <p className="text-xs text-muted-foreground">

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion'
+import { useRef } from 'react'
+import { motion, useSpring, useMotionValue } from 'framer-motion'
 
 interface MagneticButtonProps {
   children: React.ReactNode
@@ -11,7 +11,6 @@ interface MagneticButtonProps {
 
 export function MagneticButton({ children, className = '', strength = 0.3 }: MagneticButtonProps) {
   const ref = useRef<HTMLDivElement>(null)
-  const [hovered, setHovered] = useState(false)
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -21,7 +20,6 @@ export function MagneticButton({ children, className = '', strength = 0.3 }: Mag
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return
-    // Skip on touch/coarse pointer devices
     if (window.matchMedia('(pointer: coarse)').matches) return
 
     const rect = ref.current.getBoundingClientRect()
@@ -33,7 +31,6 @@ export function MagneticButton({ children, className = '', strength = 0.3 }: Mag
   }
 
   const handleMouseLeave = () => {
-    setHovered(false)
     x.set(0)
     y.set(0)
   }
@@ -43,7 +40,6 @@ export function MagneticButton({ children, className = '', strength = 0.3 }: Mag
       ref={ref}
       style={{ x: springX, y: springY }}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setHovered(true)}
       onMouseLeave={handleMouseLeave}
       className={className}
     >

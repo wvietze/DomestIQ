@@ -1,7 +1,5 @@
 'use server'
 
-import crypto from 'crypto'
-
 export async function registerWorkerAction(formData: {
   fullName: string
   phone?: string | null

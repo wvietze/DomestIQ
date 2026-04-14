@@ -2,41 +2,38 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import {
- Phone, Camera, CheckCircle2, MapPin, FileText, Shield,
- ChevronLeft, ChevronRight, User, Mail,
- Home, Flower2, Paintbrush, Flame, Zap, Droplets,
- Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
- Wrench, Baby, Dog, ShieldCheck, Navigation, Loader2
-} from 'lucide-react'
+function Icon({ name, className = '' }: { name: string; className?: string }) {
+ return <span className={`material-symbols-outlined ${className}`}>{name}</span>
+}
 import { cn } from '@/lib/utils'
 import { WaveBars } from '@/components/loading'
 import { SA_CITIES, type SACity } from '@/lib/data/sa-cities'
 import { CitySelector } from '@/components/worker/city-selector'
 import { reverseGeocode } from '@/lib/maps/geocoding'
 
-const SERVICE_OPTIONS = [
- { id: 'domestic-worker', name: 'Domestic Worker', icon: Home },
- { id: 'gardener', name: 'Gardener', icon: Flower2 },
- { id: 'painter', name: 'Painter', icon: Paintbrush },
- { id: 'welder', name: 'Welder', icon: Flame },
- { id: 'electrician', name: 'Electrician', icon: Zap },
- { id: 'plumber', name: 'Plumber', icon: Droplets },
- { id: 'carpenter', name: 'Carpenter', icon: Hammer },
- { id: 'tiler', name: 'Tiler', icon: Grid3X3 },
- { id: 'roofer', name: 'Roofer', icon: Warehouse },
- { id: 'pool-cleaner', name: 'Pool Cleaner', icon: Waves },
- { id: 'pest-control', name: 'Pest Control', icon: Bug },
- { id: 'window-cleaner', name: 'Window Cleaner', icon: Sparkles },
- { id: 'handyman', name: 'Handyman', icon: Wrench },
- { id: 'babysitter', name: 'Babysitter', icon: Baby },
- { id: 'dog-walker', name: 'Dog Walker', icon: Dog },
- { id: 'security', name: 'Security', icon: ShieldCheck },
+const SERVICE_OPTIONS: Array<{ id: string; name: string; icon: string }> = [
+ { id: 'domestic-worker', name: 'Domestic Worker', icon: 'home' },
+ { id: 'gardener', name: 'Gardener', icon: 'yard' },
+ { id: 'painter', name: 'Painter', icon: 'format_paint' },
+ { id: 'welder', name: 'Welder', icon: 'local_fire_department' },
+ { id: 'electrician', name: 'Electrician', icon: 'electrical_services' },
+ { id: 'plumber', name: 'Plumber', icon: 'plumbing' },
+ { id: 'carpenter', name: 'Carpenter', icon: 'handyman' },
+ { id: 'tiler', name: 'Tiler', icon: 'grid_view' },
+ { id: 'roofer', name: 'Roofer', icon: 'roofing' },
+ { id: 'pool-cleaner', name: 'Pool Cleaner', icon: 'pool' },
+ { id: 'pest-control', name: 'Pest Control', icon: 'pest_control' },
+ { id: 'window-cleaner', name: 'Window Cleaner', icon: 'window' },
+ { id: 'handyman', name: 'Handyman', icon: 'construction' },
+ { id: 'babysitter', name: 'Babysitter', icon: 'child_care' },
+ { id: 'dog-walker', name: 'Dog Walker', icon: 'pets' },
+ { id: 'security', name: 'Security', icon: 'security' },
 ]
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -396,7 +393,7 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- {authMethod === 'email' ? <Mail className="w-8 h-8 text-primary"/> : <Phone className="w-8 h-8 text-primary"/>}
+ {authMethod === 'email' ? <Icon name="mail" className="text-3xl text-[#005d42]"/> : <Icon name="phone" className="text-3xl text-[#005d42]"/>}
  </div>
  <h2 className="text-2xl font-bold">Create Your Account</h2>
  <p className="text-muted-foreground">Sign up to get started</p>
@@ -411,7 +408,7 @@ export default function WorkerRegisterPage() {
  authMethod === 'email' ?"bg-primary text-primary-foreground":"bg-muted/50 text-muted-foreground"
  )}
  >
- <Mail className="w-4 h-4"/> Email
+ <Icon name="mail" className="text-base"/> Email
  </button>
  <button
  onClick={() => setAuthMethod('phone')}
@@ -420,7 +417,7 @@ export default function WorkerRegisterPage() {
  authMethod === 'phone' ?"bg-primary text-primary-foreground":"bg-muted/50 text-muted-foreground"
  )}
  >
- <Phone className="w-4 h-4"/> WhatsApp / Phone
+ <Icon name="phone" className="text-base"/> WhatsApp / Phone
  </button>
  </div>
 
@@ -509,7 +506,7 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- <User className="w-8 h-8 text-primary"/>
+ <Icon name="person" className="text-3xl text-[#005d42]"/>
  </div>
  <h2 className="text-2xl font-bold">About You</h2>
  <p className="text-muted-foreground">Your name and photo</p>
@@ -524,17 +521,17 @@ export default function WorkerRegisterPage() {
  <div className="flex flex-col items-center gap-3">
  {avatarPreview ? (
  <div className="relative w-32 h-32 rounded-full overflow-hidden">
- <img src={avatarPreview} alt="Profile"className="w-full h-full object-cover"/>
+ <Image src={avatarPreview} alt="Profile" width={128} height={128} unoptimized className="w-full h-full object-cover"/>
  </div>
  ) : (
  <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center">
- <Camera className="w-10 h-10 text-muted-foreground"/>
+ <Icon name="photo_camera" className="text-4xl text-[#6e7a73]"/>
  </div>
  )}
  <label className="cursor-pointer">
  <input type="file"accept="image/*"capture="user"className="hidden"onChange={handlePhotoCapture} />
  <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg font-medium">
- <Camera className="w-4 h-4"/>
+ <Icon name="photo_camera" className="text-base"/>
  {avatarPreview ? 'Change Photo' : 'Take Photo'}
  </span>
  </label>
@@ -548,29 +545,28 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- <Wrench className="w-8 h-8 text-primary"/>
+ <Icon name="handyman" className="text-3xl text-[#005d42]"/>
  </div>
  <h2 className="text-2xl font-bold">Your Services</h2>
  <p className="text-muted-foreground">Tap to select what you do</p>
  </div>
  <div className="grid grid-cols-3 gap-3">
  {SERVICE_OPTIONS.map(svc => {
- const Icon = svc.icon
  const selected = selectedServices.includes(svc.id)
  return (
  <button
  key={svc.id}
  onClick={() => toggleService(svc.id)}
  className={cn(
-"flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+"flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all active:scale-[0.98]",
  selected
- ?"border-primary bg-primary/10 text-primary"
- :"border-border bg-card hover:border-primary/50"
+ ?"border-[#005d42] bg-[#9ffdd3]/30 text-[#005d42]"
+ :"border-[#bdc9c1] bg-white hover:border-[#005d42]/50"
  )}
  >
- <Icon className="w-8 h-8"/>
+ <Icon name={svc.icon} className="text-3xl"/>
  <span className="text-xs font-medium text-center leading-tight">{svc.name}</span>
- {selected && <CheckCircle2 className="w-4 h-4"/>}
+ {selected && <Icon name="check_circle" className="text-base"/>}
  </button>
  )
  })}
@@ -583,7 +579,7 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- <CheckCircle2 className="w-8 h-8 text-primary"/>
+ <Icon name="check_circle" className="text-3xl text-[#005d42]"/>
  </div>
  <h2 className="text-2xl font-bold">Availability</h2>
  <p className="text-muted-foreground">Tap the days you can work</p>
@@ -615,7 +611,7 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- <MapPin className="w-8 h-8 text-primary"/>
+ <Icon name="location_on" className="text-3xl text-[#005d42]"/>
  </div>
  <h2 className="text-2xl font-bold">Your Work Areas</h2>
  <p className="text-muted-foreground">Select cities where you work or detect your GPS location</p>
@@ -629,17 +625,17 @@ export default function WorkerRegisterPage() {
  className="w-full h-12 text-base gap-2"
  >
  {locationDetecting ? (
- <Loader2 className="w-4 h-4 animate-spin"/>
+ <Icon name="progress_activity" className="text-base animate-spin"/>
  ) : (
- <Navigation className="w-4 h-4"/>
+ <Icon name="navigation" className="text-base"/>
  )}
  {locationLat ? 'Re-detect Location' : 'Detect My Location'}
  </Button>
  {locationLat && locationName && (
- <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+ <div className="rounded-lg bg-[#9ffdd3]/30 border border-[#97f5cc] p-3">
  <div className="flex items-center gap-2">
- <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0"/>
- <p className="text-sm font-medium text-emerald-900">{locationName}</p>
+ <Icon name="check_circle" className="text-base text-[#005d42] shrink-0"/>
+ <p className="text-sm font-medium text-[#005d42]">{locationName}</p>
  </div>
  </div>
  )}
@@ -665,7 +661,7 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- <FileText className="w-8 h-8 text-primary"/>
+ <Icon name="description" className="text-3xl text-[#005d42]"/>
  </div>
  <h2 className="text-2xl font-bold">Documents</h2>
  <p className="text-muted-foreground">Optional - upload for verification</p>
@@ -679,9 +675,9 @@ export default function WorkerRegisterPage() {
  idDocument ?"bg-secondary/10":"bg-muted"
  )}>
  {idDocument ? (
- <CheckCircle2 className="w-6 h-6 text-secondary"/>
+ <Icon name="check_circle" className="text-2xl text-[#904d00]"/>
  ) : (
- <FileText className="w-6 h-6 text-muted-foreground"/>
+ <Icon name="description" className="text-2xl text-[#6e7a73]"/>
  )}
  </div>
  <div className="flex-1">
@@ -715,7 +711,7 @@ export default function WorkerRegisterPage() {
  <div className="space-y-6">
  <div className="text-center space-y-2">
  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
- <Shield className="w-8 h-8 text-primary"/>
+ <Icon name="shield" className="text-3xl text-[#005d42]"/>
  </div>
  <h2 className="text-2xl font-bold">Almost Done!</h2>
  <p className="text-muted-foreground">Please review and agree</p>
@@ -804,7 +800,7 @@ export default function WorkerRegisterPage() {
  onClick={() => setStep(s => s - 1)}
  className="h-14 px-6"
  >
- <ChevronLeft className="w-5 h-5"/>
+ <Icon name="chevron_left" className="text-xl"/>
  Back
  </Button>
  <Button
@@ -822,7 +818,7 @@ export default function WorkerRegisterPage() {
  <WaveBars size="sm"/>
  ) : null}
  {step === TOTAL_STEPS - 1 ? 'Complete' : 'Next'}
- {step < TOTAL_STEPS - 1 && <ChevronRight className="w-5 h-5"/>}
+ {step < TOTAL_STEPS - 1 && <Icon name="chevron_right" className="text-xl"/>}
  </Button>
  </div>
  </div>

@@ -2,24 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import {
-  Users,
-  Briefcase,
-  CalendarDays,
-  Star,
-  FileCheck,
-  AlertTriangle,
-  DollarSign,
-  TrendingUp,
-  ArrowUpRight,
-  Download,
-  CreditCard,
-} from 'lucide-react'
 
 interface PlatformStats {
   totalUsers: number
@@ -78,8 +60,6 @@ export default function AdminDashboard() {
     async function loadAllData() {
       const now = new Date()
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-
-      // Six months ago for chart
       const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString()
 
       const [
@@ -97,51 +77,22 @@ export default function AdminDashboard() {
         recentTxResult,
         monthlyRevenueResult,
       ] = await Promise.all([
-        // Existing platform stats
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'worker'),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
         supabase.from('bookings').select('*', { count: 'exact', head: true }),
         supabase.from('documents').select('*', { count: 'exact', head: true }).eq('verification_status', 'pending'),
         supabase.from('report_flags').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-
-        // Avg rating
-        supabase
-          .from('worker_profiles')
-          .select('overall_rating')
-          .gt('overall_rating', 0),
-
-        // Revenue: total platform fees
-        supabase
-          .from('revenue_ledger')
-          .select('platform_fee'),
-
-        // Revenue: this month's platform fees
-        supabase
-          .from('revenue_ledger')
-          .select('platform_fee')
-          .gte('created_at', monthStart),
-
-        // Total completed transactions
-        supabase
-          .from('transactions')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'completed'),
-
-        // Pending payouts
-        supabase
-          .from('worker_payouts')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending'),
-
-        // Recent 20 transactions
+        supabase.from('worker_profiles').select('overall_rating').gt('overall_rating', 0),
+        supabase.from('revenue_ledger').select('platform_fee'),
+        supabase.from('revenue_ledger').select('platform_fee').gte('created_at', monthStart),
+        supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('worker_payouts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase
           .from('transactions')
           .select('id, created_at, booking_id, worker_amount, platform_fee, total_amount, status')
           .order('created_at', { ascending: false })
           .limit(20),
-
-        // Monthly revenue for last 6 months
         supabase
           .from('revenue_ledger')
           .select('platform_fee, created_at')
@@ -149,31 +100,22 @@ export default function AdminDashboard() {
           .order('created_at', { ascending: true }),
       ])
 
-      // Compute avg rating
       const ratingData = ratingResult.data
       const avgRating = ratingData?.length
         ? ratingData.reduce((sum, w) => sum + Number(w.overall_rating), 0) / ratingData.length
         : 0
 
-      // Compute total revenue
-      const totalRevenue = totalRevenueResult.data?.reduce(
-        (sum, row) => sum + Number(row.platform_fee || 0),
-        0
-      ) ?? 0
+      const totalRevenue =
+        totalRevenueResult.data?.reduce((sum, row) => sum + Number(row.platform_fee || 0), 0) ?? 0
 
-      // Compute this month's revenue
-      const monthRevenue = monthRevenueResult.data?.reduce(
-        (sum, row) => sum + Number(row.platform_fee || 0),
-        0
-      ) ?? 0
+      const monthRevenue =
+        monthRevenueResult.data?.reduce((sum, row) => sum + Number(row.platform_fee || 0), 0) ?? 0
 
-      // Group monthly revenue by month
       const monthlyMap = new Map<string, number>()
       const monthLabels: string[] = []
       for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-        const label = d.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' })
         monthlyMap.set(key, 0)
         monthLabels.push(key)
       }
@@ -223,247 +165,297 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
+      <div className="space-y-6">
+        <div className="h-8 w-48 animate-pulse rounded bg-[#e8e8e6]" />
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="h-24 animate-pulse rounded-lg bg-[#eeeeec]" />
+          ))}
         </div>
-        <Skeleton className="h-6 w-40 mt-6" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="space-y-4 lg:col-span-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-28 animate-pulse rounded-lg bg-[#eeeeec]" />
+            ))}
+          </div>
+          <div className="h-80 animate-pulse rounded-lg bg-[#eeeeec] lg:col-span-8" />
         </div>
-        <Skeleton className="h-64 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
+        <div className="h-96 animate-pulse rounded-lg bg-[#eeeeec]" />
       </div>
     )
   }
 
   const statCards = [
-    { label: 'Total Users', value: stats?.totalUsers, icon: Users, color: 'text-primary' },
-    { label: 'Workers', value: stats?.totalWorkers, icon: Briefcase, color: 'text-secondary' },
-    { label: 'Clients', value: stats?.totalClients, icon: Users, color: 'text-blue-500' },
-    { label: 'Total Bookings', value: stats?.totalBookings, icon: CalendarDays, color: 'text-emerald-500' },
-    { label: 'Pending Verifications', value: stats?.pendingVerifications, icon: FileCheck, color: 'text-amber-500' },
-    { label: 'Pending Reports', value: stats?.pendingReports, icon: AlertTriangle, color: 'text-red-500' },
-  ]
-
-  const revenueCards = [
-    {
-      label: 'Total Revenue',
-      value: formatZAR(revenueStats?.totalRevenue ?? 0),
-      icon: DollarSign,
-      color: 'text-emerald-500',
-    },
-    {
-      label: "This Month's Revenue",
-      value: formatZAR(revenueStats?.monthRevenue ?? 0),
-      icon: TrendingUp,
-      color: 'text-blue-500',
-    },
-    {
-      label: 'Total Transactions',
-      value: revenueStats?.totalTransactions ?? 0,
-      icon: CreditCard,
-      color: 'text-violet-500',
-    },
-    {
-      label: 'Pending Payouts',
-      value: revenueStats?.pendingPayouts ?? 0,
-      icon: ArrowUpRight,
-      color: 'text-amber-500',
-    },
+    { label: 'Total Users', value: stats?.totalUsers ?? 0, accent: 'border-[#005d42]', valueColor: 'text-[#1a1c1b]' },
+    { label: 'Workers', value: stats?.totalWorkers ?? 0, accent: 'border-[#005d42]', valueColor: 'text-[#1a1c1b]' },
+    { label: 'Clients', value: stats?.totalClients ?? 0, accent: 'border-[#005d42]', valueColor: 'text-[#1a1c1b]' },
+    { label: 'Total Bookings', value: stats?.totalBookings ?? 0, accent: 'border-[#005d42]', valueColor: 'text-[#1a1c1b]' },
+    { label: 'Pending Ver.', value: stats?.pendingVerifications ?? 0, accent: 'border-[#904d00]', valueColor: 'text-[#904d00]' },
+    { label: 'Open Reports', value: stats?.pendingReports ?? 0, accent: 'border-[#ba1a1a]', valueColor: 'text-[#ba1a1a]' },
+    { label: 'Avg Rating', value: stats?.avgRating || 'N/A', accent: 'border-[#005d42]', valueColor: 'text-[#1a1c1b]', showStar: true },
   ]
 
   const maxMonthly = Math.max(...monthlyRevenue.map((m) => m.total), 1)
 
-  function getStatusBadge(status: string) {
+  function getStatusPill(status: string) {
+    const base = 'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider'
     switch (status) {
       case 'completed':
-        return <Badge variant="success">Completed</Badge>
+        return <span className={`${base} bg-[#97f5cc] text-[#00513a]`}>Completed</span>
       case 'pending':
-        return <Badge variant="warning">Pending</Badge>
+        return <span className={`${base} bg-[#ffdcc3] text-[#6e3900]`}>Pending</span>
       case 'failed':
-        return <Badge variant="destructive">Failed</Badge>
+        return <span className={`${base} bg-[#ffdad6] text-[#93000a]`}>Failed</span>
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <span className={`${base} bg-[#e8e8e6] text-[#3e4943]`}>{status}</span>
     }
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-10">
       {/* Toast notification */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="fixed right-4 top-20 z-50 rounded-lg bg-[#005d42] px-4 py-3 text-white shadow-lg">
           {toastMessage}
         </div>
       )}
 
-      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-
-      {/* ── Existing Platform Stats ── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {statCards.map(card => {
-          const Icon = card.icon
-          return (
-            <Card key={card.label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-8 h-8 ${card.color}`} />
-                  <div>
-                    <p className="text-2xl font-bold">{card.value}</p>
-                    <p className="text-sm text-muted-foreground">{card.label}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+      <div>
+        <h1 className="font-heading text-2xl font-bold tracking-tight text-[#1a1c1b]">
+          Admin Dashboard
+        </h1>
+        <p className="mt-1 text-sm text-[#3e4943]">Platform ecosystem at a glance</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-amber-500" />
-            Platform Average Rating
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">{stats?.avgRating || 'N/A'} <span className="text-lg text-muted-foreground">/ 5</span></p>
-        </CardContent>
-      </Card>
+      {/* Row 1: Ecosystem Stats */}
+      <section>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+          {statCards.map((card) => (
+            <div
+              key={card.label}
+              className={`rounded-lg border-l-4 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${card.accent}`}
+            >
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#3e4943]">
+                {card.label}
+              </p>
+              <div className="flex items-center gap-1">
+                <h3 className={`font-heading text-2xl font-bold ${card.valueColor}`}>
+                  {card.value}
+                </h3>
+                {card.showStar && (
+                  <span
+                    className="material-symbols-outlined text-sm text-[#904d00]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    star
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <Separator />
+      {/* Row 2: Revenue + Chart */}
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+        {/* Revenue Cards */}
+        <div className="grid grid-cols-1 gap-4 lg:col-span-4">
+          <div className="rounded-lg bg-[#005d42] p-6 text-white">
+            <p className="mb-2 text-xs font-medium uppercase tracking-widest opacity-80">
+              This Month&apos;s Revenue
+            </p>
+            <h4 className="font-heading text-3xl font-bold">
+              {formatZAR(revenueStats?.monthRevenue ?? 0)}
+            </h4>
+            <div className="mt-4 flex items-center text-xs text-[#9ffdd3]">
+              <span className="material-symbols-outlined mr-1 text-sm">trending_up</span>
+              <span>Platform fee earnings</span>
+            </div>
+          </div>
+          <div className="rounded-lg border-b-2 border-[#97f5cc] bg-[#f4f4f2] p-6">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#3e4943]">
+              Total Platform Fees
+            </p>
+            <h4 className="font-heading text-xl font-bold text-[#1a1c1b]">
+              {formatZAR(revenueStats?.totalRevenue ?? 0)}
+            </h4>
+          </div>
+          <div className="rounded-lg border-b-2 border-[#bdc9c1] bg-[#f4f4f2] p-6">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#3e4943]">
+              Completed Transactions
+            </p>
+            <h4 className="font-heading text-xl font-bold text-[#1a1c1b]">
+              {revenueStats?.totalTransactions ?? 0}
+            </h4>
+          </div>
+          <div className="rounded-lg border-b-2 border-[#904d00] bg-[#f4f4f2] p-6">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#3e4943]">
+              Pending Payouts
+            </p>
+            <h4 className="font-heading text-xl font-bold text-[#1a1c1b]">
+              {revenueStats?.pendingPayouts ?? 0}
+            </h4>
+          </div>
+        </div>
 
-      {/* ── Revenue Overview Cards ── */}
-      <h2 className="text-xl font-semibold">Revenue Overview</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {revenueCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <Card key={card.label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-full bg-muted p-2`}>
-                    <Icon className={`w-6 h-6 ${card.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{card.value}</p>
-                    <p className="text-sm text-muted-foreground">{card.label}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* ── Monthly Revenue Summary (CSS Bar Chart) ── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
-            Monthly Revenue (Last 6 Months)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-end justify-between gap-3 h-48">
-            {monthlyRevenue.map((m) => {
+        {/* 6-month Revenue Chart */}
+        <div className="rounded-lg bg-white p-8 shadow-sm lg:col-span-8">
+          <div className="mb-12 flex items-end justify-between">
+            <div>
+              <h3 className="font-heading text-lg font-bold text-[#1a1c1b]">
+                Revenue Distribution
+              </h3>
+              <p className="text-sm text-[#3e4943]">Last 6 months of platform fees</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-[#005d42]" />
+                <span className="text-xs text-[#3e4943]">Platform Fees</span>
+              </div>
+            </div>
+          </div>
+          <div className="relative flex h-48 w-full items-end justify-between gap-4">
+            <div className="pointer-events-none absolute inset-0 flex flex-col justify-between opacity-20">
+              <div className="w-full border-t border-[#6e7a73]" />
+              <div className="w-full border-t border-[#6e7a73]" />
+              <div className="w-full border-t border-[#6e7a73]" />
+            </div>
+            {monthlyRevenue.map((m, idx) => {
               const heightPercent = maxMonthly > 0 ? (m.total / maxMonthly) * 100 : 0
+              const isCurrent = idx === monthlyRevenue.length - 1
               return (
-                <div key={m.month} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full flex flex-col items-center justify-end h-36">
-                    <div
-                      className="w-full max-w-[48px] bg-emerald-500 rounded-t-md transition-all duration-500"
-                      style={{ height: `${Math.max(heightPercent, 2)}%` }}
-                    />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs font-medium text-muted-foreground">{m.label}</p>
-                    <p className="text-xs font-semibold">{formatZAR(m.total)}</p>
-                  </div>
+                <div
+                  key={m.month}
+                  className="group relative z-10 flex flex-1 flex-col items-center gap-2"
+                  title={formatZAR(m.total)}
+                >
+                  <div
+                    className={`w-full rounded-t-lg transition-all duration-500 ${
+                      isCurrent ? 'bg-[#005d42]' : 'bg-[#97f5cc] hover:bg-[#005d42]'
+                    }`}
+                    style={{ height: `${Math.max(heightPercent, 2)}%` }}
+                  />
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-tighter ${
+                      isCurrent ? 'text-[#005d42]' : 'text-[#3e4943]'
+                    }`}
+                  >
+                    {m.label}
+                  </span>
                 </div>
               )
             })}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* ── Recent Transactions Table ── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-violet-500" />
+      {/* Row 3: Recent Transactions Table */}
+      <section className="overflow-hidden rounded-lg bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#e8e8e6] px-8 py-6">
+          <h3 className="font-heading text-lg font-bold text-[#1a1c1b]">
             Recent Transactions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Header row */}
-          <div className="grid grid-cols-6 gap-4 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b">
-            <div>Date</div>
-            <div>Booking ID</div>
-            <div className="text-right">Worker Amount</div>
-            <div className="text-right">Platform Fee</div>
-            <div className="text-right">Total</div>
-            <div className="text-center">Status</div>
-          </div>
-          {/* Data rows */}
-          {recentTransactions.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">No transactions found.</div>
-          ) : (
-            recentTransactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="grid grid-cols-6 gap-4 px-3 py-3 text-sm border-b last:border-b-0 hover:bg-muted/50 transition-colors"
-              >
-                <div className="text-muted-foreground">
-                  {new Date(tx.created_at).toLocaleDateString('en-ZA', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </div>
-                <div className="font-mono text-xs truncate" title={tx.booking_id}>
-                  {tx.booking_id?.slice(0, 8)}...
-                </div>
-                <div className="text-right">{formatZAR(tx.worker_amount ?? 0)}</div>
-                <div className="text-right">{formatZAR(tx.platform_fee ?? 0)}</div>
-                <div className="text-right font-medium">{formatZAR(tx.total_amount ?? 0)}</div>
-                <div className="text-center">{getStatusBadge(tx.status)}</div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+          </h3>
+          <a
+            href="/admin/transactions"
+            className="text-xs font-bold uppercase tracking-widest text-[#005d42] hover:underline"
+          >
+            View All
+          </a>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="bg-[#f4f4f2] text-[10px] font-bold uppercase tracking-[0.15em] text-[#3e4943]">
+                <th className="px-8 py-4">Date</th>
+                <th className="px-8 py-4">Booking</th>
+                <th className="px-8 py-4 text-right">Worker Amount</th>
+                <th className="px-8 py-4 text-right">Platform Fee</th>
+                <th className="px-8 py-4 text-right">Total</th>
+                <th className="px-8 py-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#f4f4f2]">
+              {recentTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-8 py-12 text-center text-[#3e4943]">
+                    No transactions yet.
+                  </td>
+                </tr>
+              ) : (
+                recentTransactions.map((tx) => (
+                  <tr
+                    key={tx.id}
+                    className="group transition-colors hover:bg-[#f4f4f2]"
+                  >
+                    <td className="px-8 py-6 text-sm text-[#3e4943]">
+                      {new Date(tx.created_at).toLocaleDateString('en-ZA', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </td>
+                    <td
+                      className="px-8 py-6 font-mono text-xs font-bold text-[#1a1c1b]"
+                      title={tx.booking_id}
+                    >
+                      {tx.booking_id?.slice(0, 8)}…
+                    </td>
+                    <td className="px-8 py-6 text-right text-sm text-[#3e4943]">
+                      {formatZAR(tx.worker_amount ?? 0)}
+                    </td>
+                    <td className="px-8 py-6 text-right text-sm text-[#3e4943]">
+                      {formatZAR(tx.platform_fee ?? 0)}
+                    </td>
+                    <td className="px-8 py-6 text-right text-sm font-bold text-[#1a1c1b]">
+                      {formatZAR(tx.total_amount ?? 0)}
+                    </td>
+                    <td className="px-8 py-6">{getStatusPill(tx.status)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-      {/* ── Quick Actions ── */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => setToastMessage('Report will be emailed')}
-              className="gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Export Revenue Report
-            </Button>
-            <Button variant="outline" asChild className="gap-2">
-              <a href="/admin/transactions">
-                <CreditCard className="w-4 h-4" />
-                View All Transactions
-              </a>
-            </Button>
-            <Button variant="outline" asChild className="gap-2">
-              <a href="/admin/payouts">
-                <DollarSign className="w-4 h-4" />
-                Payout Settings
-              </a>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Row 4: Quick Actions */}
+      <section className="rounded-lg bg-white p-8 shadow-sm">
+        <h3 className="mb-6 font-heading text-lg font-bold text-[#1a1c1b]">Quick Actions</h3>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setToastMessage('Report will be emailed')}
+            className="flex items-center gap-2 rounded-lg bg-[#005d42] px-5 py-3 font-bold text-white transition-transform active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined text-lg">download</span>
+            Export Revenue Report
+          </button>
+          <a
+            href="/admin/transactions"
+            className="flex items-center gap-2 rounded-lg border border-[#bdc9c1] bg-white px-5 py-3 font-bold text-[#1a1c1b] transition-colors hover:bg-[#f4f4f2]"
+          >
+            <span className="material-symbols-outlined text-lg">receipt_long</span>
+            View All Transactions
+          </a>
+          <a
+            href="/admin/payouts"
+            className="flex items-center gap-2 rounded-lg border border-[#bdc9c1] bg-white px-5 py-3 font-bold text-[#1a1c1b] transition-colors hover:bg-[#f4f4f2]"
+          >
+            <span className="material-symbols-outlined text-lg">payments</span>
+            Payout Settings
+          </a>
+        </div>
+      </section>
+
+      {/* Floating Action Button */}
+      <button
+        type="button"
+        className="fixed bottom-8 right-8 flex h-14 w-14 items-center justify-center rounded-full bg-[#005d42] text-white shadow-lg transition-all hover:bg-[#047857] active:scale-95"
+        title="New Insight"
+        aria-label="New insight"
+      >
+        <span className="material-symbols-outlined">add</span>
+      </button>
     </div>
   )
 }

@@ -5,49 +5,43 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/hooks/use-user'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useTranslation } from '@/lib/hooks/use-translation'
 import { EstateSearchInput } from '@/components/estate/estate-search-input'
 import { EstateTag } from '@/components/estate/estate-tag'
 import { LocationPicker } from '@/components/worker/location-picker'
-import type { Estate, WorkerEstateRegistration } from '@/lib/types/estate'
+import type { Estate } from '@/lib/types/estate'
 import type { WorkerServiceArea } from '@/lib/types/worker'
-import {
-  Camera, Save, Loader2, CheckCircle2, ArrowLeft,
-  Home, Flower2, Paintbrush, Flame, Zap, Droplets,
-  Hammer, Grid3X3, Warehouse, Waves, Bug, Sparkles,
-  Wrench, Baby, Dog, ShieldCheck, MapPin,
-  ImagePlus, X, Building2
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
 
 const SERVICE_OPTIONS = [
-  { id: 'domestic-worker', name: 'Domestic Worker', icon: Home },
-  { id: 'gardener', name: 'Gardener', icon: Flower2 },
-  { id: 'painter', name: 'Painter', icon: Paintbrush },
-  { id: 'welder', name: 'Welder', icon: Flame },
-  { id: 'electrician', name: 'Electrician', icon: Zap },
-  { id: 'plumber', name: 'Plumber', icon: Droplets },
-  { id: 'carpenter', name: 'Carpenter', icon: Hammer },
-  { id: 'tiler', name: 'Tiler', icon: Grid3X3 },
-  { id: 'roofer', name: 'Roofer', icon: Warehouse },
-  { id: 'pool-cleaner', name: 'Pool Cleaner', icon: Waves },
-  { id: 'pest-control', name: 'Pest Control', icon: Bug },
-  { id: 'window-cleaner', name: 'Window Cleaner', icon: Sparkles },
-  { id: 'handyman', name: 'Handyman', icon: Wrench },
-  { id: 'babysitter', name: 'Babysitter', icon: Baby },
-  { id: 'dog-walker', name: 'Dog Walker', icon: Dog },
-  { id: 'security', name: 'Security', icon: ShieldCheck },
+  { id: 'domestic-worker', name: 'Domestic Worker', icon: 'home' },
+  { id: 'gardener', name: 'Gardener', icon: 'yard' },
+  { id: 'painter', name: 'Painter', icon: 'format_paint' },
+  { id: 'welder', name: 'Welder', icon: 'local_fire_department' },
+  { id: 'electrician', name: 'Electrician', icon: 'bolt' },
+  { id: 'plumber', name: 'Plumber', icon: 'plumbing' },
+  { id: 'carpenter', name: 'Carpenter', icon: 'carpenter' },
+  { id: 'tiler', name: 'Tiler', icon: 'grid_on' },
+  { id: 'roofer', name: 'Roofer', icon: 'roofing' },
+  { id: 'pool-cleaner', name: 'Pool Cleaner', icon: 'pool' },
+  { id: 'pest-control', name: 'Pest Control', icon: 'pest_control' },
+  { id: 'window-cleaner', name: 'Window Cleaner', icon: 'window' },
+  { id: 'handyman', name: 'Handyman', icon: 'handyman' },
+  { id: 'babysitter', name: 'Babysitter', icon: 'child_care' },
+  { id: 'dog-walker', name: 'Dog Walker', icon: 'pets' },
+  { id: 'security', name: 'Security', icon: 'verified_user' },
 ]
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface AvailabilitySlot {
   day_of_week: number
@@ -56,9 +50,14 @@ interface AvailabilitySlot {
   is_available: boolean
 }
 
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
+
 export default function WorkerProfileEditPage() {
   const router = useRouter()
   const { user, profile, isLoading: userLoading } = useUser()
+  const { t } = useTranslation()
   const supabase = createClient()
 
   const [workerProfileId, setWorkerProfileId] = useState<string | null>(null)
@@ -70,7 +69,7 @@ export default function WorkerProfileEditPage() {
       day_of_week: i,
       start_time: '08:00',
       end_time: '17:00',
-      is_available: i >= 1 && i <= 5, // Mon-Fri default
+      is_available: i >= 1 && i <= 5,
     }))
   )
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -85,16 +84,17 @@ export default function WorkerProfileEditPage() {
   const [portfolioImages, setPortfolioImages] = useState<Array<{ id: string; image_url: string; caption: string | null }>>([])
   const [portfolioUploading, setPortfolioUploading] = useState(false)
   const [estateRegistrations, setEstateRegistrations] = useState<Array<{ id: string; estate: { id: string; name: string; suburb: string } }>>([])
-  const [estateLoading, setEstateLoading] = useState(false)
+  const [, setEstateLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [error, setError] = useState('')
+
+  /* ---- Data Loading ---- */
 
   useEffect(() => {
     async function loadData() {
       if (!user) return
 
-      // Get all services from DB
       const { data: svcList } = await supabase
         .from('services')
         .select('id, name')
@@ -103,7 +103,6 @@ export default function WorkerProfileEditPage() {
 
       if (svcList) setAllServices(svcList)
 
-      // Get worker profile
       const { data: wp } = await supabase
         .from('worker_profiles')
         .select('id, bio, hourly_rate, location_lat, location_lng, service_radius_km, location_name')
@@ -119,7 +118,6 @@ export default function WorkerProfileEditPage() {
         if (wp.service_radius_km) setServiceRadius(wp.service_radius_km)
         if (wp.location_name) setLocationName(wp.location_name)
 
-        // Get currently linked services
         const { data: workerSvcs } = await supabase
           .from('worker_services')
           .select('service_id, services(name)')
@@ -134,7 +132,6 @@ export default function WorkerProfileEditPage() {
           setSelectedServices(serviceNames)
         }
 
-        // Get availability
         const { data: avail } = await supabase
           .from('worker_availability')
           .select('day_of_week, start_time, end_time, is_available')
@@ -160,7 +157,6 @@ export default function WorkerProfileEditPage() {
         }
       }
 
-      // Load service areas
       if (wp) {
         const { data: areas } = await supabase
           .from('worker_service_areas')
@@ -176,7 +172,6 @@ export default function WorkerProfileEditPage() {
         }
       }
 
-      // Load portfolio images
       if (wp) {
         const { data: portfolio } = await supabase
           .from('portfolio_images')
@@ -186,7 +181,6 @@ export default function WorkerProfileEditPage() {
         if (portfolio) setPortfolioImages(portfolio)
       }
 
-      // Load estate registrations
       const { data: estates } = await supabase
         .from('worker_estate_registrations')
         .select('id, estates(id, name, suburb)')
@@ -201,7 +195,6 @@ export default function WorkerProfileEditPage() {
         )
       }
 
-      // Set avatar preview from current profile
       if (profile?.avatar_url) {
         setAvatarPreview(profile.avatar_url)
       }
@@ -211,6 +204,8 @@ export default function WorkerProfileEditPage() {
 
     if (!userLoading) loadData()
   }, [user, profile, userLoading, supabase])
+
+  /* ---- Handlers ---- */
 
   const toggleService = (slug: string) => {
     setSelectedServices(prev =>
@@ -283,7 +278,6 @@ export default function WorkerProfileEditPage() {
 
   const handlePortfolioDelete = async (imageId: string, imageUrl: string) => {
     try {
-      // Extract storage path from URL
       const url = new URL(imageUrl)
       const pathParts = url.pathname.split('/portfolio/')
       if (pathParts[1]) {
@@ -347,7 +341,7 @@ export default function WorkerProfileEditPage() {
     if (selectedServices.length > 0) score += 15
     if (availability.some(a => a.is_available)) score += 10
     if (locationLat && locationLng) score += 15
-    score += 10 // base for having an account
+    score += 10
     return Math.min(score, 100)
   }
 
@@ -359,7 +353,6 @@ export default function WorkerProfileEditPage() {
     try {
       if (!user || !workerProfileId) throw new Error('Not authenticated')
 
-      // Upload avatar if changed
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop()
         const path = `${user.id}/avatar.${ext}`
@@ -368,7 +361,6 @@ export default function WorkerProfileEditPage() {
         await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', user.id)
       }
 
-      // Update worker profile
       await supabase
         .from('worker_profiles')
         .update({
@@ -382,7 +374,6 @@ export default function WorkerProfileEditPage() {
         })
         .eq('id', workerProfileId)
 
-      // Update service areas: delete old, insert new
       await supabase.from('worker_service_areas').delete().eq('worker_id', workerProfileId)
       if (serviceAreas.length > 0) {
         await supabase.from('worker_service_areas').insert(
@@ -396,7 +387,6 @@ export default function WorkerProfileEditPage() {
         )
       }
 
-      // Update services: delete old, insert new
       await supabase.from('worker_services').delete().eq('worker_id', workerProfileId)
 
       if (selectedServices.length > 0 && allServices.length > 0) {
@@ -414,7 +404,6 @@ export default function WorkerProfileEditPage() {
         }
       }
 
-      // Update availability: delete old, insert new
       await supabase.from('worker_availability').delete().eq('worker_id', workerProfileId)
 
       const availRecords = availability.map(a => ({
@@ -436,18 +425,30 @@ export default function WorkerProfileEditPage() {
     }
   }
 
+  /* ---- Loading Skeleton ---- */
+
   if (userLoading || isLoading) {
     return (
-      <div className="max-w-2xl mx-auto p-4 space-y-4">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-24 w-24 rounded-full mx-auto" />
-        <Skeleton className="h-32 rounded-xl" />
-        <Skeleton className="h-12 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
-        <Skeleton className="h-40 rounded-xl" />
+      <div className="min-h-screen bg-[#f9f9f7]">
+        <header className="bg-[#f9f9f7] flex items-center gap-4 px-6 h-16 sticky top-0 z-50">
+          <div className="w-10 h-10 rounded-full bg-[#e8e8e6] animate-pulse" />
+          <div className="h-5 w-28 rounded bg-[#e8e8e6] animate-pulse" />
+        </header>
+        <div className="px-6 max-w-md mx-auto w-full space-y-6 pt-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-20 h-20 rounded-full bg-[#e8e8e6] animate-pulse" />
+            <div className="h-6 w-40 rounded bg-[#e8e8e6] animate-pulse" />
+          </div>
+          <div className="h-28 rounded-xl bg-white animate-pulse" />
+          <div className="h-20 rounded-xl bg-white animate-pulse" />
+          <div className="h-48 rounded-xl bg-white animate-pulse" />
+          <div className="h-32 rounded-xl bg-white animate-pulse" />
+        </div>
       </div>
     )
   }
+
+  /* ---- Derived ---- */
 
   const initials = profile?.full_name
     ?.split(' ')
@@ -456,388 +457,404 @@ export default function WorkerProfileEditPage() {
     .slice(0, 2)
     .toUpperCase() || '?'
 
+  const dqCode = user?.email?.startsWith('dq')
+    ? user.email.split('@')[0]?.toUpperCase()
+    : null
+
+  /* ---- Render ---- */
+
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6 pb-24">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <h1 className="text-xl font-bold">Edit Profile</h1>
-      </div>
-
-      {/* Avatar */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center"
-      >
-        <div className="relative">
-          <Avatar className="h-24 w-24">
-            <AvatarImage src={avatarPreview || undefined} alt="Profile" />
-            <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-          </Avatar>
-          <label className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center cursor-pointer shadow-md">
-            <Camera className="w-4 h-4 text-white" />
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handlePhotoChange}
-            />
-          </label>
+    <div className="min-h-screen bg-[#f9f9f7] flex flex-col">
+      {/* Top App Bar */}
+      <header className="bg-[#f9f9f7] flex justify-between items-center w-full px-6 h-16 sticky top-0 z-50">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.back()}
+            className="text-[#005d42] hover:bg-[#e2e3e1] transition-colors p-2 rounded-full active:scale-95 duration-150"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <h1 className="font-heading font-bold text-lg tracking-tight text-[#1a1c1b]">
+            {t('worker.edit_profile', 'Edit Profile')}
+          </h1>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Tap camera icon to change photo</p>
-      </motion.div>
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="font-heading font-bold text-[#047857] hover:bg-[#e2e3e1] transition-colors px-4 py-2 rounded-lg active:scale-95 duration-150 disabled:opacity-50"
+        >
+          {isSaving ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
+        </button>
+      </header>
 
-      {/* Bio */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Bio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              placeholder="Tell clients about yourself, your experience, and what makes your work stand out..."
-              value={bio}
-              onChange={e => setBio(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {bio.length}/500 characters
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* Main Content */}
+      <main className="flex-1 pb-28 overflow-y-auto px-6 max-w-md mx-auto w-full">
+        {/* Avatar Section */}
+        <section className="flex flex-col items-center pt-8 pb-10">
+          <div className="relative group">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#e8e8e6]">
+              {avatarPreview ? (
+                <Image
+                  src={avatarPreview}
+                  alt={profile?.full_name || 'Profile'}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-[#005d42] flex items-center justify-center text-white font-heading font-bold text-xl">
+                  {initials}
+                </div>
+              )}
+            </div>
+            <label className="absolute bottom-0 right-0 bg-[#005d42] text-white p-1.5 rounded-full shadow-lg active:scale-90 transition-transform cursor-pointer">
+              <span
+                className="material-symbols-outlined text-[18px]"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                photo_camera
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
+            </label>
+          </div>
+          <div className="mt-4 text-center">
+            <h2 className="font-heading font-extrabold text-2xl tracking-tight text-[#1a1c1b]">
+              {profile?.full_name || 'Your Name'}
+            </h2>
+            {dqCode && (
+              <p className="font-mono text-sm tracking-widest text-[#3e4943] bg-[#e8e8e6] px-2 py-0.5 rounded mt-1 inline-block">
+                {dqCode}
+              </p>
+            )}
+          </div>
+        </section>
 
-      {/* Hourly Rate */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Hourly Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold text-muted-foreground">R</span>
-              <Input
+        <div className="space-y-10">
+          {/* Professional Bio */}
+          <div className="space-y-2">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              {t('worker.bio', 'Professional Bio')}
+            </label>
+            <div className="bg-[#f4f4f2] p-4 rounded-lg focus-within:bg-white transition-colors border-b-2 border-transparent focus-within:border-[#005d42]">
+              <textarea
+                className="w-full bg-transparent border-none p-0 focus:ring-0 focus:outline-none text-[#1a1c1b] leading-relaxed text-sm resize-none"
+                rows={3}
+                placeholder={t('worker.bio_placeholder', 'Tell clients about yourself, your experience, and what makes your work stand out...')}
+                value={bio}
+                onChange={e => setBio(e.target.value)}
+                maxLength={500}
+              />
+            </div>
+            <p className="text-[11px] text-[#6e7a73] px-1">{bio.length}/500</p>
+          </div>
+
+          {/* Hourly Rate */}
+          <div className="space-y-2">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              {t('worker.hourly_rate', 'Hourly Rate')}
+            </label>
+            <div className="flex items-center bg-[#f4f4f2] rounded-lg overflow-hidden focus-within:bg-white transition-colors border-b-2 border-transparent focus-within:border-[#005d42]">
+              <span className="pl-4 font-heading font-bold text-[#3e4943]">R</span>
+              <input
+                className="w-full bg-transparent border-none py-4 focus:ring-0 focus:outline-none text-[#1a1c1b] font-heading font-bold text-lg"
                 type="number"
                 placeholder="150"
                 value={hourlyRate}
                 onChange={e => setHourlyRate(e.target.value)}
                 min={0}
                 step={10}
-                className="text-lg"
               />
-              <span className="text-sm text-muted-foreground">/hr</span>
+              <span className="pr-4 text-sm text-[#6e7a73]">/hr</span>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
 
-      {/* Services Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Services</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-3">
-              Tap to select the services you offer
-            </p>
-            <div className="grid grid-cols-3 gap-2">
+          {/* Offered Services */}
+          <div className="space-y-3">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              {t('worker.services', 'Offered Services')}
+            </label>
+            <div className="flex flex-wrap gap-2 items-center">
               {SERVICE_OPTIONS.map(svc => {
-                const Icon = svc.icon
                 const selected = selectedServices.includes(svc.id)
                 return (
                   <button
                     key={svc.id}
                     onClick={() => toggleService(svc.id)}
-                    className={cn(
-                      'flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all',
-                      selected
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-border bg-card hover:border-emerald-300'
-                    )}
+                    className={`
+                      px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold
+                      transition-all duration-150 active:scale-95
+                      ${selected
+                        ? 'bg-[#005d42] text-white'
+                        : 'bg-[#e2e3e1] text-[#3e4943] hover:bg-[#d0d1cf]'
+                      }
+                    `}
                   >
-                    <Icon className="w-6 h-6" />
-                    <span className="text-[10px] font-medium text-center leading-tight">
-                      {svc.name}
-                    </span>
-                    {selected && <CheckCircle2 className="w-3 h-3" />}
+                    <span className="material-symbols-outlined text-[18px]">{svc.icon}</span>
+                    <span>{svc.name}</span>
                   </button>
                 )
               })}
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
 
-      {/* Service Area */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-emerald-600" />
-              Service Area
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-3">
-              Set where you work — select cities, search an address, or use GPS
-            </p>
-            <LocationPicker
-              locationLat={locationLat}
-              locationLng={locationLng}
-              locationName={locationName}
-              serviceRadius={serviceRadius}
-              serviceAreas={serviceAreas}
-              onLocationChange={handleLocationChange}
-              onRadiusChange={setServiceRadius}
-              onServiceAreasChange={setServiceAreas}
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Availability */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Availability</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Toggle days and set your working hours
-            </p>
-            {availability.map(slot => (
-              <div key={slot.day_of_week} className="flex items-center gap-3">
-                <button
-                  onClick={() => toggleDay(slot.day_of_week)}
-                  className={cn(
-                    'w-12 h-10 rounded-lg border-2 text-sm font-medium transition-all flex-shrink-0',
-                    slot.is_available
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-border text-muted-foreground'
-                  )}
-                >
-                  {DAYS[slot.day_of_week]}
-                </button>
-                {slot.is_available ? (
-                  <div className="flex items-center gap-1 flex-1">
-                    <Input
-                      type="time"
-                      value={slot.start_time}
-                      onChange={e => updateTime(slot.day_of_week, 'start_time', e.target.value)}
-                      className="h-10 text-sm"
-                    />
-                    <span className="text-muted-foreground text-xs">to</span>
-                    <Input
-                      type="time"
-                      value={slot.end_time}
-                      onChange={e => updateTime(slot.day_of_week, 'end_time', e.target.value)}
-                      className="h-10 text-sm"
-                    />
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Not available</span>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Portfolio / Work Gallery */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <ImagePlus className="w-4 h-4 text-emerald-600" />
-              Work Portfolio
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Show clients the quality of your work. Upload before &amp; after photos, completed projects, etc.
-            </p>
-
-            {/* Image Grid */}
-            {portfolioImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                {portfolioImages.map(img => (
-                  <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden group">
-                    <Image src={img.image_url} alt={img.caption || 'Portfolio'} fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
-                    <button
-                      onClick={() => handlePortfolioDelete(img.id, img.image_url)}
-                      className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-3 h-3 text-white" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Upload Button */}
-            <label className="cursor-pointer">
-              <div className={cn(
-                "flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors",
-                portfolioUploading ? "border-emerald-300 bg-emerald-50" : "border-border hover:border-emerald-400 hover:bg-emerald-50/50"
-              )}>
-                {portfolioUploading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" />
-                    <span className="text-sm font-medium text-emerald-700">Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <ImagePlus className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-sm font-medium text-muted-foreground">Add Photos</span>
-                  </>
-                )}
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handlePortfolioUpload}
-                disabled={portfolioUploading}
-              />
+          {/* Weekly Availability */}
+          <div className="space-y-3">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              {t('worker.availability', 'Weekly Availability')}
             </label>
-            <p className="text-xs text-muted-foreground text-center">
-              {portfolioImages.length}/12 photos &middot; Tap &amp; hold to remove
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
 
-      {/* Estate Registrations */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.27 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-emerald-600" />
-              Estate Registrations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Add estates and complexes where you are registered to work. This helps clients in those areas find you.
-            </p>
+            {/* Day circles row */}
+            <div className="flex justify-between items-center bg-[#f4f4f2] p-5 rounded-xl">
+              {availability.map(slot => (
+                <button
+                  key={slot.day_of_week}
+                  onClick={() => toggleDay(slot.day_of_week)}
+                  className={`
+                    w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
+                    transition-all duration-150 active:scale-90
+                    ${slot.is_available
+                      ? 'bg-[#005d42] text-white'
+                      : 'bg-[#e2e3e1] text-[#3e4943]'
+                    }
+                  `}
+                >
+                  {DAY_LABELS[slot.day_of_week]}
+                </button>
+              ))}
+            </div>
 
-            {/* Current registrations */}
-            {estateRegistrations.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {estateRegistrations.map(reg => (
-                  <EstateTag
-                    key={reg.id}
-                    name={reg.estate.name}
-                    suburb={reg.estate.suburb}
-                    onRemove={() => handleRemoveEstate(reg.id)}
+            {/* Time inputs for active days */}
+            <div className="space-y-2">
+              {availability.filter(s => s.is_available).map(slot => (
+                <div
+                  key={slot.day_of_week}
+                  className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 shadow-sm"
+                >
+                  <span className="text-sm font-bold text-[#005d42] w-8 shrink-0">
+                    {DAY_NAMES[slot.day_of_week]}
+                  </span>
+                  <input
+                    type="time"
+                    value={slot.start_time}
+                    onChange={e => updateTime(slot.day_of_week, 'start_time', e.target.value)}
+                    className="flex-1 bg-[#f4f4f2] border-none rounded-lg py-2 px-3 text-sm text-[#1a1c1b] focus:ring-0 focus:outline-none"
                   />
-                ))}
-              </div>
-            )}
+                  <span className="text-[#6e7a73] text-xs">to</span>
+                  <input
+                    type="time"
+                    value={slot.end_time}
+                    onChange={e => updateTime(slot.day_of_week, 'end_time', e.target.value)}
+                    className="flex-1 bg-[#f4f4f2] border-none rounded-lg py-2 px-3 text-sm text-[#1a1c1b] focus:ring-0 focus:outline-none"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
-            {/* Search to add */}
-            <EstateSearchInput
-              placeholder="Search for an estate..."
-              onSelect={(estate: Estate) => handleAddEstate(estate)}
-            />
-            <p className="text-xs text-muted-foreground text-center">
-              {estateRegistrations.length} estate{estateRegistrations.length !== 1 ? 's' : ''} registered
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
+          {/* Service Area */}
+          <div className="space-y-3">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              <span className="inline-flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] text-[#005d42]">location_on</span>
+                {t('worker.service_area', 'Service Area')}
+              </span>
+            </label>
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <p className="text-sm text-[#3e4943] mb-4">
+                {t('worker.service_area_desc', 'Set where you work -- select cities, search an address, or use GPS')}
+              </p>
+              <LocationPicker
+                locationLat={locationLat}
+                locationLng={locationLng}
+                locationName={locationName}
+                serviceRadius={serviceRadius}
+                serviceAreas={serviceAreas}
+                onLocationChange={handleLocationChange}
+                onRadiusChange={setServiceRadius}
+                onServiceAreasChange={setServiceAreas}
+              />
+            </div>
+          </div>
 
-      {/* Verification Documents */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-amber-500" />
-              Verification Documents
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Get verified to appear higher in search results and earn more bookings.
-            </p>
-            <Link href="/worker-verification">
-              <Button variant="outline" className="w-full gap-2">
-                <ShieldCheck className="w-4 h-4" />
-                Manage Verification
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </motion.div>
+          {/* Work Portfolio */}
+          <div className="space-y-3">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              <span className="inline-flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] text-[#005d42]">photo_library</span>
+                {t('worker.portfolio', 'Work Portfolio')}
+              </span>
+            </label>
+            <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+              <p className="text-sm text-[#3e4943]">
+                {t('worker.portfolio_desc', 'Show clients the quality of your work. Upload before & after photos, completed projects, etc.')}
+              </p>
 
-      {/* Error */}
+              {portfolioImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {portfolioImages.map(img => (
+                    <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden group">
+                      <Image
+                        src={img.image_url}
+                        alt={img.caption || 'Portfolio'}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 33vw, 200px"
+                      />
+                      <button
+                        onClick={() => handlePortfolioDelete(img.id, img.image_url)}
+                        className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined text-white text-[14px]">close</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <label className="cursor-pointer block">
+                <div className={`
+                  flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors
+                  ${portfolioUploading
+                    ? 'border-[#005d42] bg-[#005d42]/5'
+                    : 'border-[#bdc9c1] hover:border-[#005d42] hover:bg-[#005d42]/5'
+                  }
+                `}>
+                  {portfolioUploading ? (
+                    <>
+                      <span className="material-symbols-outlined text-[#005d42] animate-spin text-[20px]">progress_activity</span>
+                      <span className="text-sm font-medium text-[#005d42]">{t('common.uploading', 'Uploading...')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[#6e7a73] text-[20px]">add_photo_alternate</span>
+                      <span className="text-sm font-medium text-[#6e7a73]">{t('worker.add_photos', 'Add Photos')}</span>
+                    </>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handlePortfolioUpload}
+                  disabled={portfolioUploading}
+                />
+              </label>
+              <p className="text-[11px] text-[#6e7a73] text-center">
+                {portfolioImages.length}/12 photos
+              </p>
+            </div>
+          </div>
+
+          {/* Estate Registrations */}
+          <div className="space-y-3">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              <span className="inline-flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] text-[#005d42]">apartment</span>
+                {t('worker.estate_registrations', 'Estate Registrations')}
+              </span>
+            </label>
+            <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+              <p className="text-sm text-[#3e4943]">
+                {t('worker.estate_desc', 'Add estates and complexes where you are registered to work. This helps clients in those areas find you.')}
+              </p>
+
+              {estateRegistrations.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {estateRegistrations.map(reg => (
+                    <EstateTag
+                      key={reg.id}
+                      name={reg.estate.name}
+                      suburb={reg.estate.suburb}
+                      onRemove={() => handleRemoveEstate(reg.id)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <EstateSearchInput
+                placeholder={t('worker.search_estate', 'Search for an estate...')}
+                onSelect={(estate: Estate) => handleAddEstate(estate)}
+              />
+              <p className="text-[11px] text-[#6e7a73] text-center">
+                {estateRegistrations.length} estate{estateRegistrations.length !== 1 ? 's' : ''} registered
+              </p>
+            </div>
+          </div>
+
+          {/* Verification Documents */}
+          <div className="space-y-3">
+            <label className="block text-[11px] uppercase tracking-widest font-bold text-[#3e4943] opacity-70 px-1">
+              <span className="inline-flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] text-[#904d00]">verified_user</span>
+                {t('worker.verification', 'Verification Documents')}
+              </span>
+            </label>
+            <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+              <p className="text-sm text-[#3e4943]">
+                {t('worker.verification_desc', 'Get verified to appear higher in search results and earn more bookings.')}
+              </p>
+              <Link
+                href="/worker-verification"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border-2 border-[#904d00] text-[#904d00] font-heading font-bold text-sm hover:bg-[#904d00]/5 transition-colors active:scale-[0.98] duration-150"
+              >
+                <span className="material-symbols-outlined text-[20px]">verified_user</span>
+                {t('worker.manage_verification', 'Manage Verification')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Error Toast */}
       {error && (
-        <p className="text-destructive text-sm text-center">{error}</p>
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#ba1a1a] text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-[slideDown_0.2s_ease-out]">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          <span className="text-sm font-medium">{error}</span>
+          <button onClick={() => setError('')} className="ml-2 hover:opacity-70">
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
       )}
 
-      {/* Save Button */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-background border-t">
-        <div className="max-w-2xl mx-auto">
-          <Button
-            className="w-full h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+      {/* Success Toast */}
+      {saveSuccess && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#005d42] text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-[slideDown_0.2s_ease-out]">
+          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <span className="text-sm font-medium">{t('common.saved', 'Profile saved successfully')}</span>
+        </div>
+      )}
+
+      {/* Fixed Bottom Save Button */}
+      <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#f9f9f7] via-[#f9f9f7] to-transparent z-40">
+        <div className="max-w-md mx-auto">
+          <button
             onClick={handleSave}
             disabled={isSaving}
+            className="w-full bg-[#005d42] text-white py-4 rounded-lg font-heading font-bold text-lg shadow-xl active:scale-[0.98] active:bg-[#047857] transition-all duration-150 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                {t('common.saving', 'Saving...')}
               </>
             ) : saveSuccess ? (
               <>
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Saved!
+                <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                {t('common.saved_short', 'Saved!')}
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Changes
+                <span className="material-symbols-outlined text-[20px]">save</span>
+                {t('common.save_changes', 'Save Changes')}
               </>
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

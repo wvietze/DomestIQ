@@ -1,18 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/lib/hooks/use-user'
 import { useOnboarding } from '@/lib/hooks/use-onboarding'
+import { useTranslation } from '@/lib/hooks/use-translation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import {
-  Sparkles, Camera, FileText, DollarSign, ShieldCheck,
-  MessageCircle, Share2, Copy, CheckCircle2,
-  ArrowRight, Lightbulb, Star, CalendarDays, Zap
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
@@ -22,11 +15,14 @@ export default function WorkerOnboardingPage() {
   const router = useRouter()
   const { user, profile } = useUser()
   const { completeOnboarding } = useOnboarding()
+  const { t } = useTranslation()
   const supabase = createClient()
 
   const [step, setStep] = useState(0)
   const [referralCode, setReferralCode] = useState('')
   const [codeCopied, setCodeCopied] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
   const [profileChecks, setProfileChecks] = useState({
     hasPhoto: false,
     hasBio: false,
@@ -69,12 +65,27 @@ export default function WorkerOnboardingPage() {
     loadStatus()
   }, [user, profile, supabase])
 
+  const completedCount = useMemo(() => {
+    return [profileChecks.hasPhoto, profileChecks.hasBio, profileChecks.hasRate, profileChecks.hasId]
+      .filter(Boolean).length
+  }, [profileChecks])
+
   const handleComplete = () => {
     completeOnboarding()
     router.push('/worker-dashboard')
   }
 
-  const appUrl = 'https://domestiq-sa.vercel.app'
+  const goToStep = (nextStep: number) => {
+    if (transitioning) return
+    setSlideDirection(nextStep > step ? 'left' : 'right')
+    setTransitioning(true)
+    setTimeout(() => {
+      setStep(nextStep)
+      setTimeout(() => setTransitioning(false), 20)
+    }, 200)
+  }
+
+  const appUrl = 'https://domestiq-kappa.vercel.app'
   const shareMessage = `Join DomestIQ and find work! Use my code ${referralCode} when you sign up. ${appUrl}`
 
   const copyCode = async () => {
@@ -85,158 +96,341 @@ export default function WorkerOnboardingPage() {
     } catch { /* ignore */ }
   }
 
+  const firstName = profile?.full_name?.split(' ')[0] || t('onboarding.default_name', 'there')
+
+  const checklistItems = useMemo(() => [
+    {
+      key: 'hasPhoto',
+      icon: 'add_a_photo',
+      label: t('onboarding.add_photo', 'Add a profile photo'),
+      subtitle: t('onboarding.photo_subtitle', 'Earn more trust from clients'),
+      href: '/worker-profile/edit',
+      done: profileChecks.hasPhoto,
+    },
+    {
+      key: 'hasBio',
+      icon: 'description',
+      label: t('onboarding.write_bio', 'Write a short bio'),
+      subtitle: t('onboarding.bio_subtitle', 'Tell clients about yourself'),
+      href: '/worker-profile/edit',
+      done: profileChecks.hasBio,
+    },
+    {
+      key: 'hasRate',
+      icon: 'payments',
+      label: t('onboarding.set_rate', 'Set your rate'),
+      subtitle: t('onboarding.rate_subtitle', 'Let clients know your pricing'),
+      href: '/worker-profile/edit',
+      done: profileChecks.hasRate,
+    },
+    {
+      key: 'hasId',
+      icon: 'verified_user',
+      label: t('onboarding.upload_id', 'Verify your ID'),
+      subtitle: t('onboarding.id_subtitle', 'Required for activation'),
+      href: '/worker-verification',
+      done: profileChecks.hasId,
+    },
+  ], [profileChecks, t])
+
+  const tips = useMemo(() => [
+    {
+      icon: 'bolt',
+      tip: t('onboarding.tip_respond', 'Respond to booking requests quickly — clients prefer workers who reply within an hour.'),
+    },
+    {
+      icon: 'star',
+      tip: t('onboarding.tip_reviews', 'Ask happy clients to leave a review. Good ratings attract more bookings.'),
+    },
+    {
+      icon: 'photo_camera',
+      tip: t('onboarding.tip_photos', 'Upload photos of your best work to your portfolio. Clients love seeing proof.'),
+    },
+    {
+      icon: 'calendar_month',
+      tip: t('onboarding.tip_calendar', 'Keep your calendar updated. Block days you cannot work so clients see your real availability.'),
+    },
+  ], [t])
+
   const renderStep = () => {
     switch (step) {
+      /* ── Step 0: Welcome ── */
       case 0:
         return (
-          <div className="text-center space-y-6 py-8">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', damping: 15 }}
-              className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/25"
-            >
-              <Sparkles className="w-10 h-10 text-white" />
-            </motion.div>
-            <h1 className="text-3xl font-extrabold tracking-tight">
-              Welcome to DomestIQ!
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-sm mx-auto">
-              You just joined the fastest-growing platform for domestic workers in South Africa.
-            </p>
-            <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto">
-              <div className="text-center p-3 bg-emerald-50 rounded-xl">
-                <Zap className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
-                <p className="text-xl font-bold text-emerald-700">3x</p>
-                <p className="text-[10px] text-muted-foreground">More Bookings</p>
+          <div className="flex flex-col gap-8">
+            {/* Welcome Icon */}
+            <section className="flex flex-col items-start gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-[#97f5cc] flex items-center justify-center relative shadow-sm">
+                <span
+                  className="material-symbols-outlined text-[#005d42] text-5xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  home_work
+                </span>
+                <div className="absolute -top-1 -right-1 bg-[#904d00] w-8 h-8 rounded-full border-4 border-[#f9f9f7] flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-sm font-bold">check</span>
+                </div>
               </div>
-              <div className="text-center p-3 bg-amber-50 rounded-xl">
-                <Star className="w-5 h-5 text-amber-500 mx-auto mb-1" />
-                <p className="text-xl font-bold text-amber-700">4.8</p>
-                <p className="text-[10px] text-muted-foreground">Avg Rating</p>
+              <div className="flex flex-col gap-2">
+                <p className="text-[#3e4943] text-sm tracking-widest uppercase font-medium">
+                  {t('onboarding.label', 'Worker: Onboarding')}
+                </p>
+                <h2 className="text-3xl font-bold tracking-tight text-[#1a1c1b] leading-tight font-heading">
+                  {t('onboarding.welcome_title', `Welcome to DomestIQ, ${firstName}!`)}
+                </h2>
+                <p className="text-[#3e4943] text-lg">
+                  {t('onboarding.welcome_subtitle', "Let's get your profile ready so clients can find you.")}
+                </p>
               </div>
-              <div className="text-center p-3 bg-sky-50 rounded-xl">
-                <CalendarDays className="w-5 h-5 text-sky-600 mx-auto mb-1" />
-                <p className="text-xl font-bold text-sky-700">500+</p>
-                <p className="text-[10px] text-muted-foreground">Workers</p>
+            </section>
+
+            {/* Progress Section */}
+            <section className="bg-[#f4f4f2] rounded-xl p-6 flex flex-col gap-3">
+              <div className="flex justify-between items-end">
+                <span className="font-bold text-lg text-[#005d42] font-heading">
+                  {completedCount} {t('onboarding.of', 'of')} 4 {t('onboarding.complete', 'complete')}
+                </span>
+                <span className="text-sm text-[#3e4943]">
+                  {Math.round((completedCount / 4) * 100)}%
+                </span>
               </div>
-            </div>
+              <div className="w-full h-3 bg-[#e8e8e6] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#005d42] rounded-full transition-all duration-500"
+                  style={{ width: `${(completedCount / 4) * 100}%` }}
+                />
+              </div>
+            </section>
+
+            {/* Stats Row */}
+            <section className="grid grid-cols-3 gap-3">
+              <div className="text-center p-3 bg-[#97f5cc]/20 rounded-xl">
+                <span className="material-symbols-outlined text-[#005d42] text-xl mb-1 block">bolt</span>
+                <p className="text-xl font-bold text-[#005d42]">3x</p>
+                <p className="text-[10px] text-[#3e4943]">{t('onboarding.stat_bookings', 'More Bookings')}</p>
+              </div>
+              <div className="text-center p-3 bg-[#ffdcc3]/20 rounded-xl">
+                <span className="material-symbols-outlined text-[#904d00] text-xl mb-1 block">star</span>
+                <p className="text-xl font-bold text-[#904d00]">4.8</p>
+                <p className="text-[10px] text-[#3e4943]">{t('onboarding.stat_rating', 'Avg Rating')}</p>
+              </div>
+              <div className="text-center p-3 bg-[#e3e1ec]/30 rounded-xl">
+                <span className="material-symbols-outlined text-[#505058] text-xl mb-1 block">group</span>
+                <p className="text-xl font-bold text-[#505058]">500+</p>
+                <p className="text-[10px] text-[#3e4943]">{t('onboarding.stat_workers', 'Workers')}</p>
+              </div>
+            </section>
           </div>
         )
 
+      /* ── Step 1: Profile Checklist ── */
       case 1:
         return (
-          <div className="space-y-5">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold">Complete Your Profile</h2>
-              <p className="text-muted-foreground">Workers with complete profiles get 3x more bookings</p>
+          <div className="flex flex-col gap-6">
+            <section className="flex flex-col gap-2">
+              <p className="text-[#3e4943] text-sm tracking-widest uppercase font-medium">
+                {t('onboarding.step_label', 'Step')} 2/4
+              </p>
+              <h2 className="text-2xl font-bold text-[#1a1c1b] font-heading">
+                {t('onboarding.complete_profile', 'Complete Your Profile')}
+              </h2>
+              <p className="text-[#3e4943]">
+                {t('onboarding.profile_subtitle', 'Workers with complete profiles get 3x more bookings')}
+              </p>
+            </section>
+
+            {/* Progress bar inline */}
+            <div className="bg-[#f4f4f2] rounded-xl p-4 flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-sm text-[#005d42]">
+                  {completedCount}/4 {t('onboarding.complete', 'complete')}
+                </span>
+                <span className="text-xs text-[#3e4943]">{Math.round((completedCount / 4) * 100)}%</span>
+              </div>
+              <div className="w-full h-2 bg-[#e8e8e6] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#005d42] rounded-full transition-all duration-500"
+                  style={{ width: `${(completedCount / 4) * 100}%` }}
+                />
+              </div>
             </div>
-            <div className="space-y-3">
-              {[
-                { key: 'hasPhoto', icon: Camera, label: 'Add a profile photo', href: '/worker-profile/edit', done: profileChecks.hasPhoto },
-                { key: 'hasBio', icon: FileText, label: 'Write a short bio', href: '/worker-profile/edit', done: profileChecks.hasBio },
-                { key: 'hasRate', icon: DollarSign, label: 'Set your rate', href: '/worker-profile/edit', done: profileChecks.hasRate },
-                { key: 'hasId', icon: ShieldCheck, label: 'Upload your ID document', href: '/worker-verification', done: profileChecks.hasId },
-              ].map(item => {
-                const Icon = item.icon
+
+            {/* Checklist */}
+            <section className="flex flex-col gap-3">
+              {checklistItems.map((item, idx) => {
+                const isNextGoal = !item.done && !checklistItems.slice(0, idx).some(prev => !prev.done)
                 return (
                   <Link key={item.key} href={item.href}>
-                    <Card className={cn(
-                      'transition-all hover:shadow-sm',
-                      item.done && 'border-emerald-200 bg-emerald-50/50'
-                    )}>
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <div className={cn(
-                          'w-10 h-10 rounded-lg flex items-center justify-center',
-                          item.done ? 'bg-emerald-100' : 'bg-muted'
-                        )}>
-                          {item.done ? (
-                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                          ) : (
-                            <Icon className="w-5 h-5 text-muted-foreground" />
-                          )}
+                    <div
+                      className={cn(
+                        'bg-white rounded-xl flex items-center gap-4 transition-all duration-200',
+                        item.done
+                          ? 'p-4 border-l-4 border-[#005d42]'
+                          : isNextGoal
+                            ? 'p-5 shadow-[0_4px_12px_rgba(26,28,27,0.04)] ring-1 ring-[#005d42]/10'
+                            : 'p-4 bg-[#f4f4f2] opacity-70'
+                      )}
+                    >
+                      {/* Status indicator */}
+                      {item.done ? (
+                        <div className="w-6 h-6 rounded-full bg-[#005d42] flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-white text-xs">check</span>
                         </div>
-                        <span className={cn(
-                          'font-medium flex-1',
-                          item.done && 'text-emerald-700'
-                        )}>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full border-2 border-[#bdc9c1] shrink-0" />
+                      )}
+
+                      {/* Label */}
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span
+                          className={cn(
+                            'font-bold text-[#1a1c1b]',
+                            item.done && 'line-through decoration-[#005d42]/30',
+                            isNextGoal && 'text-lg'
+                          )}
+                        >
                           {item.label}
                         </span>
-                        {!item.done && <ArrowRight className="w-4 h-4 text-muted-foreground" />}
-                      </CardContent>
-                    </Card>
+                        <span
+                          className={cn(
+                            'text-xs text-[#3e4943]',
+                            isNextGoal && 'text-sm text-[#904d00] font-medium'
+                          )}
+                        >
+                          {item.subtitle}
+                        </span>
+                      </div>
+
+                      {/* Arrow for pending items */}
+                      {!item.done && (
+                        <span className="material-symbols-outlined text-[#3e4943] ml-auto shrink-0">
+                          chevron_right
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 )
               })}
-            </div>
+            </section>
           </div>
         )
 
+      /* ── Step 2: Referral ── */
       case 2:
         return (
-          <div className="space-y-5">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold">Invite Other Workers</h2>
-              <p className="text-muted-foreground">Help fellow workers join DomestIQ</p>
-            </div>
+          <div className="flex flex-col gap-6">
+            <section className="flex flex-col gap-2">
+              <p className="text-[#3e4943] text-sm tracking-widest uppercase font-medium">
+                {t('onboarding.step_label', 'Step')} 3/4
+              </p>
+              <h2 className="text-2xl font-bold text-[#1a1c1b] font-heading">
+                {t('onboarding.invite_title', 'Invite Other Workers')}
+              </h2>
+              <p className="text-[#3e4943]">
+                {t('onboarding.invite_subtitle', 'Help fellow workers join DomestIQ')}
+              </p>
+            </section>
+
             {referralCode ? (
-              <>
-                <div className="bg-muted rounded-lg p-4 flex items-center justify-between">
-                  <span className="text-2xl font-bold tracking-widest font-mono">{referralCode}</span>
-                  <Button variant="ghost" size="sm" onClick={copyCode}>
-                    <Copy className="w-4 h-4 mr-1" />
-                    {codeCopied ? 'Copied!' : 'Copy'}
-                  </Button>
+              <div className="flex flex-col gap-4">
+                {/* Code display */}
+                <div className="bg-[#f4f4f2] rounded-xl p-5 flex items-center justify-between">
+                  <span className="text-2xl font-bold tracking-widest font-mono text-[#1a1c1b]">
+                    {referralCode}
+                  </span>
+                  <button
+                    onClick={copyCode}
+                    className="flex items-center gap-1 text-[#005d42] font-medium text-sm px-3 py-2 rounded-lg hover:bg-[#005d42]/5 transition-colors duration-200 active:scale-[0.98]"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {codeCopied ? 'check_circle' : 'content_copy'}
+                    </span>
+                    {codeCopied ? t('onboarding.copied', 'Copied!') : t('onboarding.copy', 'Copy')}
+                  </button>
                 </div>
+
+                {/* Share buttons */}
                 <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" className="h-12 text-green-700 border-green-200 hover:bg-green-50" asChild>
-                    <a href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      WhatsApp
-                    </a>
-                  </Button>
-                  <Button variant="outline" className="h-12" asChild>
-                    <a href={`sms:?body=${encodeURIComponent(shareMessage)}`}>
-                      <Share2 className="w-4 h-4 mr-2" />
-                      SMS
-                    </a>
-                  </Button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 h-12 rounded-lg border border-[#bdc9c1] text-[#005d42] font-bold text-sm hover:bg-[#005d42]/5 transition-colors duration-200 active:scale-[0.98]"
+                  >
+                    <span className="material-symbols-outlined text-lg">chat</span>
+                    WhatsApp
+                  </a>
+                  <a
+                    href={`sms:?body=${encodeURIComponent(shareMessage)}`}
+                    className="flex items-center justify-center gap-2 h-12 rounded-lg border border-[#bdc9c1] text-[#1a1c1b] font-bold text-sm hover:bg-[#e8e8e6] transition-colors duration-200 active:scale-[0.98]"
+                  >
+                    <span className="material-symbols-outlined text-lg">sms</span>
+                    SMS
+                  </a>
                 </div>
-              </>
+
+                {/* Benefit callout */}
+                <div className="bg-[#ffdcc3]/20 rounded-xl p-4 flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[#904d00] shrink-0">emoji_events</span>
+                  <p className="text-sm text-[#3e4943]">
+                    {t('onboarding.referral_benefit', 'When friends you refer get their first booking, you both benefit from the DomestIQ community.')}
+                  </p>
+                </div>
+              </div>
             ) : (
-              <div className="text-center text-muted-foreground text-sm p-6">
-                Your referral code will be generated soon.
+              <div className="bg-[#f4f4f2] rounded-xl p-8 text-center">
+                <span className="material-symbols-outlined text-[#bdc9c1] text-4xl mb-3 block">hourglass_empty</span>
+                <p className="text-[#3e4943] text-sm">
+                  {t('onboarding.referral_pending', 'Your referral code will be generated soon.')}
+                </p>
               </div>
             )}
           </div>
         )
 
+      /* ── Step 3: Tips ── */
       case 3:
         return (
-          <div className="space-y-5">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold">Quick Tips</h2>
-              <p className="text-muted-foreground">Make the most of DomestIQ</p>
-            </div>
-            <div className="space-y-3">
-              {[
-                { icon: Lightbulb, tip: 'Respond to booking requests quickly — clients prefer workers who reply within an hour.' },
-                { icon: Star, tip: 'Ask happy clients to leave a review. Good ratings attract more bookings.' },
-                { icon: Camera, tip: 'Upload photos of your best work to your portfolio. Clients love seeing proof.' },
-                { icon: CalendarDays, tip: 'Keep your calendar updated. Block days you cannot work so clients see your real availability.' },
-              ].map((item, i) => {
-                const Icon = item.icon
-                return (
-                  <Card key={i}>
-                    <CardContent className="p-4 flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                        <Icon className="w-4 h-4 text-amber-600" />
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{item.tip}</p>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+          <div className="flex flex-col gap-6">
+            <section className="flex flex-col gap-2">
+              <p className="text-[#3e4943] text-sm tracking-widest uppercase font-medium">
+                {t('onboarding.step_label', 'Step')} 4/4
+              </p>
+              <h2 className="text-2xl font-bold text-[#1a1c1b] font-heading">
+                {t('onboarding.tips_title', 'Quick Tips')}
+              </h2>
+              <p className="text-[#3e4943]">
+                {t('onboarding.tips_subtitle', 'Make the most of DomestIQ')}
+              </p>
+            </section>
+
+            <section className="flex flex-col gap-3">
+              {tips.map((item, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-4 flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#ffdcc3]/30 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[#904d00] text-lg">{item.icon}</span>
+                  </div>
+                  <p className="text-sm text-[#3e4943] leading-relaxed">{item.tip}</p>
+                </div>
+              ))}
+            </section>
+
+            {/* Ready callout */}
+            <div className="bg-[#97f5cc]/20 rounded-xl p-5 flex items-start gap-3">
+              <span
+                className="material-symbols-outlined text-[#005d42] shrink-0"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                verified
+              </span>
+              <div>
+                <p className="font-bold text-[#1a1c1b] text-sm">
+                  {t('onboarding.ready_title', "You're all set!")}
+                </p>
+                <p className="text-sm text-[#3e4943]">
+                  {t('onboarding.ready_subtitle', 'Head to your dashboard to start receiving bookings.')}
+                </p>
+              </div>
             </div>
           </div>
         )
@@ -247,56 +441,94 @@ export default function WorkerOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-[#f9f9f7] text-[#1a1c1b] flex flex-col antialiased">
       {/* Progress Dots */}
-      <div className="flex items-center justify-center gap-2 py-4 px-4">
+      <div className="flex items-center justify-center gap-2 py-4 px-6">
         {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-          <div
+          <button
             key={i}
+            onClick={() => goToStep(i)}
+            aria-label={`Step ${i + 1}`}
             className={cn(
-              'h-2 rounded-full transition-all',
-              i === step ? 'w-8 bg-emerald-600' : i < step ? 'w-2 bg-emerald-600' : 'w-2 bg-border'
+              'h-2 rounded-full transition-all duration-300',
+              i === step
+                ? 'w-8 bg-[#005d42]'
+                : i < step
+                  ? 'w-2 bg-[#005d42]'
+                  : 'w-2 bg-[#bdc9c1]'
             )}
           />
         ))}
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-4 pb-24 max-w-md mx-auto w-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderStep()}
-          </motion.div>
-        </AnimatePresence>
+      <div className="flex-1 px-6 pb-36 max-w-md mx-auto w-full">
+        <div
+          className={cn(
+            'transition-all duration-200',
+            transitioning
+              ? slideDirection === 'left'
+                ? 'opacity-0 translate-x-[-16px]'
+                : 'opacity-0 translate-x-[16px]'
+              : 'opacity-100 translate-x-0'
+          )}
+        >
+          {renderStep()}
+        </div>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="max-w-md mx-auto flex gap-3">
-          {step > 0 && (
-            <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-14 px-6">
-              Back
-            </Button>
+      <div className="fixed bottom-0 left-0 right-0 bg-[#f9f9f7] border-t border-[#e2e3e1]/20 shadow-[0_-8px_24px_rgba(26,28,27,0.06)] px-6 py-4 z-50">
+        <div className="max-w-md mx-auto flex flex-col gap-3">
+          {/* Main CTA */}
+          <div className="flex gap-3">
+            {step > 0 && (
+              <button
+                onClick={() => goToStep(step - 1)}
+                className="h-14 px-5 rounded-lg border border-[#bdc9c1] text-[#1a1c1b] font-bold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98] hover:bg-[#e8e8e6]"
+              >
+                <span className="material-symbols-outlined text-lg">arrow_back</span>
+                {t('onboarding.back', 'Back')}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (step === TOTAL_STEPS - 1) {
+                  handleComplete()
+                } else {
+                  goToStep(step + 1)
+                }
+              }}
+              className="flex-1 h-14 bg-[#005d42] text-white font-bold rounded-lg text-lg flex items-center justify-center gap-2 shadow-lg transition-all duration-200 active:scale-[0.98]"
+            >
+              {step === TOTAL_STEPS - 1 ? (
+                <>
+                  <span className="material-symbols-outlined">dashboard</span>
+                  {t('onboarding.go_dashboard', 'Go to Dashboard')}
+                </>
+              ) : step === 0 ? (
+                <>
+                  {t('onboarding.get_started', "Let's Get Started")}
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </>
+              ) : (
+                <>
+                  {t('onboarding.next', 'Next')}
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Skip link */}
+          {step < TOTAL_STEPS - 1 && (
+            <button
+              onClick={handleComplete}
+              className="py-2 text-[#3e4943] font-medium text-sm hover:underline decoration-[#904d00] transition-colors duration-200"
+            >
+              {t('onboarding.skip', "I'll do this later")}
+            </button>
           )}
-          <Button
-            onClick={() => {
-              if (step === TOTAL_STEPS - 1) {
-                handleComplete()
-              } else {
-                setStep(s => s + 1)
-              }
-            }}
-            className="flex-1 h-14 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-          >
-            {step === TOTAL_STEPS - 1 ? 'Go to Dashboard' : 'Next'}
-            {step < TOTAL_STEPS - 1 && <ArrowRight className="w-5 h-5 ml-2" />}
-          </Button>
         </div>
       </div>
     </div>

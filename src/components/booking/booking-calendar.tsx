@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BookingCalendarProps {
@@ -33,12 +32,12 @@ export function BookingCalendar({ selectedDate, onSelectDate, bookedDates = [], 
   return (
     <div className={cn('', className)}>
       <div className="flex items-center justify-between mb-4">
-        <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}><ChevronLeft className="w-5 h-5" /></Button>
-        <h3 className="font-semibold text-base">{monthLabel}</h3>
-        <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}><ChevronRight className="w-5 h-5" /></Button>
+        <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}><span className="material-symbols-outlined text-xl">chevron_left</span></Button>
+        <h3 className="font-semibold text-base text-[#1a1c1b]">{monthLabel}</h3>
+        <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}><span className="material-symbols-outlined text-xl">chevron_right</span></Button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (<span key={d} className="text-xs font-medium text-muted-foreground py-1">{d}</span>))}
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (<span key={d} className="text-xs font-medium text-[#3e4943] py-1">{d}</span>))}
       </div>
       <div className="grid grid-cols-7 gap-1">
         {days.map((day, i) => {
@@ -52,13 +51,13 @@ export function BookingCalendar({ selectedDate, onSelectDate, bookedDates = [], 
           return (
             <button key={day.dateStr} type="button" disabled={disabled} onClick={() => onSelectDate(day.dateStr)}
               className={cn('aspect-square rounded-lg text-sm font-medium transition-all relative',
-                isSelected && 'bg-primary text-primary-foreground shadow-sm',
-                !isSelected && isToday && 'ring-2 ring-primary ring-offset-1',
-                !isSelected && !disabled && 'hover:bg-gray-100',
-                disabled && 'text-gray-300 cursor-not-allowed',
-                isBooked && !isSelected && 'bg-blue-50 text-blue-700')}>
+                isSelected && 'bg-[#005d42] text-white shadow-sm',
+                !isSelected && isToday && 'ring-2 ring-[#005d42] ring-offset-1',
+                !isSelected && !disabled && 'hover:bg-[#f4f4f2] text-[#1a1c1b]',
+                disabled && 'text-[#bdc9c1] cursor-not-allowed',
+                isBooked && !isSelected && 'bg-[#9ffdd3]/40 text-[#005d42]')}>
               {day.date.getDate()}
-              {isBooked && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500" />}
+              {isBooked && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#005d42]" />}
             </button>
           )
         })}

@@ -30,7 +30,7 @@ function LogoMark({ size = 'default', light = false, className }: Omit<LogoProps
         priority
       />
       <span className={cn(text, 'font-extrabold tracking-tight truncate', light ? 'text-white' : 'text-foreground')}>
-        domest<span className="text-emerald-600">IQ</span>
+        domest<span className="text-[#005d42]">IQ</span>
       </span>
     </div>
   )

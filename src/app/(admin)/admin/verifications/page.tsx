@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import { CheckCircle2, XCircle, FileText, ExternalLink } from 'lucide-react'
 
 interface Document {
   id: string
@@ -30,11 +29,7 @@ export default function VerificationsPage() {
   const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({})
   const [processing, setProcessing] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadDocuments()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function loadDocuments() {
+  const loadDocuments = useCallback(async () => {
     const { data } = await supabase
       .from('documents')
       .select('*, profiles!user_id(full_name, email)')
@@ -43,7 +38,12 @@ export default function VerificationsPage() {
 
     setDocuments((data || []) as unknown as Document[])
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadDocuments()
+  }, [loadDocuments])
 
   async function handleVerify(docId: string, status: 'approved' | 'rejected') {
     setProcessing(docId)
@@ -103,7 +103,7 @@ export default function VerificationsPage() {
       {documents.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <CheckCircle2 className="w-12 h-12 text-secondary mx-auto mb-3" />
+            <span className="material-symbols-outlined text-5xl text-[#005d42] mx-auto mb-3 block w-fit">check_circle</span>
             <p className="font-medium">All caught up!</p>
             <p className="text-sm text-muted-foreground">No documents pending verification.</p>
           </CardContent>
@@ -114,7 +114,7 @@ export default function VerificationsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
+                  <span className="material-symbols-outlined text-xl">description</span>
                   {doc.document_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
                 <Badge variant="warning">Pending</Badge>
@@ -137,7 +137,7 @@ export default function VerificationsPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  View Document <ExternalLink className="w-3.5 h-3.5" />
+                  View Document <span className="material-symbols-outlined text-sm">open_in_new</span>
                 </a>
               )}
 
@@ -165,7 +165,7 @@ export default function VerificationsPage() {
                   disabled={processing === doc.id}
                   className="flex-1"
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-1" /> Approve
+                  <span className="material-symbols-outlined text-base mr-1">check_circle</span> Approve
                 </Button>
                 <Button
                   variant="destructive"
@@ -173,7 +173,7 @@ export default function VerificationsPage() {
                   disabled={processing === doc.id}
                   className="flex-1"
                 >
-                  <XCircle className="w-4 h-4 mr-1" /> Reject
+                  <span className="material-symbols-outlined text-base mr-1">cancel</span> Reject
                 </Button>
               </div>
             </CardContent>

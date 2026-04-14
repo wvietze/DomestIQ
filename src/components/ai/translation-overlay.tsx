@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Languages, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguageStore } from '@/lib/stores/language-store'
 
@@ -32,14 +31,16 @@ export function TranslationOverlay({ text, className }: TranslationOverlayProps)
 
   return (
     <div className={cn('inline-flex items-center', className)}>
-      <Button variant="ghost" size="sm" onClick={handleTranslate} disabled={loading} className="h-6 px-2 text-xs gap-1">
-        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
+      <Button variant="ghost" size="sm" onClick={handleTranslate} disabled={loading} className="h-6 px-2 text-xs gap-1 text-[#005d42]">
+        <span className={cn('material-symbols-outlined text-xs', loading && 'animate-spin')}>
+          {loading ? 'progress_activity' : 'translate'}
+        </span>
         {translated && show ? 'Original' : 'Translate'}
       </Button>
       {show && translated && (
-        <div className="ml-2 text-sm italic text-muted-foreground flex items-center gap-1">
+        <div className="ml-2 text-sm italic text-[#3e4943] flex items-center gap-1">
           {translated}
-          <button onClick={() => setShow(false)} className="hover:text-foreground"><X className="w-3 h-3" /></button>
+          <button onClick={() => setShow(false)} className="hover:text-[#1a1c1b]"><span className="material-symbols-outlined text-xs">close</span></button>
         </div>
       )}
     </div>

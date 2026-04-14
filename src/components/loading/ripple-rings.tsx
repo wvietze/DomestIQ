@@ -1,14 +1,12 @@
 'use client'
 
-import { MapPin } from 'lucide-react'
-
 type Size = 'sm' | 'md' | 'lg' | 'full'
 
-const sizeConfig: Record<Size, { box: number; ringSize: number; iconSize: number }> = {
-  sm: { box: 24, ringSize: 16, iconSize: 10 },
-  md: { box: 48, ringSize: 32, iconSize: 18 },
-  lg: { box: 80, ringSize: 52, iconSize: 26 },
-  full: { box: 120, ringSize: 80, iconSize: 36 },
+const sizeConfig: Record<Size, { box: number; ringSize: number; iconSize: string }> = {
+  sm: { box: 24, ringSize: 16, iconSize: 'text-xs' },
+  md: { box: 48, ringSize: 32, iconSize: 'text-lg' },
+  lg: { box: 80, ringSize: 52, iconSize: 'text-2xl' },
+  full: { box: 120, ringSize: 80, iconSize: 'text-4xl' },
 }
 
 export function RippleRings({ size = 'full' }: { size?: Size }) {
@@ -21,7 +19,7 @@ export function RippleRings({ size = 'full' }: { size?: Size }) {
       {Array.from({ length: ringCount }).map((_, i) => (
         <div
           key={i}
-          className="absolute rounded-full border-2 border-emerald-500/60"
+          className="absolute rounded-full border-2 border-[#005d42]/60"
           style={{
             top: '50%',
             left: '50%',
@@ -44,7 +42,9 @@ export function RippleRings({ size = 'full' }: { size?: Size }) {
           transform: 'translate(-50%, -50%)',
         }}
       >
-        <MapPin size={cfg.iconSize} color="#047857" fill="#d1fae5" strokeWidth={2} />
+        <span className={`material-symbols-outlined text-[#005d42] ${cfg.iconSize}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+          location_on
+        </span>
       </div>
     </div>
   )
