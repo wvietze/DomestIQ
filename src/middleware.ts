@@ -11,7 +11,10 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // Allow public routes
-  if (publicRoutes.some((route) => path === route) || path.startsWith('/api/')) {
+  if (
+    publicRoutes.some((route) => path === route || (route !== '/' && path.startsWith(`${route}/`))) ||
+    path.startsWith('/api/')
+  ) {
     return supabaseResponse
   }
 
