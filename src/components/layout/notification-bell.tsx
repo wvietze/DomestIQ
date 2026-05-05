@@ -84,26 +84,36 @@ export function NotificationBell({ userId, notificationsHref = '/notifications' 
   // ---- Realtime subscription -----------------------------------------------
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`notifications-bell-${userId}`)
-      .on(
-        'postgres_changes' as never,
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          // Re-fetch on any change to keep the list accurate
-          fetchNotifications()
-          fetchUnreadCount()
-        }
-      )
-      .subscribe()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let cancelled = false
+
+    async function subscribe() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled || !session) return
+
+      channel = supabase
+        .channel(`notifications-bell-${userId}`)
+        .on(
+          'postgres_changes' as never,
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            fetchNotifications()
+            fetchUnreadCount()
+          }
+        )
+        .subscribe()
+    }
+
+    subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      cancelled = true
+      if (channel) supabase.removeChannel(channel)
     }
   }, [supabase, userId, fetchNotifications, fetchUnreadCount])
 

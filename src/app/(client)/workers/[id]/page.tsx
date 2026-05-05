@@ -57,68 +57,70 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
 
 
   useEffect(() => {
+    let cancelled = false
+
     async function loadWorker() {
-      const { data } = await supabase
-        .from('worker_profiles')
-        .select('*, profiles!inner(full_name, avatar_url, phone), worker_services(services(id, name, icon), custom_rate), worker_availability(day_of_week, start_time, end_time, is_available)')
-        .eq('user_id', id)
-        .single()
+      try {
+        const { data } = await supabase
+          .from('worker_profiles')
+          .select('*, profiles!inner(full_name, avatar_url, phone), worker_services(services(id, name, icon), custom_rate), worker_availability(day_of_week, start_time, end_time, is_available)')
+          .eq('user_id', id)
+          .single()
 
-      if (data) {
-        setWorker(data as unknown as WorkerData)
+        if (cancelled) return
 
-        // Fetch portfolio images
-        const { data: portfolioData } = await supabase
-          .from('portfolio_images')
-          .select('id, image_url, caption')
-          .eq('worker_profile_id', data.id)
-          .order('sort_order')
-        if (portfolioData) setPortfolio(portfolioData)
+        if (data) {
+          setWorker(data as unknown as WorkerData)
+          if (data.top_traits) setTopTraits(data.top_traits as Record<string, number>)
+
+          const { data: portfolioData } = await supabase
+            .from('portfolio_images')
+            .select('id, image_url, caption')
+            .eq('worker_profile_id', data.id)
+            .order('sort_order')
+          if (!cancelled && portfolioData) setPortfolio(portfolioData)
+        }
+
+        const [{ count }, { data: reviewData }] = await Promise.all([
+          supabase
+            .from('bookings')
+            .select('*', { count: 'exact', head: true })
+            .eq('worker_id', id)
+            .eq('status', 'completed'),
+          supabase
+            .from('reviews')
+            .select('id, overall_rating, punctuality, quality, communication, comment, created_at, profiles!reviewer_id(full_name, avatar_url)')
+            .eq('reviewee_id', id)
+            .eq('is_public', true)
+            .order('created_at', { ascending: false })
+            .limit(10),
+        ])
+
+        if (cancelled) return
+        setJobsCompleted(count || 0)
+        if (reviewData) setReviews(reviewData as unknown as ReviewData[])
+
+        const [refRes, estateRes] = await Promise.allSettled([
+          fetch(`/api/references?workerId=${id}`).then(r => r.json()),
+          fetch(`/api/worker-estates?workerId=${id}`).then(r => r.json()),
+        ])
+
+        if (cancelled) return
+        if (refRes.status === 'fulfilled' && refRes.value?.references) {
+          setReferences(refRes.value.references)
+        }
+        if (estateRes.status === 'fulfilled' && estateRes.value?.registrations) {
+          setEstateRegistrations(estateRes.value.registrations)
+        }
+      } catch (err) {
+        console.error('Worker profile load error:', err)
+      } finally {
+        if (!cancelled) setIsLoading(false)
       }
-
-      // Completed jobs count
-      const { count } = await supabase
-        .from('bookings')
-        .select('*', { count: 'exact', head: true })
-        .eq('worker_id', id)
-        .eq('status', 'completed')
-      setJobsCompleted(count || 0)
-
-      const { data: reviewData } = await supabase
-        .from('reviews')
-        .select('*, profiles!reviewer_id(full_name, avatar_url)')
-        .eq('reviewee_id', id)
-        .eq('is_public', true)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (reviewData) setReviews(reviewData as unknown as ReviewData[])
-
-      // Fetch top traits from worker_profiles
-      const { data: wpTraits } = await supabase
-        .from('worker_profiles')
-        .select('top_traits')
-        .eq('user_id', id)
-        .single()
-      if (wpTraits?.top_traits) setTopTraits(wpTraits.top_traits as Record<string, number>)
-
-      // Fetch references
-      try {
-        const refRes = await fetch(`/api/references?workerId=${id}`)
-        const refData = await refRes.json()
-        if (refData.references) setReferences(refData.references)
-      } catch { /* silent */ }
-
-      // Fetch estate registrations
-      try {
-        const estateRes = await fetch(`/api/worker-estates?workerId=${id}`)
-        const estateData = await estateRes.json()
-        if (estateData.registrations) setEstateRegistrations(estateData.registrations)
-      } catch { /* silent */ }
-
-      setIsLoading(false)
     }
+
     loadWorker()
+    return () => { cancelled = true }
   }, [id, supabase])
 
   if (isLoading) {

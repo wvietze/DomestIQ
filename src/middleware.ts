@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-const publicRoutes = ['/', '/login', '/register', '/callback', '/terms', '/privacy', '/demo', '/partners', '/references', '/helpdesk']
+const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/callback', '/terms', '/privacy', '/demo', '/partners', '/references', '/helpdesk']
 const workerRoutes = ['/worker-dashboard', '/worker-profile', '/worker-calendar', '/worker-bookings', '/worker-messages', '/worker-reviews', '/worker-earnings', '/worker-settings', '/worker-notifications', '/worker-verification', '/worker-onboarding', '/worker-references', '/worker-cv']
 const clientRoutes = ['/dashboard', '/search', '/workers', '/bookings', '/messages', '/reviews', '/profile', '/notifications', '/favorites', '/onboarding', '/write-reference']
 const adminRoutes = ['/admin']

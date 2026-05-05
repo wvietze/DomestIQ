@@ -102,8 +102,10 @@ export default function ClientRegistrationPage() {
     setSuccess(true)
     setLoading(false)
 
-    // Auto-confirm is enabled — redirect to dashboard after short delay
-    setTimeout(() => router.push("/login"), 1500)
+    // Auto-confirm is enabled — session is already active. Refresh router so
+    // middleware sees the new auth cookie, then push into onboarding.
+    router.refresh()
+    setTimeout(() => router.push("/onboarding"), 1200)
   }
 
   if (success) {
@@ -121,7 +123,7 @@ export default function ClientRegistrationPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             Welcome to DomestIQ,{" "}
             <span className="font-medium text-foreground">{fullName}</span>.
-            Redirecting you to log in...
+            Setting up your dashboard...
           </p>
         </CardContent>
       </Card>

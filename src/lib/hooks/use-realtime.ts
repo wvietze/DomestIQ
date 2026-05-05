@@ -31,35 +31,47 @@ export function useRealtime({
     if (!enabled) return
 
     const supabase = createClient()
+    let channel: RealtimeChannel | null = null
+    let cancelled = false
 
-    const channelConfig: Record<string, string> = {
-      event,
-      schema: 'public',
-      table,
-    }
-    if (filter) channelConfig.filter = filter
+    async function subscribe() {
+      // Realtime requires an authenticated session — without one the WS
+      // handshake fails. Wait for the session before subscribing.
+      const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled || !session) return
 
-    const channel = supabase
-      .channel(`${table}-changes`)
-      .on(
-        'postgres_changes' as never,
-        channelConfig,
-        (payload: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
-          if (payload.eventType === 'INSERT' && onInsert) {
-            onInsert(payload.new)
-          } else if (payload.eventType === 'UPDATE' && onUpdate) {
-            onUpdate(payload.new)
-          } else if (payload.eventType === 'DELETE' && onDelete) {
-            onDelete(payload.old)
+      const channelConfig: Record<string, string> = {
+        event,
+        schema: 'public',
+        table,
+      }
+      if (filter) channelConfig.filter = filter
+
+      channel = supabase
+        .channel(`${table}-changes`)
+        .on(
+          'postgres_changes' as never,
+          channelConfig,
+          (payload: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+            if (payload.eventType === 'INSERT' && onInsert) {
+              onInsert(payload.new)
+            } else if (payload.eventType === 'UPDATE' && onUpdate) {
+              onUpdate(payload.new)
+            } else if (payload.eventType === 'DELETE' && onDelete) {
+              onDelete(payload.old)
+            }
           }
-        }
-      )
-      .subscribe()
+        )
+        .subscribe()
 
-    channelRef.current = channel
+      channelRef.current = channel
+    }
+
+    subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      cancelled = true
+      if (channel) supabase.removeChannel(channel)
     }
   }, [table, filter, event, onInsert, onUpdate, onDelete, enabled])
 

@@ -185,9 +185,9 @@ export default function ClientDashboard() {
         }
 
         const { count: favCount } = await supabase
-          .from('favorites')
+          .from('favorite_workers')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
+          .eq('client_id', user.id)
         setFavoritesCount(favCount || 0)
 
         const { count: activeCount } = await supabase

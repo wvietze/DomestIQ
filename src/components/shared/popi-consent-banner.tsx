@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
 
 const CONSENT_KEY = 'domestiq-popi-consent'
 
@@ -45,30 +46,34 @@ export function PopiConsentBanner() {
     if (isSubmitting) return
     setIsSubmitting(true)
 
-    // Fire all three consent API calls in parallel
-    const results = await Promise.allSettled([
-      grantConsent(
-        'popi_consent',
-        'User consented to POPI Act data processing on DomestIQ'
-      ),
-      grantConsent(
-        'privacy_policy',
-        'User accepted the DomestIQ Privacy Policy'
-      ),
-      grantConsent(
-        'platform_terms',
-        'User accepted the DomestIQ Platform Terms of Use'
-      ),
-    ])
+    // Only sync to the server if the user is signed in. Anonymous visitors get
+    // a localStorage record; the registration handler records consent server-side
+    // when they sign up.
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Log failures but don't block the user
-    results.forEach((result, i) => {
-      if (result.status === 'rejected' || (result.status === 'fulfilled' && !result.value)) {
-        console.warn(`Consent API call ${i} did not succeed — stored locally as fallback`)
-      }
-    })
+    if (user) {
+      const results = await Promise.allSettled([
+        grantConsent(
+          'popi_consent',
+          'User consented to POPI Act data processing on DomestIQ'
+        ),
+        grantConsent(
+          'privacy_policy',
+          'User accepted the DomestIQ Privacy Policy'
+        ),
+        grantConsent(
+          'platform_terms',
+          'User accepted the DomestIQ Platform Terms of Use'
+        ),
+      ])
+      results.forEach((result, i) => {
+        if (result.status === 'rejected' || (result.status === 'fulfilled' && !result.value)) {
+          console.warn(`Consent API call ${i} did not succeed — stored locally as fallback`)
+        }
+      })
+    }
 
-    // Store acceptance in localStorage as backup
     localStorage.setItem(
       CONSENT_KEY,
       JSON.stringify({

@@ -1,32 +1,101 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useOnboarding } from '@/lib/hooks/use-onboarding'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
+import { SA_CITIES as SA_CITIES_DATA } from '@/lib/data/sa-cities'
 
 function Icon({ name, className = '', style }: { name: string; className?: string; style?: React.CSSProperties }) {
   return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>
 }
 
-const SA_CITIES = [
+const ONBOARDING_CITIES = [
   'Johannesburg', 'Cape Town', 'Durban', 'Pretoria', 'Port Elizabeth',
   'Bloemfontein', 'East London', 'Pietermaritzburg', 'Polokwane',
 ]
+
+// Major metros that don't have an exact match in sa-cities.ts use the CBD entry.
+const METRO_ALIASES: Record<string, string> = {
+  'Cape Town': 'Cape Town CBD',
+  'Port Elizabeth': 'Gqeberha',
+}
+
+function findCityCoords(name: string): { lat: number; lng: number } | null {
+  const target = METRO_ALIASES[name] ?? name
+  const match = SA_CITIES_DATA.find((c) => c.name === target)
+  return match ? { lat: match.lat, lng: match.lng } : null
+}
 
 const TOTAL_STEPS = 3
 
 export default function ClientOnboardingPage() {
   const router = useRouter()
   const { completeOnboarding } = useOnboarding()
+  const supabase = createClient()
   const [step, setStep] = useState(0)
   const [selectedCity, setSelectedCity] = useState('')
   const [detectingLocation, setDetectingLocation] = useState(false)
   const [locationDetected, setLocationDetected] = useState(false)
+  const [hasRegisteredAddress, setHasRegisteredAddress] = useState(false)
+  const [registeredAddressLabel, setRegisteredAddressLabel] = useState<string | null>(null)
 
-  const handleComplete = () => {
+  useEffect(() => {
+    let cancelled = false
+    async function loadRegisteredAddress() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (cancelled || !user) return
+
+      const { data } = await supabase
+        .from('client_profiles')
+        .select('address, suburb, city, location_lat, location_lng')
+        .eq('user_id', user.id)
+        .single<{
+          address: string | null
+          suburb: string | null
+          city: string | null
+          location_lat: number | null
+          location_lng: number | null
+        }>()
+
+      if (cancelled || !data?.location_lat || !data?.location_lng) return
+      setHasRegisteredAddress(true)
+      setRegisteredAddressLabel(
+        [data.suburb, data.city].filter(Boolean).join(', ') || data.address || 'your saved address'
+      )
+    }
+    loadRegisteredAddress()
+    return () => { cancelled = true }
+  }, [supabase])
+
+  async function persistSelectedCity() {
+    if (!selectedCity) return
+    const coords = findCityCoords(selectedCity)
+    if (!coords) return
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    await supabase
+      .from('client_profiles')
+      .upsert(
+        {
+          user_id: user.id,
+          city: selectedCity,
+          location_lat: coords.lat,
+          location_lng: coords.lng,
+        },
+        { onConflict: 'user_id' }
+      )
+  }
+
+  const handleComplete = async () => {
+    if (selectedCity && !hasRegisteredAddress) {
+      await persistSelectedCity()
+    }
     completeOnboarding()
     router.push('/search')
   }
@@ -35,9 +104,22 @@ export default function ClientOnboardingPage() {
     if (!navigator.geolocation) return
     setDetectingLocation(true)
     navigator.geolocation.getCurrentPosition(
-      () => {
+      async (pos) => {
         setLocationDetected(true)
         setDetectingLocation(false)
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase
+            .from('client_profiles')
+            .upsert(
+              {
+                user_id: user.id,
+                location_lat: pos.coords.latitude,
+                location_lng: pos.coords.longitude,
+              },
+              { onConflict: 'user_id' }
+            )
+        }
       },
       () => {
         setDetectingLocation(false)
@@ -79,9 +161,25 @@ export default function ClientOnboardingPage() {
         return (
           <div className="space-y-5">
             <div className="text-center space-y-2">
-              <h2 className="font-heading text-2xl font-bold text-[#1a1c1b]">Set Your Location</h2>
-              <p className="text-[#3e4943]">So we can show workers near you</p>
+              <h2 className="font-heading text-2xl font-bold text-[#1a1c1b]">
+                {hasRegisteredAddress ? 'Confirm Your Location' : 'Set Your Location'}
+              </h2>
+              <p className="text-[#3e4943]">
+                {hasRegisteredAddress
+                  ? 'We’ll show workers near your saved address'
+                  : 'So we can show workers near you'}
+              </p>
             </div>
+
+            {hasRegisteredAddress && (
+              <div className="rounded-xl border border-[#005d42]/30 bg-[#9ffdd3]/30 px-4 py-3 flex items-start gap-3">
+                <Icon name="check_circle" className="text-[#005d42] mt-0.5" style={{ fontSize: '20px' }} />
+                <div className="flex-1 text-sm">
+                  <p className="font-semibold text-[#1a1c1b]">Using your saved address</p>
+                  <p className="text-[#3e4943] mt-0.5">{registeredAddressLabel}</p>
+                </div>
+              </div>
+            )}
 
             <button
               onClick={detectLocation}
@@ -96,35 +194,43 @@ export default function ClientOnboardingPage() {
                 <Icon name="near_me" style={{ fontSize: '20px' }} />
               )}
               <span className="ml-2">
-                {locationDetected ? 'Location Detected!' : detectingLocation ? 'Detecting...' : 'Use My Location'}
+                {locationDetected
+                  ? 'Location Detected!'
+                  : detectingLocation
+                    ? 'Detecting...'
+                    : hasRegisteredAddress ? 'Use a Different Location' : 'Use My Location'}
               </span>
             </button>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-[#bdc9c1]" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-[#f9f9f7] px-2 text-[#6e7a73]">or select city</span>
-              </div>
-            </div>
+            {!hasRegisteredAddress && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-[#bdc9c1]" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-[#f9f9f7] px-2 text-[#6e7a73]">or select city</span>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              {SA_CITIES.map(city => (
-                <button
-                  key={city}
-                  onClick={() => setSelectedCity(city)}
-                  className={cn(
-                    'p-3 text-sm rounded-lg border transition-all text-center active:scale-[0.98]',
-                    selectedCity === city
-                      ? 'border-[#005d42] bg-[#97f5cc]/30 text-[#005d42] font-medium'
-                      : 'border-[#bdc9c1] text-[#1a1c1b] bg-white hover:border-[#005d42]'
-                  )}
-                >
-                  {city}
-                </button>
-              ))}
-            </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {ONBOARDING_CITIES.map(city => (
+                    <button
+                      key={city}
+                      onClick={() => setSelectedCity(city)}
+                      className={cn(
+                        'p-3 text-sm rounded-lg border transition-all text-center active:scale-[0.98]',
+                        selectedCity === city
+                          ? 'border-[#005d42] bg-[#97f5cc]/30 text-[#005d42] font-medium'
+                          : 'border-[#bdc9c1] text-[#1a1c1b] bg-white hover:border-[#005d42]'
+                      )}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )
 
