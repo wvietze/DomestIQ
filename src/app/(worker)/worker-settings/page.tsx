@@ -14,13 +14,6 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -42,13 +35,6 @@ interface ConsentRecord {
   revoked_at: string | null
 }
 
-interface BankDetails {
-  bank_name: string
-  account_number: string
-  account_holder: string
-  account_type: 'cheque' | 'savings'
-}
-
 interface NotificationPreferences {
   new_booking_requests: boolean
   booking_updates: boolean
@@ -60,18 +46,6 @@ interface NotificationPreferences {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-const SA_BANKS = [
-  'Capitec',
-  'FNB',
-  'Standard Bank',
-  'Absa',
-  'Nedbank',
-  'TymeBank',
-  'African Bank',
-  'Investec',
-  'Discovery Bank',
-] as const
 
 const CONSENT_LABELS: Record<string, { label: string; description: string }> = {
   platform_terms: {
@@ -318,20 +292,8 @@ export default function WorkerSettingsPage() {
 
   // Panel state — which sub-panel is open
   const [activePanel, setActivePanel] = useState<
-    'none' | 'bank' | 'notifications' | 'language' | 'consent' | 'visibility'
+    'none' | 'notifications' | 'language' | 'consent' | 'visibility'
   >('none')
-
-  // Bank account state
-  const [bankForm, setBankForm] = useState<BankDetails>({
-    bank_name: '',
-    account_number: '',
-    account_holder: '',
-    account_type: 'cheque',
-  })
-  const [savedBankLast4, setSavedBankLast4] = useState<string | null>(null)
-  const [savedBankName, setSavedBankName] = useState<string | null>(null)
-  const [showAccountNumber, setShowAccountNumber] = useState(false)
-  const [isSavingBank, setIsSavingBank] = useState(false)
 
   // Consent state
   const [consents, setConsents] = useState<ConsentRecord[]>([])
@@ -371,17 +333,11 @@ export default function WorkerSettingsPage() {
       try {
         const { data: workerProfile } = await supabase
           .from('worker_profiles')
-          .select('bank_name, account_number_last4, notification_preferences, is_active')
+          .select('notification_preferences, is_active')
           .eq('user_id', user!.id)
           .single()
 
         if (workerProfile) {
-          if (workerProfile.bank_name) {
-            setSavedBankName(workerProfile.bank_name)
-          }
-          if (workerProfile.account_number_last4) {
-            setSavedBankLast4(workerProfile.account_number_last4)
-          }
           if (typeof workerProfile.is_active === 'boolean') {
             setProfileVisible(workerProfile.is_active)
           }
@@ -412,52 +368,6 @@ export default function WorkerSettingsPage() {
 
     loadSettings()
   }, [user, supabase])
-
-  // ---------------------------------------------------------------------------
-  // Bank Account Handlers
-  // ---------------------------------------------------------------------------
-
-  const handleSaveBank = async () => {
-    if (!bankForm.bank_name || !bankForm.account_number || !bankForm.account_holder) {
-      showToast('Please fill in all bank details', 'error')
-      return
-    }
-
-    if (bankForm.account_number.length < 6) {
-      showToast('Please enter a valid account number', 'error')
-      return
-    }
-
-    setIsSavingBank(true)
-    try {
-      const res = await fetch('/api/payments/banks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bank_name: bankForm.bank_name,
-          account_number: bankForm.account_number,
-          account_holder: bankForm.account_holder,
-          account_type: bankForm.account_type,
-        }),
-      })
-
-      if (res.ok) {
-        const last4 = bankForm.account_number.slice(-4)
-        setSavedBankLast4(last4)
-        setSavedBankName(bankForm.bank_name)
-        setBankForm({ bank_name: '', account_number: '', account_holder: '', account_type: 'cheque' })
-        showToast('Bank details saved successfully', 'success')
-        setActivePanel('none')
-      } else {
-        const data = await res.json()
-        showToast(data.error || 'Failed to save bank details', 'error')
-      }
-    } catch {
-      showToast('Failed to save bank details', 'error')
-    } finally {
-      setIsSavingBank(false)
-    }
-  }
 
   // ---------------------------------------------------------------------------
   // Consent Handlers
@@ -634,153 +544,6 @@ export default function WorkerSettingsPage() {
             </div>
           ))}
         </div>
-      </div>
-    )
-  }
-
-  // ---------------------------------------------------------------------------
-  // Sub-panel: Bank Details
-  // ---------------------------------------------------------------------------
-
-  if (activePanel === 'bank') {
-    return (
-      <div className="min-h-screen bg-[#f9f9f7]">
-        {/* Sub-panel header */}
-        <div className="sticky top-0 z-40 bg-[#f9f9f7] flex items-center gap-4 px-6 py-4">
-          <button
-            onClick={() => setActivePanel('none')}
-            className="p-2 -ml-2 hover:bg-[#e8e8e6] transition-colors duration-200 rounded-full"
-          >
-            <span className="material-symbols-outlined text-[#005d42]">arrow_back</span>
-          </button>
-          <h1 className="font-heading font-bold text-lg tracking-tight text-[#005d42]">Bank Details</h1>
-        </div>
-
-        <div className="px-6 pb-32 space-y-6">
-          {/* Saved account info */}
-          {savedBankLast4 && (
-            <div className="bg-[#f4f4f2] rounded-xl p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-[#005d42]">
-                    <span className="material-symbols-outlined">verified</span>
-                  </div>
-                  <div>
-                    <p className="text-[15px] font-semibold text-[#1a1c1b]">Account on file</p>
-                    {savedBankName && <p className="text-[13px] text-[#3e4943]">{savedBankName}</p>}
-                  </div>
-                </div>
-                <span className="text-xs font-mono bg-white text-[#005d42] px-2 py-1 rounded-lg">
-                  ****{savedBankLast4}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Form */}
-          <div className="bg-[#f4f4f2] rounded-xl p-4 space-y-5">
-            <p className="text-[13px] text-[#3e4943]">
-              {savedBankLast4 ? 'Update your bank details below:' : 'Enter your bank details to get started:'}
-            </p>
-
-            <div className="space-y-2">
-              <Label htmlFor="bank-name" className="text-[13px] font-semibold text-[#1a1c1b]">Bank Name</Label>
-              <Select
-                value={bankForm.bank_name}
-                onValueChange={(value) => setBankForm((prev) => ({ ...prev, bank_name: value }))}
-              >
-                <SelectTrigger id="bank-name" className="bg-white border-[#bdc9c1]">
-                  <SelectValue placeholder="Select your bank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SA_BANKS.map((bank) => (
-                    <SelectItem key={bank} value={bank}>{bank}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="account-holder" className="text-[13px] font-semibold text-[#1a1c1b]">Account Holder Name</Label>
-              <Input
-                id="account-holder"
-                placeholder="Full name as on bank account"
-                value={bankForm.account_holder}
-                onChange={(e) => setBankForm((prev) => ({ ...prev, account_holder: e.target.value }))}
-                className="bg-white border-[#bdc9c1]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="account-number" className="text-[13px] font-semibold text-[#1a1c1b]">Account Number</Label>
-              <div className="relative">
-                <Input
-                  id="account-number"
-                  type={showAccountNumber ? 'text' : 'password'}
-                  placeholder="Enter your account number"
-                  value={bankForm.account_number}
-                  onChange={(e) =>
-                    setBankForm((prev) => ({
-                      ...prev,
-                      account_number: e.target.value.replace(/\D/g, ''),
-                    }))
-                  }
-                  className="bg-white border-[#bdc9c1] pr-10"
-                  inputMode="numeric"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAccountNumber((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6e7a73] hover:text-[#1a1c1b] transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showAccountNumber ? 'visibility_off' : 'visibility'}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="account-type" className="text-[13px] font-semibold text-[#1a1c1b]">Account Type</Label>
-              <Select
-                value={bankForm.account_type}
-                onValueChange={(value) =>
-                  setBankForm((prev) => ({ ...prev, account_type: value as 'cheque' | 'savings' }))
-                }
-              >
-                <SelectTrigger id="account-type" className="bg-white border-[#bdc9c1]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cheque">Cheque / Current</SelectItem>
-                  <SelectItem value="savings">Savings</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2 text-[12px] text-[#6e7a73]">
-              <span className="material-symbols-outlined text-[16px]">lock</span>
-              <span>Your bank details are encrypted and stored securely.</span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSaveBank}
-            disabled={isSavingBank}
-            className="w-full flex items-center justify-center gap-2 bg-[#005d42] text-white font-semibold py-3.5 rounded-xl hover:bg-[#047857] transition-colors duration-200 disabled:opacity-60"
-          >
-            {isSavingBank ? (
-              <><WaveBars size="sm" /> Saving...</>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-[20px]">account_balance</span>
-                {savedBankLast4 ? 'Update Bank Details' : 'Save Bank Details'}
-              </>
-            )}
-          </button>
-        </div>
-
-        <InlineToast toast={toast} onDismiss={dismissToast} />
       </div>
     )
   }
@@ -1015,12 +778,6 @@ export default function WorkerSettingsPage() {
         <SectionHeader>ACCOUNT</SectionHeader>
         <div className="bg-[#f4f4f2] rounded-xl overflow-hidden">
           <SettingsRow
-            icon="account_balance"
-            label={t('settings.bank_details', 'Bank Details')}
-            subtitle={savedBankLast4 ? `${savedBankName ?? 'Bank'} ****${savedBankLast4}` : 'Not set up'}
-            onClick={() => setActivePanel('bank')}
-          />
-          <SettingsRow
             icon="notifications"
             label={t('settings.notifications', 'Notification Preferences')}
             subtitle={notifSummary}
@@ -1123,8 +880,7 @@ export default function WorkerSettingsPage() {
                 </DialogTitle>
                 <DialogDescription className="text-[#3e4943]">
                   This will permanently remove your personal data, deactivate your worker profile,
-                  and sign you out. Any pending payouts will still be processed. This action
-                  cannot be undone.
+                  and sign you out. This action cannot be undone.
                 </DialogDescription>
               </DialogHeader>
 

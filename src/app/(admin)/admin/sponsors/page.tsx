@@ -146,7 +146,7 @@ export default function AdminSponsorsPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Partner Name *</Label>
-                  <Input required value={form.partner_name} onChange={e => setForm(p => ({ ...p, partner_name: e.target.value }))} placeholder="e.g. Capitec" />
+                  <Input required value={form.partner_name} onChange={e => setForm(p => ({ ...p, partner_name: e.target.value }))} placeholder="e.g. Your Brand" />
                 </div>
                 <div>
                   <Label>Logo URL</Label>
@@ -165,7 +165,7 @@ export default function AdminSponsorsPage() {
                 </div>
                 <div>
                   <Label>Headline *</Label>
-                  <Input required value={form.headline} onChange={e => setForm(p => ({ ...p, headline: e.target.value }))} placeholder="Powered by Capitec" />
+                  <Input required value={form.headline} onChange={e => setForm(p => ({ ...p, headline: e.target.value }))} placeholder="Powered by Your Brand" />
                 </div>
               </div>
 

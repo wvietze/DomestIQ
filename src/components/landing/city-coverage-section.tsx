@@ -6,15 +6,15 @@ import { motion, useInView } from 'framer-motion'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 const cities = [
-  { name: 'Johannesburg', province: 'Gauteng', workers: '120+', launched: true },
-  { name: 'Cape Town', province: 'Western Cape', workers: '95+', launched: true },
-  { name: 'Durban', province: 'KwaZulu-Natal', workers: '80+', launched: true },
-  { name: 'Pretoria', province: 'Gauteng', workers: '70+', launched: true },
-  { name: 'Port Elizabeth', province: 'Eastern Cape', workers: '45+', launched: true },
-  { name: 'Bloemfontein', province: 'Free State', workers: '30+', launched: true },
-  { name: 'East London', province: 'Eastern Cape', workers: '25+', launched: false },
-  { name: 'Polokwane', province: 'Limpopo', workers: '15+', launched: false },
-  { name: 'Nelspruit', province: 'Mpumalanga', workers: '10+', launched: false },
+  { name: 'Paarl', province: 'Western Cape', launched: true },
+  { name: 'Cape Town', province: 'Western Cape', launched: true },
+  { name: 'Johannesburg', province: 'Gauteng', launched: false },
+  { name: 'Pretoria', province: 'Gauteng', launched: false },
+  { name: 'Durban', province: 'KwaZulu-Natal', launched: false },
+  { name: 'Gqeberha', province: 'Eastern Cape', launched: false },
+  { name: 'Bloemfontein', province: 'Free State', launched: false },
+  { name: 'East London', province: 'Eastern Cape', launched: false },
+  { name: 'Polokwane', province: 'Limpopo', launched: false },
 ]
 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }
@@ -59,22 +59,21 @@ export function CityCoverageSection() {
               transition={{ duration: 0.4 }}
               className="group p-5 rounded-2xl bg-white border border-[#e8e8e6] hover:border-[#bdc9c1] hover:shadow-md transition-all duration-300"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[#1a1c1b]">{city.name}</h3>
-                    {!city.launched && (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 bg-[#ffdcc3] text-[#904d00] rounded-full">
-                        {t('landing.cities.launching_soon', 'Launching Soon')}
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="font-bold text-[#1a1c1b]">{city.name}</h3>
                   <p className="text-sm text-[#3e4943]">{city.province}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-[#005d42]">{city.workers}</p>
-                  <p className="text-[10px] text-[#3e4943]">{t('landing.cities.workers', 'workers')}</p>
-                </div>
+                {city.launched ? (
+                  <span className="inline-flex items-center gap-1.5 shrink-0 text-[10px] font-semibold px-2.5 py-1 bg-[#9ffdd3]/60 text-[#005d42] rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#005d42] animate-pulse" />
+                    {t('landing.cities.now_live', 'Now Live')}
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-[10px] font-semibold px-2.5 py-1 bg-[#ffdcc3] text-[#904d00] rounded-full">
+                    {t('landing.cities.launching_soon', 'Launching Soon')}
+                  </span>
+                )}
               </div>
             </motion.div>
           ))}

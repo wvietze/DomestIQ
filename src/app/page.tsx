@@ -14,7 +14,6 @@ import {
 import { Logo } from '@/components/shared/logo'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
 import { MagneticButton } from '@/components/landing/magnetic-button'
-import { AnimatedCountersSection } from '@/components/landing/animated-counters-section'
 import { TrustBadgesSection } from '@/components/landing/trust-badges-section'
 import { CityCoverageSection } from '@/components/landing/city-coverage-section'
 import { FaqSection } from '@/components/landing/faq-section'
@@ -748,9 +747,6 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* ━━━ Animated Counters ━━━ */}
-      <AnimatedCountersSection />
 
       {/* ━━━ Trust Badges ━━━ */}
       <TrustBadgesSection />

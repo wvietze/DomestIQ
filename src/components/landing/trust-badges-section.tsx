@@ -17,8 +17,8 @@ export function TrustBadgesSection() {
     { icon: 'verified_user', title: t('landing.trust.t2_title', 'ID Verified Workers'), desc: t('landing.trust.t2_desc', 'Document verification by our team'), color: 'text-[#005d42]', bg: 'bg-[#9ffdd3]/40' },
     { icon: 'chat', title: t('landing.trust.t3_title', 'Safe Messaging'), desc: t('landing.trust.t3_desc', 'Chat securely through the platform'), color: 'text-[#005d42]', bg: 'bg-[#9ffdd3]/40' },
     { icon: 'fingerprint', title: t('landing.trust.t4_title', 'Background Checks'), desc: t('landing.trust.t4_desc', 'Criminal clearance certificates'), color: 'text-[#904d00]', bg: 'bg-[#ffdcc3]/40' },
-    { icon: 'group', title: t('landing.trust.t5_title', '500+ Workers'), desc: t('landing.trust.t5_desc', 'Growing network across SA'), color: 'text-[#904d00]', bg: 'bg-[#ffdcc3]/40' },
-    { icon: 'star', title: t('landing.trust.t6_title', '4.8 Rating'), desc: t('landing.trust.t6_desc', 'Average worker satisfaction score'), color: 'text-[#904d00]', bg: 'bg-[#ffdcc3]/40' },
+    { icon: 'reviews', title: t('landing.trust.t5_title', 'Honest Reviews'), desc: t('landing.trust.t5_desc', 'Real ratings from real households'), color: 'text-[#904d00]', bg: 'bg-[#ffdcc3]/40' },
+    { icon: 'payments', title: t('landing.trust.t6_title', 'Zero Commission'), desc: t('landing.trust.t6_desc', 'Workers keep 100% of what they earn'), color: 'text-[#904d00]', bg: 'bg-[#ffdcc3]/40' },
   ], [t])
 
   return (
