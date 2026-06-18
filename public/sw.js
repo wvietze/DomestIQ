@@ -1,9 +1,11 @@
 // DomestIQ Service Worker — Push Notifications + Offline Cache
 
-const CACHE_NAME = 'domestiq-v3'
-const STATIC_ASSETS = ['/', '/offline', '/manifest.json', '/icons/icon-192x192.png', '/icons/icon-512x512.png']
+const CACHE_NAME = 'domestiq-v4'
+// Pre-cache only the offline shell + PWA assets. Never pre-cache '/' (the HTML
+// document) so we can't serve a stale page that references deleted JS chunks.
+const STATIC_ASSETS = ['/offline', '/manifest.json', '/icons/icon-192x192.png', '/icons/icon-512x512.png']
 
-// Install — cache static assets including offline fallback
+// Install — cache the offline shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -11,7 +13,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting()
 })
 
-// Activate — clean old caches
+// Activate — drop every previous cache version
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -21,25 +23,54 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch — network first, cache fallback
+// Fetch strategy.
+//
+// The previous version intercepted EVERY GET and cache.put() it — including
+// cross-origin requests (Google Fonts, Maps) and Supabase REST data. Caching
+// opaque/cross-origin responses made the Material Symbols font fail to load
+// (icons rendered as literal text) and risked serving stale data and stale HTML
+// that pointed at deleted build chunks.
+//
+// This version only ever touches SAME-ORIGIN, non-API GETs, and never caches
+// HTML documents.
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests, skip API calls
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) return
+  const { request } = event
+
+  if (request.method !== 'GET') return
+
+  const url = new URL(request.url)
+
+  // Let the browser handle everything cross-origin natively (fonts, maps,
+  // Supabase) — we must not cache or proxy those.
+  if (url.origin !== self.location.origin) return
+
+  // Never touch API traffic.
+  if (url.pathname.startsWith('/api/')) return
+
+  // HTML navigations: network-only, with an offline fallback. We never cache the
+  // document, so a returning user always gets HTML that matches the current
+  // deployment's chunks.
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(() => caches.match('/offline')))
+    return
+  }
+
+  // Same-origin static assets (hashed /_next assets, images, icons, fonts):
+  // stale-while-revalidate. Only basic (same-origin, non-opaque) 200 responses
+  // are ever stored.
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const clone = response.clone()
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-        return response
-      })
-      .catch(() => caches.match(event.request).then((cached) => {
-        if (cached) return cached
-        // For navigation requests, show offline page
-        if (event.request.mode === 'navigate') {
-          return caches.match('/offline')
-        }
-        return cached
-      }))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      const cached = await cache.match(request)
+      const network = fetch(request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            cache.put(request, response.clone())
+          }
+          return response
+        })
+        .catch(() => cached)
+      return cached || network
+    })
   )
 })
 
