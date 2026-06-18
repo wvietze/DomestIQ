@@ -10,46 +10,53 @@ export function useUser() {
 
   useEffect(() => {
     const supabase = createClient()
+    let active = true
 
-    async function getUser() {
+    async function loadProfile(userId: string) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      if (active) setProfile(data as Profile | null)
+    }
+
+    async function init() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
+        if (!active) return
         setUser(user)
-
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single()
-          setProfile(profile as Profile | null)
-        }
+        if (user) await loadProfile(user.id)
       } catch {
-        reset()
+        if (active) reset()
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
-    getUser()
+    init()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
+        if (!active) return
         setUser(session?.user ?? null)
+        // IMPORTANT: never `await` a Supabase call directly inside this callback.
+        // onAuthStateChange runs while GoTrue holds its internal auth lock, so an
+        // awaited query here deadlocks getUser()/getSession() and the app hangs on
+        // its loading state. Defer the profile fetch out of the lock with setTimeout.
         if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          setProfile(profile as Profile | null)
+          const userId = session.user.id
+          setTimeout(() => { if (active) void loadProfile(userId) }, 0)
         } else {
           setProfile(null)
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [setUser, setProfile, setLoading, reset])
 
   return { user, profile, isLoading }
