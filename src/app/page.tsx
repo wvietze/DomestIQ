@@ -9,7 +9,7 @@ import {
   Search, Shield, Star, MapPin, MessageSquare, Clock,
   ArrowRight, Phone, Globe, CheckCircle2,
   Heart, Users, Zap, ChevronRight,
-  Briefcase, TrendingUp, Award, Gift, FileText, Download,
+  Briefcase, Award, FileText, Download,
 } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
@@ -69,24 +69,14 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
-  // Parallax image reveal between hero and problem section
-  const revealRef = useRef(null)
-  const { scrollYProgress: revealProgress } = useScroll({ target: revealRef, offset: ['start end', 'end start'] })
-  const revealScale = useTransform(revealProgress, [0, 0.5], [1.15, 1])
-  const revealY = useTransform(revealProgress, [0, 1], ['0%', '15%'])
-
   // How It Works active step
   const [activeStep, setActiveStep] = useState(0)
 
   const workerBenefits = useMemo(() => [
-    { icon: TrendingUp, title: t('landing.worker.b1_title', 'Consistent Work'), desc: t('landing.worker.b1_desc', 'Bookings come straight to your phone. No more waiting at gates or asking around.') },
     { icon: Star, title: t('landing.worker.b2_title', 'Your Reputation Grows'), desc: t('landing.worker.b2_desc', 'Every good job earns a review. Every review brings the next job. You never start from zero again.') },
     { icon: Shield, title: t('landing.worker.b3_title', 'Know Who You Work For'), desc: t('landing.worker.b3_desc', 'Clients are verified too. See who you\'re going to before you arrive.') },
-    { icon: Phone, title: t('landing.worker.b4_title', 'Phone-Only Registration'), desc: t('landing.worker.b4_desc', 'No email needed. Tap icons to pick your skills — no typing, no forms.') },
     { icon: Globe, title: t('landing.worker.b5_title', 'In Your Language'), desc: t('landing.worker.b5_desc', 'Use DomestIQ in Zulu, Xhosa, Sotho, Afrikaans — all 11 SA languages.') },
     { icon: Heart, title: t('landing.worker.b6_title', 'You Keep Every Rand'), desc: t('landing.worker.b6_desc', 'We never take a cut from what you earn. Not now, not ever.') },
-    { icon: Gift, title: t('landing.worker.b7_title', 'Refer & Earn'), desc: t('landing.worker.b7_desc', 'Know someone good? Share your code. When they join, you both earn.') },
-    { icon: FileText, title: t('landing.worker.b8_title', 'Free CV Builder'), desc: t('landing.worker.b8_desc', 'Build a professional CV from your profile. Download the PDF — it\'s yours to use anywhere.') },
   ], [t])
 
   const clientBenefits = useMemo(() => [
@@ -107,11 +97,8 @@ export default function LandingPage() {
 
   const stories = useMemo(() => [
     { name: 'Thandi M.', role: t('landing.stories.s1_role', 'Domestic Worker, Soweto'), quote: t('landing.stories.s1_quote', 'I used to wait weeks between jobs. Now I get bookings every week. My children can eat properly.'), initials: 'TM', image: '/images/landing/rated-respected.png' },
-    { name: 'Sipho K.', role: t('landing.stories.s2_role', 'Gardener, Pretoria'), quote: t('landing.stories.s2_quote', 'I cannot read well but the pictures make it easy. I registered by myself. No help needed.'), initials: 'SK', image: '/images/landing/phone-buzzes.png' },
     { name: 'Nomsa D.', role: t('landing.stories.s3_role', 'Domestic Worker, Durban'), quote: t('landing.stories.s3_quote', 'Before, I had no proof I\'m good at what I do. Now my reviews speak for me. Clients trust me before I arrive.'), initials: 'ND', image: '/images/landing/reputation.png' },
-    { name: 'Sarah vd Berg', role: t('landing.stories.s4_role', 'Household, Sandton'), quote: t('landing.stories.s4_quote', 'Finding someone I trust used to mean asking friends and hoping for the best. Not anymore.'), initials: 'SB', image: '/images/landing/found-worker.png' },
     { name: 'Pieter J.', role: t('landing.stories.s5_role', 'Household, Cape Town'), quote: t('landing.stories.s5_quote', 'I know exactly who\'s coming to my house. When you have kids, that matters more than anything.'), initials: 'PJ', image: '/images/landing/trust-at-door.png' },
-    { name: 'Lerato M.', role: t('landing.stories.s6_role', 'Painter, Johannesburg'), quote: t('landing.stories.s6_quote', 'I set my own rates. Nobody takes a cut. I earned R8,000 last month through DomestIQ alone.'), initials: 'LM', image: '/images/landing/braai-share.png' },
   ], [t])
 
   const stats = useMemo(() => [
@@ -282,28 +269,6 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ━━━ Parallax Image Reveal — Cinematic Transition ━━━ */}
-      <section ref={revealRef} className="relative h-[60vh] md:h-[70vh] overflow-hidden">
-        <motion.div style={{ scale: revealScale, y: revealY }} className="absolute inset-0">
-          <Image
-            src="/images/landing/waiting-for-work-alt.png"
-            alt="Worker waiting for opportunity outside estate"
-            fill
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-zinc-900/40" />
-        </motion.div>
-        <div className="relative h-full flex items-center justify-center text-center px-6">
-          <Section>
-            <p className="text-2xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-3xl">
-              {t('landing.cta.heading_1', 'South Africa runs on domestic work.')}{' '}
-              <span className="text-emerald-300">{t('landing.cta.heading_2', "It's time it worked for everyone.")}</span>
-            </p>
-          </Section>
         </div>
       </section>
 
@@ -730,21 +695,6 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-
-          {/* Second row */}
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
-            className="grid md:grid-cols-2 gap-5 mt-5">
-            {stories.slice(4).map((story) => (
-              <motion.div key={story.name} variants={fadeUp} transition={{ duration: 0.5 }}
-                className="p-5 rounded-2xl border border-zinc-100 bg-white hover:shadow-sm transition-shadow">
-                <p className="text-zinc-700 leading-relaxed text-sm mb-4">&ldquo;{story.quote}&rdquo;</p>
-                <div>
-                  <p className="font-semibold text-sm text-zinc-900">{story.name}</p>
-                  <p className="text-xs text-zinc-500">{story.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
         </div>
       </section>
 
