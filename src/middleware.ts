@@ -10,6 +10,11 @@ export async function middleware(request: NextRequest) {
   const { supabase, user, supabaseResponse } = await updateSession(request)
   const path = request.nextUrl.pathname
 
+  // The public /partners page was retired — redirect any stale links to home.
+  if (path === '/partners' || path.startsWith('/partners/')) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
   // Signed-in users should skip the landing page and land in their app shell.
   // Unknown roles (no profile yet) still see the landing so they can register.
   if (path === '/' && user) {

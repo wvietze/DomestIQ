@@ -31,12 +31,12 @@ const DAYS = [
   { short: 'Thu', idx: 4 }, { short: 'Fri', idx: 5 }, { short: 'Sat', idx: 6 }, { short: 'Sun', idx: 0 },
 ]
 
-const SERVICE_EMOJIS: Record<string, string> = {
-  'domestic-worker': '🏠', gardener: '🌿', painter: '🎨', welder: '🔧',
-  electrician: '⚡', plumber: '🔧', carpenter: '🪚', tiler: '🧱',
-  roofer: '🏗️', 'pool-cleaner': '🏊', 'pest-control': '🐛',
-  'window-cleaner': '✨', handyman: '🛠️', babysitter: '👶',
-  'dog-walker': '🐕', 'security-guard': '🛡️',
+const SERVICE_ICONS: Record<string, string> = {
+  'domestic-worker': 'home', gardener: 'yard', painter: 'format_paint', welder: 'construction',
+  electrician: 'bolt', plumber: 'plumbing', carpenter: 'carpenter', tiler: 'grid_view',
+  roofer: 'roofing', 'pool-cleaner': 'pool', 'pest-control': 'pest_control',
+  'window-cleaner': 'cleaning_services', handyman: 'handyman', babysitter: 'child_care',
+  'dog-walker': 'pets', 'security-guard': 'security',
 }
 
 export function WorkerRegisterWizard() {
@@ -206,7 +206,7 @@ export function WorkerRegisterWizard() {
                   return (
                     <button key={svc.id} type="button" onClick={() => toggleService(svc.id)}
                       className={cn('flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left', isSelected ? 'border-[#005d42] bg-[#9ffdd3]/30 shadow-sm' : 'border-[#bdc9c1] hover:border-[#97f5cc]')}>
-                      <span className="text-xl">{SERVICE_EMOJIS[svc.id] || '🛠️'}</span>
+                      <span className="material-symbols-outlined text-xl text-[#005d42]">{SERVICE_ICONS[svc.id] || 'handyman'}</span>
                       <span className="font-medium text-sm text-[#1a1c1b]">{svc.name}</span>
                       {isSelected && <span className="material-symbols-outlined text-base text-[#005d42] ml-auto">check</span>}
                     </button>

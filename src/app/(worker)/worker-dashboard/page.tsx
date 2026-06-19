@@ -227,7 +227,7 @@ export default function WorkerDashboard() {
       {/* Greeting Section */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-[#1a1c1b] font-heading">
-          Hey {firstName} <span className="inline-block animate-[wave_1.5s_ease-in-out_infinite]">👋</span>
+          Hey {firstName} <span className="inline-block origin-[70%_70%] animate-[wave_1.5s_ease-in-out_infinite]">👋</span>
         </h1>
         <p className="text-[#3e4943] text-sm mt-1">
           Here&apos;s your work overview
