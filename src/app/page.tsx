@@ -113,21 +113,21 @@ export default function LandingPage() {
 
       {/* ━━━ Navigation ━━━ */}
       <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-zinc-100">
+        className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#eeeeec]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="shrink-0"><Logo /></Link>
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#for-workers" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.nav.for_workers', 'For Workers')}</a>
-            <a href="#for-households" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.nav.for_households', 'For Households')}</a>
-            <a href="#services" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.nav.services', 'Services')}</a>
-            <a href="#stories" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.nav.stories', 'Stories')}</a>
-            <a href="#faq" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.nav.faq', 'FAQ')}</a>
+            <a href="#for-workers" className="text-sm font-medium text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.nav.for_workers', 'For Workers')}</a>
+            <a href="#for-households" className="text-sm font-medium text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.nav.for_households', 'For Households')}</a>
+            <a href="#services" className="text-sm font-medium text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.nav.services', 'Services')}</a>
+            <a href="#stories" className="text-sm font-medium text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.nav.stories', 'Stories')}</a>
+            <a href="#faq" className="text-sm font-medium text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.nav.faq', 'FAQ')}</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <LanguageSwitcher />
-            <Link href="/login" className="hidden sm:inline-flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-2">{t('landing.nav.login', 'Log In')}</Link>
+            <Link href="/login" className="hidden sm:inline-flex items-center text-sm font-medium text-[#6e7a73] hover:text-[#1a1c1b] transition-colors px-3 py-2">{t('landing.nav.login', 'Log In')}</Link>
             <MagneticButton strength={0.2}>
-              <Link href="/register" className="inline-flex items-center justify-center text-sm font-semibold leading-none bg-zinc-900 text-white px-4 h-9 sm:px-5 sm:h-10 rounded-full hover:bg-zinc-800 transition-colors">{t('landing.nav.get_started', 'Get Started')}</Link>
+              <Link href="/register" className="inline-flex items-center justify-center text-sm font-semibold leading-none bg-[#005d42] text-white px-4 h-9 sm:px-5 sm:h-10 rounded-full hover:bg-[#047857] transition-colors">{t('landing.nav.get_started', 'Get Started')}</Link>
             </MagneticButton>
           </div>
         </div>
@@ -139,21 +139,21 @@ export default function LandingPage() {
         <motion.div style={{ opacity: heroOpacity }} className="flex-1 flex items-center px-6 sm:px-10 lg:px-16 py-20 lg:py-0">
           <div className="max-w-xl">
             <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#9ffdd3]/40 text-[#005d42] border border-[#97f5cc] mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#047857] animate-pulse" />
               {t('landing.hero.badge', 'Built for Mzansi. Built for us.')}
             </motion.span>
 
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-zinc-900">
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-[#1a1c1b]">
               {t('landing.hero.heading_1', 'Good work')}{' '}
-              <span className="text-emerald-700">{t('landing.hero.heading_workers', 'deserves')}</span>{' '}
+              <span className="text-[#005d42]">{t('landing.hero.heading_workers', 'deserves')}</span>{' '}
               {t('landing.hero.heading_and', 'to be')}<br />
-              <span className="text-emerald-700">{t('landing.hero.heading_households', 'found')}</span>
+              <span className="text-[#005d42]">{t('landing.hero.heading_households', 'found')}</span>
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.7 }}
-              className="mt-8 text-lg text-zinc-500 leading-relaxed max-w-[50ch]">
+              className="mt-8 text-lg text-[#6e7a73] leading-relaxed max-w-[50ch]">
               {t('landing.hero.subtext', 'DomestIQ connects domestic workers and households across South Africa — with verified profiles, honest reviews, and real trust. Phone-first. All 11 languages. Always free for workers.')}
             </motion.p>
 
@@ -161,21 +161,21 @@ export default function LandingPage() {
               className="mt-10 flex flex-col sm:flex-row gap-3">
               <MagneticButton>
                 <Link href="/register/worker"
-                  className="group inline-flex items-center justify-center gap-2 bg-zinc-900 text-white px-7 py-3.5 rounded-full text-base font-semibold hover:bg-zinc-800 transition-colors">
+                  className="group inline-flex items-center justify-center gap-2 bg-[#005d42] text-white px-7 py-3.5 rounded-full text-base font-semibold hover:bg-[#047857] transition-colors">
                   {t('landing.hero.cta_worker', "I'm a Worker")}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </MagneticButton>
               <MagneticButton>
                 <Link href="/register"
-                  className="group inline-flex items-center justify-center gap-2 border border-zinc-200 text-zinc-700 px-7 py-3.5 rounded-full text-base font-semibold hover:border-zinc-300 hover:bg-zinc-50 transition-all">
+                  className="group inline-flex items-center justify-center gap-2 border border-[#e8e8e6] text-[#3e4943] px-7 py-3.5 rounded-full text-base font-semibold hover:border-[#bdc9c1] hover:bg-[#f4f4f2] transition-all">
                   {t('landing.hero.cta_client', 'I Need Help at Home')}
                 </Link>
               </MagneticButton>
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1.3 }}
-              className="mt-10 flex flex-wrap gap-4 text-xs font-medium text-zinc-400">
+              className="mt-10 flex flex-wrap gap-4 text-xs font-medium text-[#bdc9c1]">
               {[
                 t('landing.hero.trust_popia', 'POPIA Compliant'),
                 t('landing.hero.trust_verified', 'ID Verified'),
@@ -183,7 +183,7 @@ export default function LandingPage() {
                 t('landing.hero.trust_commission', 'Zero Commission'),
               ].map((label) => (
                 <span key={label} className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#047857]" />
                   {label}
                 </span>
               ))}
@@ -207,16 +207,16 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ Stats Bar ━━━ */}
-      <section className="border-y border-zinc-100 bg-zinc-950 text-white">
+      <section className="border-y border-[#eeeeec] bg-[#1a1c1b] text-white">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((s) => {
               const Icon = s.icon
               return (
                 <motion.div key={s.label} variants={scaleIn} transition={{ duration: 0.5 }} className="text-center p-3">
-                  <Icon className="w-4 h-4 text-emerald-400 mx-auto mb-2" />
+                  <Icon className="w-4 h-4 text-[#97f5cc] mx-auto mb-2" />
                   <p className="text-3xl md:text-4xl font-extrabold text-white">{s.value}</p>
-                  <p className="text-sm text-zinc-500 mt-1">{s.label}</p>
+                  <p className="text-sm text-[#6e7a73] mt-1">{s.label}</p>
                 </motion.div>
               )
             })}
@@ -228,12 +228,12 @@ export default function LandingPage() {
       <section className="py-20 md:py-28">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <Section className="mb-16">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#eeeeec] text-[#6e7a73] border border-[#e8e8e6] mb-6">
               {t('landing.problem.badge', 'The Reality')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 leading-tight max-w-2xl">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-[#1a1c1b] leading-tight max-w-2xl">
               {t('landing.problem.heading_1', 'We know')}{' '}
-              <span className="text-zinc-400">{t('landing.problem.heading_2', 'the struggle')}</span>
+              <span className="text-[#bdc9c1]">{t('landing.problem.heading_2', 'the struggle')}</span>
             </h2>
           </Section>
 
@@ -264,8 +264,8 @@ export default function LandingPage() {
                   <Image src={item.image} alt={item.alt} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 </div>
-                <h3 className="font-bold text-lg text-zinc-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{item.desc}</p>
+                <h3 className="font-bold text-lg text-[#1a1c1b] mb-2">{item.title}</h3>
+                <p className="text-sm text-[#6e7a73] leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -285,19 +285,19 @@ export default function LandingPage() {
             {/* Copy — right */}
             <div>
               <Section>
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 mb-6">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#9ffdd3]/40 text-[#005d42] border border-[#97f5cc] mb-6">
                   <Briefcase className="w-3 h-3" /> {t('landing.nav.for_workers', 'For Workers')}
                 </span>
-                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight text-zinc-900">
+                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight text-[#1a1c1b]">
                   {t('landing.worker.heading_1', 'Your skills deserve')}<br />
-                  <span className="text-emerald-700">{t('landing.worker.heading_2', 'consistent work')}</span>
+                  <span className="text-[#005d42]">{t('landing.worker.heading_2', 'consistent work')}</span>
                 </h2>
-                <p className="mt-5 text-lg text-zinc-500 leading-relaxed max-w-[50ch]">
+                <p className="mt-5 text-lg text-[#6e7a73] leading-relaxed max-w-[50ch]">
                   {t('landing.worker.body', 'Millions of workers across SA rely on word-of-mouth. When one client falls away, it can mean weeks with nothing. DomestIQ changes that — build your profile once, and your reviews, references, and reputation follow you.')}
                 </p>
                 <div className="mt-8">
                   <Link href="/register/worker"
-                    className="group inline-flex items-center gap-2 bg-zinc-900 text-white px-7 py-3.5 rounded-full text-base font-semibold hover:bg-zinc-800 transition-colors">
+                    className="group inline-flex items-center gap-2 bg-[#005d42] text-white px-7 py-3.5 rounded-full text-base font-semibold hover:bg-[#047857] transition-colors">
                     {t('landing.worker.cta', 'Register Free — Takes 2 Minutes')}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
@@ -313,12 +313,12 @@ export default function LandingPage() {
               const Icon = b.icon
               return (
                 <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
-                  <div className="group p-5 rounded-2xl border border-zinc-100 hover:border-emerald-200 hover:shadow-sm transition-all duration-300 h-full">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
-                      <Icon className="w-4 h-4 text-emerald-700" />
+                  <div className="group p-5 rounded-2xl border border-[#eeeeec] hover:border-[#97f5cc] hover:shadow-sm transition-all duration-300 h-full">
+                    <div className="w-9 h-9 rounded-lg bg-[#9ffdd3]/40 flex items-center justify-center mb-3 group-hover:bg-[#9ffdd3]/70 transition-colors">
+                      <Icon className="w-4 h-4 text-[#005d42]" />
                     </div>
-                    <h3 className="font-semibold text-sm text-zinc-900 mb-1">{b.title}</h3>
-                    <p className="text-sm text-zinc-500 leading-relaxed">{b.desc}</p>
+                    <h3 className="font-semibold text-sm text-[#1a1c1b] mb-1">{b.title}</h3>
+                    <p className="text-sm text-[#6e7a73] leading-relaxed">{b.desc}</p>
                   </div>
                 </motion.div>
               )
@@ -327,17 +327,17 @@ export default function LandingPage() {
 
           {/* CV Builder Callout */}
           <Section delay={0.2}>
-            <div className="mt-16 rounded-2xl border border-zinc-100 bg-zinc-50 p-8 md:p-10">
+            <div className="mt-16 rounded-2xl border border-[#eeeeec] bg-[#f4f4f2] p-8 md:p-10">
               <div className="grid md:grid-cols-2 gap-10 items-center">
                 <div>
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 mb-4">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#9ffdd3]/40 text-[#005d42] border border-[#97f5cc] mb-4">
                     <FileText className="w-3 h-3" /> {t('landing.cv.badge', 'Free for Every Worker')}
                   </span>
-                  <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900">
+                  <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#1a1c1b]">
                     {t('landing.cv.heading_1', 'A professional CV')}{' '}
-                    <span className="text-emerald-700">{t('landing.cv.heading_2', 'in 3 taps')}</span>
+                    <span className="text-[#005d42]">{t('landing.cv.heading_2', 'in 3 taps')}</span>
                   </h3>
-                  <p className="mt-3 text-zinc-500 leading-relaxed">
+                  <p className="mt-3 text-[#6e7a73] leading-relaxed">
                     {t('landing.cv.body', 'Your skills, work history, and reviews — turned into a proper document you can hand to anyone. Not just for DomestIQ. It\'s yours.')}
                   </p>
                   <div className="mt-6 space-y-3">
@@ -347,50 +347,50 @@ export default function LandingPage() {
                       { step: '3', text: t('landing.cv.step3', 'Download the PDF — free, always') },
                     ].map((s) => (
                       <div key={s.step} className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
-                        <span className="text-sm font-medium text-zinc-700">{s.text}</span>
+                        <div className="w-6 h-6 rounded-full bg-[#1a1c1b] text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
+                        <span className="text-sm font-medium text-[#3e4943]">{s.text}</span>
                       </div>
                     ))}
                   </div>
-                  <p className="mt-5 text-xs text-zinc-400">
+                  <p className="mt-5 text-xs text-[#bdc9c1]">
                     {t('landing.cv.portable', 'Your CV works everywhere. Print it. Email it. Hand it over at the gate.')}
                   </p>
                 </div>
 
                 <div className="flex justify-center">
                   <div className="relative">
-                    <div className="w-[220px] bg-white rounded-xl shadow-lg border border-zinc-200 p-5 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-100">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100" />
+                    <div className="w-[220px] bg-white rounded-xl shadow-lg border border-[#e8e8e6] p-5 transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#eeeeec]">
+                        <div className="w-10 h-10 rounded-full bg-[#9ffdd3]/70" />
                         <div className="space-y-1.5">
-                          <div className="h-2.5 w-20 bg-zinc-800 rounded-sm" />
-                          <div className="h-2 w-14 bg-zinc-300 rounded-sm" />
+                          <div className="h-2.5 w-20 bg-[#3e4943] rounded-sm" />
+                          <div className="h-2 w-14 bg-[#bdc9c1] rounded-sm" />
                         </div>
                       </div>
                       <div className="mb-3">
-                        <div className="h-2 w-10 bg-emerald-600 rounded-sm mb-2" />
+                        <div className="h-2 w-10 bg-[#047857] rounded-sm mb-2" />
                         <div className="flex flex-wrap gap-1">
                           {['Cleaning', 'Ironing', 'Cooking'].map((s) => (
-                            <span key={s} className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[8px] text-emerald-700 font-medium">{s}</span>
+                            <span key={s} className="px-1.5 py-0.5 bg-[#9ffdd3]/40 border border-[#97f5cc] rounded text-[8px] text-[#005d42] font-medium">{s}</span>
                           ))}
                         </div>
                       </div>
                       <div className="mb-3">
-                        <div className="h-2 w-14 bg-emerald-600 rounded-sm mb-2" />
+                        <div className="h-2 w-14 bg-[#047857] rounded-sm mb-2" />
                         <div className="space-y-1">
-                          <div className="h-1.5 w-full bg-zinc-100 rounded-sm" />
-                          <div className="h-1.5 w-4/5 bg-zinc-100 rounded-sm" />
-                          <div className="h-1.5 w-3/5 bg-zinc-100 rounded-sm" />
+                          <div className="h-1.5 w-full bg-[#eeeeec] rounded-sm" />
+                          <div className="h-1.5 w-4/5 bg-[#eeeeec] rounded-sm" />
+                          <div className="h-1.5 w-3/5 bg-[#eeeeec] rounded-sm" />
                         </div>
                       </div>
-                      <div className="flex items-center gap-0.5 mt-3 pt-2 border-t border-zinc-100">
+                      <div className="flex items-center gap-0.5 mt-3 pt-2 border-t border-[#eeeeec]">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <Star key={i} className="w-3 h-3 fill-[#fe932c] text-[#fe932c]" />
                         ))}
-                        <span className="text-[9px] text-zinc-500 ml-1">4.9</span>
+                        <span className="text-[9px] text-[#6e7a73] ml-1">4.9</span>
                       </div>
                     </div>
-                    <div className="absolute -bottom-3 -right-3 bg-zinc-900 text-white rounded-full p-2.5 shadow-lg">
+                    <div className="absolute -bottom-3 -right-3 bg-[#1a1c1b] text-white rounded-full p-2.5 shadow-lg">
                       <Download className="w-4 h-4" />
                     </div>
                   </div>
@@ -402,25 +402,25 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ For Households ━━━ */}
-      <section id="for-households" className="py-20 md:py-28 bg-zinc-50">
+      <section id="for-households" className="py-20 md:py-28 bg-[#f4f4f2]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Copy — left */}
             <div>
               <Section>
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200 mb-6">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#9ffdd3]/40 text-[#005d42] border border-[#97f5cc] mb-6">
                   <Users className="w-3 h-3" /> {t('landing.nav.for_households', 'For Households')}
                 </span>
-                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight text-zinc-900">
+                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight text-[#1a1c1b]">
                   {t('landing.client.heading_1', 'Find help')}<br />
-                  <span className="text-blue-700">{t('landing.client.heading_2', 'you can trust')}</span>
+                  <span className="text-[#005d42]">{t('landing.client.heading_2', 'you can trust')}</span>
                 </h2>
-                <p className="mt-5 text-lg text-zinc-500 leading-relaxed max-w-[50ch]">
+                <p className="mt-5 text-lg text-[#6e7a73] leading-relaxed max-w-[50ch]">
                   {t('landing.client.body', 'Verified IDs. Background checks. Honest reviews from households like yours. Browse rated professionals in your area, see their work history, and connect with confidence.')}
                 </p>
                 <div className="mt-8">
                   <Link href="/register"
-                    className="group inline-flex items-center gap-2 bg-zinc-900 text-white px-7 py-3.5 rounded-full text-base font-semibold hover:bg-zinc-800 transition-colors">
+                    className="group inline-flex items-center gap-2 bg-[#005d42] text-white px-7 py-3.5 rounded-full text-base font-semibold hover:bg-[#047857] transition-colors">
                     {t('landing.client.cta', 'Find a Worker Near Me')}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
@@ -433,12 +433,12 @@ export default function LandingPage() {
                   const Icon = b.icon
                   return (
                     <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
-                      <div className="group p-4 rounded-xl border border-zinc-200 bg-white hover:border-blue-200 hover:shadow-sm transition-all duration-300 h-full">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
-                          <Icon className="w-4 h-4 text-blue-700" />
+                      <div className="group p-4 rounded-xl border border-[#e8e8e6] bg-white hover:border-[#97f5cc] hover:shadow-sm transition-all duration-300 h-full">
+                        <div className="w-8 h-8 rounded-lg bg-[#9ffdd3]/40 flex items-center justify-center mb-2 group-hover:bg-[#9ffdd3]/70 transition-colors">
+                          <Icon className="w-4 h-4 text-[#005d42]" />
                         </div>
-                        <h3 className="font-semibold text-sm text-zinc-900 mb-1">{b.title}</h3>
-                        <p className="text-sm text-zinc-500 leading-relaxed">{b.desc}</p>
+                        <h3 className="font-semibold text-sm text-[#1a1c1b] mb-1">{b.title}</h3>
+                        <p className="text-sm text-[#6e7a73] leading-relaxed">{b.desc}</p>
                       </div>
                     </motion.div>
                   )
@@ -459,12 +459,12 @@ export default function LandingPage() {
       <section className="relative py-20 md:py-24">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <Section className="text-center mb-10">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#eeeeec] text-[#6e7a73] border border-[#e8e8e6] mb-4">
               {t('landing.how.badge', 'How It Works')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-[#1a1c1b]">
               {t('landing.how.heading_1', 'Simple for')}{' '}
-              <span className="text-emerald-700">{t('landing.how.heading_2', 'everyone')}</span>
+              <span className="text-[#005d42]">{t('landing.how.heading_2', 'everyone')}</span>
             </h2>
           </Section>
 
@@ -472,20 +472,20 @@ export default function LandingPage() {
           <div className="hidden lg:grid grid-cols-2 gap-16">
             <div className="relative">
               <div className="sticky top-[15vh] flex items-center justify-center">
-                <div className="relative w-[280px] h-[480px] rounded-[2.5rem] bg-zinc-900 p-3 shadow-2xl shadow-black/20">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-zinc-900 rounded-b-2xl z-10" />
+                <div className="relative w-[280px] h-[480px] rounded-[2.5rem] bg-[#1a1c1b] p-3 shadow-2xl shadow-black/20">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#1a1c1b] rounded-b-2xl z-10" />
                   <div className="w-full h-full rounded-[2rem] bg-white overflow-hidden relative">
                     <AnimatePresence mode="wait">
                       {activeStep === 0 && (
                         <motion.div key="step0" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-5 flex flex-col">
                           <div className="text-center mt-8 mb-6">
-                            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3"><Phone className="w-7 h-7 text-emerald-700" /></div>
-                            <p className="font-bold text-sm text-zinc-900">{t('landing.how.ws1_title', 'Sign up with your phone')}</p>
+                            <div className="w-14 h-14 rounded-2xl bg-[#9ffdd3]/40 flex items-center justify-center mx-auto mb-3"><Phone className="w-7 h-7 text-[#005d42]" /></div>
+                            <p className="font-bold text-sm text-[#1a1c1b]">{t('landing.how.ws1_title', 'Sign up with your phone')}</p>
                           </div>
                           <div className="grid grid-cols-3 gap-2.5 px-2">
                             {['Cleaning', 'Garden', 'Paint', 'Weld', 'Electric', 'Plumb', 'Build', 'Pool', 'Fix'].map((e, i) => (
                               <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 + i * 0.06, type: 'spring', stiffness: 400 }}
-                                className="aspect-square rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-[10px] font-medium text-zinc-600 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-colors">
+                                className="aspect-square rounded-xl bg-[#f4f4f2] border border-[#eeeeec] flex items-center justify-center text-[10px] font-medium text-[#6e7a73] cursor-pointer hover:bg-[#9ffdd3]/40 hover:border-[#97f5cc] transition-colors">
                                 {e}
                               </motion.div>
                             ))}
@@ -495,7 +495,7 @@ export default function LandingPage() {
                       {activeStep === 1 && (
                         <motion.div key="step1" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-4 flex flex-col">
                           <div className="flex items-center gap-2 mb-4 mt-6">
-                            <div className="flex-1 h-9 rounded-full bg-zinc-100 flex items-center px-3"><Search className="w-4 h-4 text-zinc-400" /><span className="text-xs text-zinc-400 ml-2">Search workers...</span></div>
+                            <div className="flex-1 h-9 rounded-full bg-[#eeeeec] flex items-center px-3"><Search className="w-4 h-4 text-[#bdc9c1]" /><span className="text-xs text-[#bdc9c1] ml-2">Search workers...</span></div>
                           </div>
                           {[
                             { name: 'Thandi M.', role: 'Domestic Worker', rating: '4.9' },
@@ -503,10 +503,10 @@ export default function LandingPage() {
                             { name: 'Nomsa D.', role: 'Domestic Worker', rating: '5.0' },
                           ].map((w, i) => (
                             <motion.div key={i} initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 + i * 0.15 }}
-                              className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 mb-2">
-                              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-xs font-bold text-emerald-700">{w.name.split(' ').map(n => n[0]).join('')}</div>
-                              <div className="flex-1 min-w-0"><p className="font-semibold text-xs truncate">{w.name}</p><p className="text-[10px] text-zinc-500">{w.role}</p></div>
-                              <div className="flex items-center gap-0.5"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /><span className="text-[10px] font-medium">{w.rating}</span></div>
+                              className="flex items-center gap-3 p-3 rounded-xl border border-[#eeeeec] mb-2">
+                              <div className="w-10 h-10 rounded-full bg-[#9ffdd3]/40 flex items-center justify-center text-xs font-bold text-[#005d42]">{w.name.split(' ').map(n => n[0]).join('')}</div>
+                              <div className="flex-1 min-w-0"><p className="font-semibold text-xs truncate">{w.name}</p><p className="text-[10px] text-[#6e7a73]">{w.role}</p></div>
+                              <div className="flex items-center gap-0.5"><Star className="w-3 h-3 fill-[#fe932c] text-[#fe932c]" /><span className="text-[10px] font-medium">{w.rating}</span></div>
                             </motion.div>
                           ))}
                         </motion.div>
@@ -514,33 +514,33 @@ export default function LandingPage() {
                       {activeStep === 2 && (
                         <motion.div key="step2" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-5 flex flex-col items-center justify-center">
                           <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ delay: 0.3, type: 'spring' }}
-                            className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
-                            <CheckCircle2 className="w-9 h-9 text-emerald-700" />
+                            className="w-16 h-16 rounded-full bg-[#9ffdd3]/40 flex items-center justify-center mb-4">
+                            <CheckCircle2 className="w-9 h-9 text-[#005d42]" />
                           </motion.div>
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="font-bold text-base text-zinc-900 mb-1">Booking Sent</motion.p>
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-xs text-zinc-500 text-center mb-6">Thandi will confirm shortly</motion.p>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="font-bold text-base text-[#1a1c1b] mb-1">Booking Sent</motion.p>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-xs text-[#6e7a73] text-center mb-6">Thandi will confirm shortly</motion.p>
                           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
-                            className="w-full rounded-xl bg-zinc-50 border border-zinc-100 p-3 space-y-2">
-                            <div className="flex justify-between text-xs"><span className="text-zinc-500">Service</span><span className="font-medium">Deep Clean</span></div>
-                            <div className="flex justify-between text-xs"><span className="text-zinc-500">Date</span><span className="font-medium">Mon, 10 Mar</span></div>
-                            <div className="flex justify-between text-xs"><span className="text-zinc-500">Time</span><span className="font-medium">08:00 – 14:00</span></div>
+                            className="w-full rounded-xl bg-[#f4f4f2] border border-[#eeeeec] p-3 space-y-2">
+                            <div className="flex justify-between text-xs"><span className="text-[#6e7a73]">Service</span><span className="font-medium">Deep Clean</span></div>
+                            <div className="flex justify-between text-xs"><span className="text-[#6e7a73]">Date</span><span className="font-medium">Mon, 10 Mar</span></div>
+                            <div className="flex justify-between text-xs"><span className="text-[#6e7a73]">Time</span><span className="font-medium">08:00 – 14:00</span></div>
                           </motion.div>
                         </motion.div>
                       )}
                       {activeStep === 3 && (
                         <motion.div key="step3" {...stepVisual} transition={{ duration: 0.4 }} className="absolute inset-0 p-5 flex flex-col items-center justify-center">
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="font-bold text-sm text-zinc-900 mb-3">How was Thandi?</motion.p>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="font-bold text-sm text-[#1a1c1b] mb-3">How was Thandi?</motion.p>
                           <div className="flex gap-1.5 mb-4">
                             {[...Array(5)].map((_, i) => (
                               <motion.div key={i} initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ delay: 0.4 + i * 0.1, type: 'spring', stiffness: 400 }}>
-                                <Star className="w-8 h-8 fill-amber-400 text-amber-400" />
+                                <Star className="w-8 h-8 fill-[#fe932c] text-[#fe932c]" />
                               </motion.div>
                             ))}
                           </div>
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="text-xs text-zinc-500 text-center mb-5">Your review helps Thandi find more work</motion.p>
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="text-xs text-[#6e7a73] text-center mb-5">Your review helps Thandi find more work</motion.p>
                           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
-                            className="w-full h-20 rounded-xl bg-zinc-50 border border-zinc-100 p-3">
-                            <span className="text-xs text-zinc-400">Write a review...</span>
+                            className="w-full h-20 rounded-xl bg-[#f4f4f2] border border-[#eeeeec] p-3">
+                            <span className="text-xs text-[#bdc9c1]">Write a review...</span>
                           </motion.div>
                         </motion.div>
                       )}
@@ -560,17 +560,17 @@ export default function LandingPage() {
                 const StepIcon = s.icon
                 return (
                   <HowItWorksStep key={s.step} step={s.step} isFirst={i === 0} isLast={i === arr.length - 1} onActivate={setActiveStep}>
-                    <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center mb-4">
-                      <StepIcon className="w-5 h-5 text-zinc-700" />
+                    <div className="w-10 h-10 rounded-xl bg-[#eeeeec] flex items-center justify-center mb-4">
+                      <StepIcon className="w-5 h-5 text-[#3e4943]" />
                     </div>
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="w-7 h-7 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-bold">{s.step + 1}</span>
-                      <h4 className="text-xl font-bold text-zinc-900">{s.title}</h4>
+                      <span className="w-7 h-7 rounded-full bg-[#1a1c1b] text-white flex items-center justify-center text-xs font-bold">{s.step + 1}</span>
+                      <h4 className="text-xl font-bold text-[#1a1c1b]">{s.title}</h4>
                     </div>
-                    <p className="text-zinc-500 leading-relaxed mb-3">{s.desc}</p>
-                    <div className="flex items-start gap-2 text-sm text-zinc-500 bg-zinc-50 rounded-xl p-3 border border-zinc-100">
-                      <Users className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
-                      <span><span className="font-medium text-zinc-900">Households:</span> {s.sub}</span>
+                    <p className="text-[#6e7a73] leading-relaxed mb-3">{s.desc}</p>
+                    <div className="flex items-start gap-2 text-sm text-[#6e7a73] bg-[#f4f4f2] rounded-xl p-3 border border-[#eeeeec]">
+                      <Users className="w-4 h-4 shrink-0 mt-0.5 text-[#005d42]" />
+                      <span><span className="font-medium text-[#1a1c1b]">Households:</span> {s.sub}</span>
                     </div>
                   </HowItWorksStep>
                 )
@@ -581,9 +581,9 @@ export default function LandingPage() {
           {/* Mobile: Simple vertical cards */}
           <div className="lg:hidden grid md:grid-cols-2 gap-8">
             <Section>
-              <div className="rounded-2xl p-8 border border-zinc-200 bg-white">
-                <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-zinc-900">
-                  <Briefcase className="w-5 h-5 text-emerald-700" /> {t('landing.how.worker_title', "If you're a worker")}
+              <div className="rounded-2xl p-8 border border-[#e8e8e6] bg-white">
+                <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-[#1a1c1b]">
+                  <Briefcase className="w-5 h-5 text-[#005d42]" /> {t('landing.how.worker_title', "If you're a worker")}
                 </h3>
                 <div className="space-y-6">
                   {[
@@ -593,8 +593,8 @@ export default function LandingPage() {
                     { step: '4', title: t('landing.how.ws4_title', 'Grow with every job'), desc: t('landing.how.ws4_desc', 'Good work earns reviews. Reviews earn more bookings. It compounds.') },
                   ].map((s) => (
                     <div key={s.step} className="flex gap-4">
-                      <div className="w-7 h-7 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
-                      <div><h4 className="font-semibold text-sm text-zinc-900">{s.title}</h4><p className="text-sm text-zinc-500 mt-0.5">{s.desc}</p></div>
+                      <div className="w-7 h-7 rounded-full bg-[#1a1c1b] text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
+                      <div><h4 className="font-semibold text-sm text-[#1a1c1b]">{s.title}</h4><p className="text-sm text-[#6e7a73] mt-0.5">{s.desc}</p></div>
                     </div>
                   ))}
                 </div>
@@ -602,9 +602,9 @@ export default function LandingPage() {
             </Section>
 
             <Section delay={0.15}>
-              <div className="rounded-2xl p-8 border border-zinc-200 bg-white">
-                <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-zinc-900">
-                  <Users className="w-5 h-5 text-blue-700" /> {t('landing.how.client_title', "If you need help at home")}
+              <div className="rounded-2xl p-8 border border-[#e8e8e6] bg-white">
+                <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-[#1a1c1b]">
+                  <Users className="w-5 h-5 text-[#005d42]" /> {t('landing.how.client_title', "If you need help at home")}
                 </h3>
                 <div className="space-y-6">
                   {[
@@ -614,8 +614,8 @@ export default function LandingPage() {
                     { step: '4', title: t('landing.how.cs4_title', 'Leave an honest review'), desc: t('landing.how.cs4_desc', 'Your rating helps good workers get seen. It keeps the whole community honest.') },
                   ].map((s) => (
                     <div key={s.step} className="flex gap-4">
-                      <div className="w-7 h-7 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
-                      <div><h4 className="font-semibold text-sm text-zinc-900">{s.title}</h4><p className="text-sm text-zinc-500 mt-0.5">{s.desc}</p></div>
+                      <div className="w-7 h-7 rounded-full bg-[#1a1c1b] text-white flex items-center justify-center text-xs font-bold shrink-0">{s.step}</div>
+                      <div><h4 className="font-semibold text-sm text-[#1a1c1b]">{s.title}</h4><p className="text-sm text-[#6e7a73] mt-0.5">{s.desc}</p></div>
                     </div>
                   ))}
                 </div>
@@ -626,17 +626,17 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━ Services — Clean Typography ━━━ */}
-      <section id="services" className="py-20 md:py-28 bg-zinc-50">
+      <section id="services" className="py-20 md:py-28 bg-[#f4f4f2]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <Section className="mb-12">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#eeeeec] text-[#6e7a73] border border-[#e8e8e6] mb-6">
               {t('landing.services.badge', 'Services')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-[#1a1c1b]">
               {t('landing.services.heading_1', 'One platform.')}{' '}
-              <span className="text-emerald-700">{t('landing.services.heading_2', 'Every skill you need.')}</span>
+              <span className="text-[#005d42]">{t('landing.services.heading_2', 'Every skill you need.')}</span>
             </h2>
-            <p className="mt-4 text-lg text-zinc-500 max-w-xl">
+            <p className="mt-4 text-lg text-[#6e7a73] max-w-xl">
               {t('landing.services.subtext', 'From daily household help to skilled trades. Workers list what they do. You find exactly who you need.')}
             </p>
           </Section>
@@ -645,7 +645,7 @@ export default function LandingPage() {
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {services.map((name) => (
               <motion.div key={name} variants={scaleIn} transition={{ duration: 0.4 }}
-                className="px-4 py-3.5 rounded-xl bg-white border border-zinc-200 text-center font-medium text-sm text-zinc-700 hover:border-emerald-300 hover:text-emerald-800 transition-colors cursor-default">
+                className="px-4 py-3.5 rounded-xl bg-white border border-[#e8e8e6] text-center font-medium text-sm text-[#3e4943] hover:border-[#97f5cc] hover:text-[#005d42] transition-colors cursor-default">
                 {name}
               </motion.div>
             ))}
@@ -657,12 +657,12 @@ export default function LandingPage() {
       <section id="stories" className="py-20 md:py-28">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <Section className="mb-16">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#eeeeec] text-[#6e7a73] border border-[#e8e8e6] mb-6">
               {t('landing.stories.badge', 'From the Community')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-[#1a1c1b]">
               {t('landing.stories.heading_1', 'Real people.')}{' '}
-              <span className="text-emerald-700">{t('landing.stories.heading_2', 'Real difference.')}</span>
+              <span className="text-[#005d42]">{t('landing.stories.heading_2', 'Real difference.')}</span>
             </h2>
           </Section>
 
@@ -685,11 +685,11 @@ export default function LandingPage() {
               {stories.slice(1, 4).map((story, i) => (
                 <motion.div key={story.name} initial="hidden" whileInView="visible" viewport={{ once: true }}
                   variants={fadeUp} transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="p-5 rounded-2xl border border-zinc-100 bg-white hover:shadow-sm transition-shadow">
-                  <p className="text-zinc-700 leading-relaxed text-sm mb-4">&ldquo;{story.quote}&rdquo;</p>
+                  className="p-5 rounded-2xl border border-[#eeeeec] bg-white hover:shadow-sm transition-shadow">
+                  <p className="text-[#3e4943] leading-relaxed text-sm mb-4">&ldquo;{story.quote}&rdquo;</p>
                   <div>
-                    <p className="font-semibold text-sm text-zinc-900">{story.name}</p>
-                    <p className="text-xs text-zinc-500">{story.role}</p>
+                    <p className="font-semibold text-sm text-[#1a1c1b]">{story.name}</p>
+                    <p className="text-xs text-[#6e7a73]">{story.role}</p>
                   </div>
                 </motion.div>
               ))}
@@ -710,29 +710,29 @@ export default function LandingPage() {
       {/* ━━━ CTA — Full-bleed Image Background ━━━ */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         <Image src="/images/landing/braai-share.png" alt="" fill className="object-cover" sizes="100vw" />
-        <div className="absolute inset-0 bg-zinc-900/75" />
+        <div className="absolute inset-0 bg-[#1a1c1b]/75" />
 
         <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="max-w-2xl">
             <Section>
               <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
                 {t('landing.cta.heading_1', 'South Africa runs on domestic work.')}<br />
-                <span className="text-emerald-300">{t('landing.cta.heading_2', "It's time it worked for everyone.")}</span>
+                <span className="text-[#97f5cc]">{t('landing.cta.heading_2', "It's time it worked for everyone.")}</span>
               </h2>
-              <p className="mt-6 text-lg text-zinc-300 leading-relaxed max-w-xl">
+              <p className="mt-6 text-lg text-[#bdc9c1] leading-relaxed max-w-xl">
                 {t('landing.cta.body', "Every worker who builds a profile creates proof of their skill. Every household that books builds trust in the community. Together, we're building something South Africa has never had.")}
               </p>
             </Section>
 
             <Section delay={0.2}>
-              <div className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-300">
+              <div className="mt-8 flex flex-wrap gap-4 text-sm text-[#bdc9c1]">
                 {[
                   t('landing.cta.pill1', 'Workers keep 100% of earnings'),
                   t('landing.cta.pill2', 'ID and background verification'),
                   t('landing.cta.pill3', 'All 11 SA languages'),
                 ].map((text) => (
                   <span key={text} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#97f5cc] shrink-0" />
                     {text}
                   </span>
                 ))}
@@ -743,7 +743,7 @@ export default function LandingPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-3">
                 <MagneticButton>
                   <Link href="/register/worker"
-                    className="group inline-flex items-center justify-center gap-2 bg-white text-zinc-900 px-7 py-3.5 rounded-full text-base font-semibold hover:bg-zinc-100 transition-colors">
+                    className="group inline-flex items-center justify-center gap-2 bg-white text-[#1a1c1b] px-7 py-3.5 rounded-full text-base font-semibold hover:bg-[#eeeeec] transition-colors">
                     {t('landing.cta.register_worker', 'Register as a Worker')}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
@@ -765,40 +765,40 @@ export default function LandingPage() {
       <PwaInstallSection />
 
       {/* ━━━ Footer ━━━ */}
-      <footer className="border-t border-zinc-100 bg-white">
+      <footer className="border-t border-[#eeeeec] bg-white">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
               <Logo />
-              <p className="text-sm text-zinc-500 leading-relaxed mt-4 max-w-xs">
+              <p className="text-sm text-[#6e7a73] leading-relaxed mt-4 max-w-xs">
                 The trusted network for verified domestic workers and households in South Africa.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-sm text-zinc-900">{t('landing.footer.for_workers', 'For Workers')}</h4>
+              <h4 className="font-semibold mb-4 text-sm text-[#1a1c1b]">{t('landing.footer.for_workers', 'For Workers')}</h4>
               <ul className="space-y-3">
-                <li><Link href="/register/worker" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.footer.register', 'Register')}</Link></li>
-                <li><Link href="/login" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.nav.login', 'Log In')}</Link></li>
+                <li><Link href="/register/worker" className="text-sm text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.footer.register', 'Register')}</Link></li>
+                <li><Link href="/login" className="text-sm text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.nav.login', 'Log In')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-sm text-zinc-900">{t('landing.footer.for_households', 'For Households')}</h4>
+              <h4 className="font-semibold mb-4 text-sm text-[#1a1c1b]">{t('landing.footer.for_households', 'For Households')}</h4>
               <ul className="space-y-3">
-                <li><Link href="/register" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.footer.find_workers', 'Find Workers')}</Link></li>
-                <li><Link href="/login" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.footer.sign_in', 'Sign In')}</Link></li>
+                <li><Link href="/register" className="text-sm text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.footer.find_workers', 'Find Workers')}</Link></li>
+                <li><Link href="/login" className="text-sm text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.footer.sign_in', 'Sign In')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-sm text-zinc-900">{t('landing.footer.legal', 'Legal')}</h4>
+              <h4 className="font-semibold mb-4 text-sm text-[#1a1c1b]">{t('landing.footer.legal', 'Legal')}</h4>
               <ul className="space-y-3">
-                <li><Link href="/terms" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.footer.terms', 'Terms of Service')}</Link></li>
-                <li><Link href="/privacy" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">{t('landing.footer.privacy', 'Privacy Policy')}</Link></li>
+                <li><Link href="/terms" className="text-sm text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.footer.terms', 'Terms of Service')}</Link></li>
+                <li><Link href="/privacy" className="text-sm text-[#6e7a73] hover:text-[#1a1c1b] transition-colors">{t('landing.footer.privacy', 'Privacy Policy')}</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-zinc-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-zinc-500">&copy; {new Date().getFullYear()} {t('landing.footer.copyright', 'DomestIQ. All rights reserved.')}</p>
-            <p className="text-xs text-zinc-400">{t('landing.footer.disclaimer', 'DomestIQ is a matching platform. We do not create an employment relationship between users.')}</p>
+          <div className="border-t border-[#eeeeec] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-[#6e7a73]">&copy; {new Date().getFullYear()} {t('landing.footer.copyright', 'DomestIQ. All rights reserved.')}</p>
+            <p className="text-xs text-[#bdc9c1]">{t('landing.footer.disclaimer', 'DomestIQ is a matching platform. We do not create an employment relationship between users.')}</p>
           </div>
         </div>
       </footer>
